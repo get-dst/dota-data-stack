@@ -2,8 +2,9 @@ name: drafts
 description: Every pick and ban of every professional match, in draft order.
 grain: one row per pick or ban, so a match contributes up to 24 rows
 use_cases:
-  - Use for ban counts, contest rates, first-pick and draft-order questions.
-  - Avoid for win rates by hero played; that is player_performances.
+  - Use for ban counts, draft order, first-pick and contest questions.
+  - Avoid for pick counts and win rates — a match whose draft OpenDota did not record has no
+    rows here, so picks undercount; picks live on hero_daily_stats and player_performances.
 common_questions:
   - Which hero was banned most this patch?
   - Which heroes are picked first most often?
@@ -38,6 +39,6 @@ dimensions:
   - {name: is_pick, type: boolean}
   - {name: match_date, type: date}
 metrics:
-  - {name: picks, agg: sum, expr: "CASE WHEN drafts.is_pick THEN 1 ELSE 0 END"}
+  - {name: draft_picks, agg: sum, expr: "CASE WHEN drafts.is_pick THEN 1 ELSE 0 END", description: "Picks recorded in the draft log; fewer than the picks on player_performances when a draft is missing."}
   - {name: bans, agg: sum, expr: "CASE WHEN drafts.is_ban THEN 1 ELSE 0 END"}
   - {name: draft_actions, agg: count, expr: drafts.match_id, description: Picks plus bans.}
