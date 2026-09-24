@@ -1,0 +1,43 @@
+name: hero_daily_stats
+description: Per hero, per day, per patch — picks, bans, wins and losses across pro matches.
+  The rollup for meta questions.
+grain: one row per hero per match date per patch
+use_cases:
+  - Use for hero pick, ban and win totals over a period or a patch.
+  - Avoid for anything about a specific player or team.
+common_questions:
+  - Which heroes were picked most on the current patch?
+  - How many times was Windranger banned this week?
+source:
+  connection: warehouse
+  table: marts.daily_hero_stats
+default_time_field: match_date
+primary_key: [match_date, patch_id, hero_id]
+population: Heroes that were picked at least once on a given day; a hero with bans but no
+  picks that day has no row.
+fields:
+  - {name: match_date, type: date}
+  - {name: patch_id, type: integer}
+  - {name: patch_name, type: string}
+  - {name: hero_id, type: integer}
+  - {name: hero_name, type: string}
+  - {name: picks, type: integer}
+  - {name: bans, type: integer}
+  - {name: wins, type: integer}
+  - {name: losses, type: integer}
+  - {name: matches_that_day, type: integer, description: Pro matches played that day on that patch; repeats on every hero row.}
+dimensions:
+  - {name: hero_name, type: string}
+  - {name: patch_name, type: string}
+  - {name: match_date, type: date}
+metrics:
+  - {name: total_picks, agg: sum, expr: hero_daily_stats.picks}
+  - {name: total_bans, agg: sum, expr: hero_daily_stats.bans}
+  - {name: total_wins, agg: sum, expr: hero_daily_stats.wins}
+  - {name: total_losses, agg: sum, expr: hero_daily_stats.losses}
+  - name: hero_win_rate
+    type: ratio
+    numerator: total_wins
+    denominator: total_picks
+    format: percent
+    description: Wins divided by picks for the hero.

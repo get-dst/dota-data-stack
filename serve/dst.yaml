@@ -1,0 +1,23 @@
+name: dota
+
+providers:
+  # Generation and prose: a fast OpenAI-compatible model. Key in .env.
+  deepseek:
+    type: openai-compatible
+    base_url: https://api.deepseek.com
+    api_key_env: DST_API_KEY_DEEPSEEK
+    fast_model: deepseek-v4-flash
+  # Typed decisions: no model writes SQL for a typed answer — every slot is a
+  # closed-set decision over the semantic model, and the SQL is compiled.
+  jev:
+    type: typesafe
+    api_key_env: DST_API_KEY_JEV
+
+connections:
+  # The marts dbt built. Local: the DuckDB file dlt wrote. Aiven: swap the block for
+  #   warehouse: {type: postgres, config: {host: …, port: 5432, database: …, user: dst_ro,
+  #               schema: marts, sslmode: require, statement_timeout_ms: 30000},
+  #               secret_env: DST_API_KEY_WAREHOUSE}
+  warehouse:
+    type: duckdb
+    config: {path: ../data/dota.duckdb, schema: marts, statement_timeout_ms: 30000}

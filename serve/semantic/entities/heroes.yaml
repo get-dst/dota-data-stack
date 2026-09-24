@@ -1,0 +1,20 @@
+name: heroes
+description: The hero roster with attribute, attack type and roles.
+grain: one row per hero
+source:
+  connection: warehouse
+  table: marts.dim_hero
+primary_key: [hero_id]
+fields:
+  - {name: hero_id, type: integer}
+  - {name: hero_name, type: string, description: "Display name, e.g. Windranger."}
+  - {name: hero_key, type: string, description: "Internal key, e.g. npc_dota_hero_windrunner."}
+  - {name: primary_attribute, type: string, description: "str, agi, int or all."}
+  - {name: attack_type, type: string, description: Melee or Ranged.}
+  - {name: roles, type: string, description: "Comma-separated roles, e.g. Carry, Support."}
+dimensions:
+  - {name: hero_name, type: string}
+  - {name: primary_attribute, type: string}
+  - {name: attack_type, type: string}
+metrics:
+  - {name: hero_count, agg: count, expr: heroes.hero_id}

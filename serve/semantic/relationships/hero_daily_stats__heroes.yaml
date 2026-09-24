@@ -1,0 +1,4 @@
+left: hero_daily_stats
+right: heroes
+on: hero_daily_stats.hero_id = heroes.hero_id
+relationship: many_to_one

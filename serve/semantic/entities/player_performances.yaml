@@ -1,0 +1,86 @@
+name: player_performances
+description: One player's performance in one professional match; ten rows per match.
+grain: one row per player per match, so counting rows counts player-games, not matches
+use_cases:
+  - Use for hero win rates and pick counts, player and team stats, GPM, XPM, KDA.
+  - Avoid for match-level facts (duration, winner) — those repeat ten times here; use pro_matches.
+common_questions:
+  - Which hero has the highest win rate on the current patch?
+  - Who has the highest average GPM this month?
+  - How many games has each team played?
+source:
+  connection: warehouse
+  table: marts.fact_player_match
+default_time_field: started_at
+primary_key: [match_id, player_slot]
+population: Every player in every professional match in the loaded window.
+fields:
+  - {name: match_id, type: integer}
+  - {name: player_slot, type: integer, description: "0-4 Radiant, 128-132 Dire."}
+  - {name: is_radiant, type: boolean}
+  - {name: team_id, type: integer, description: The team this player played for in this match.}
+  - {name: team_name, type: string}
+  - {name: account_id, type: integer, description: Steam account id.}
+  - {name: player_name, type: string, description: Steam persona name at match time.}
+  - {name: hero_id, type: integer}
+  - {name: hero_name, type: string}
+  - {name: is_win, type: boolean, description: True when this player's side won.}
+  - {name: kills, type: integer}
+  - {name: deaths, type: integer}
+  - {name: assists, type: integer}
+  - {name: kda, type: number, description: "(kills + assists) / max(deaths, 1) as OpenDota computes it."}
+  - {name: last_hits, type: integer}
+  - {name: denies, type: integer}
+  - {name: gold_per_min, type: integer}
+  - {name: xp_per_min, type: integer}
+  - {name: level, type: integer}
+  - {name: net_worth, type: integer}
+  - {name: hero_damage, type: integer}
+  - {name: tower_damage, type: integer}
+  - {name: hero_healing, type: integer}
+  - {name: obs_placed, type: integer, description: Observer wards placed.}
+  - {name: sen_placed, type: integer, description: Sentry wards placed.}
+  - {name: camps_stacked, type: integer}
+  - {name: rune_pickups, type: integer}
+  - {name: roshans_killed, type: integer}
+  - {name: towers_killed, type: integer}
+  - {name: teamfight_participation, type: number}
+  - {name: stuns, type: number, description: Seconds of stun dealt.}
+  - {name: has_aghanims_scepter, type: boolean}
+  - {name: has_aghanims_shard, type: boolean}
+  - {name: leaver_status, type: integer}
+  - {name: abandons, type: integer}
+  - {name: started_at, type: timestamp}
+  - {name: match_date, type: date}
+  - {name: patch_id, type: integer}
+  - {name: patch_name, type: string}
+  - {name: league_id, type: integer}
+  - {name: league_name, type: string}
+  - {name: duration_min, type: number}
+dimensions:
+  - {name: hero_name, type: string}
+  - {name: team_name, type: string}
+  - {name: player_name, type: string}
+  - {name: patch_name, type: string}
+  - {name: league_name, type: string}
+  - {name: match_date, type: date}
+  - {name: is_radiant, type: boolean}
+metrics:
+  - {name: games, agg: count, expr: player_performances.match_id, description: "Player-games, i.e. rows."}
+  - {name: wins, agg: sum, expr: "CASE WHEN player_performances.is_win THEN 1 ELSE 0 END"}
+  - name: win_rate
+    type: ratio
+    numerator: wins
+    denominator: games
+    format: percent
+    description: Wins divided by games, at whatever grouping the question asks (hero, team, player).
+  - {name: avg_gpm, agg: avg, expr: player_performances.gold_per_min}
+  - {name: avg_xpm, agg: avg, expr: player_performances.xp_per_min}
+  - {name: avg_kills, agg: avg, expr: player_performances.kills}
+  - {name: avg_deaths, agg: avg, expr: player_performances.deaths}
+  - {name: avg_assists, agg: avg, expr: player_performances.assists}
+  - {name: avg_kda, agg: avg, expr: player_performances.kda}
+  - {name: avg_last_hits, agg: avg, expr: player_performances.last_hits}
+  - {name: avg_hero_damage, agg: avg, expr: player_performances.hero_damage}
+  - {name: avg_tower_damage, agg: avg, expr: player_performances.tower_damage}
+  - {name: avg_net_worth, agg: avg, expr: player_performances.net_worth}

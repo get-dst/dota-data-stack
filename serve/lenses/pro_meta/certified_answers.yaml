@@ -1,0 +1,25 @@
+# Certified answers: question -> SQL pairs a person checked. Served verbatim, re-verified
+# on every apply and by `dst test`. Start small; promote from the review queue.
+- question: How many pro matches were played on the current patch?
+  sql: |
+    SELECT COUNT(*) AS match_count
+    FROM marts.fact_match AS pro_matches
+    JOIN marts.dim_patch AS patches ON patches.patch_id = pro_matches.patch_id
+    WHERE patches.is_current = TRUE
+  status: active
+- question: Which ten heroes were picked most on the current patch?
+  sql: |
+    SELECT hero_name, SUM(picks) AS total_picks
+    FROM marts.daily_hero_stats AS hero_daily_stats
+    JOIN marts.dim_patch AS patches ON patches.patch_id = hero_daily_stats.patch_id
+    WHERE patches.is_current = TRUE
+    GROUP BY hero_name
+    ORDER BY total_picks DESC
+    LIMIT 10
+  status: active
+- question: What is the current patch?
+  sql: |
+    SELECT patch_name, patch_started_at
+    FROM marts.dim_patch AS patches
+    WHERE patches.is_current = TRUE
+  status: active

@@ -1,0 +1,4 @@
+left: hero_daily_stats
+right: patches
+on: hero_daily_stats.patch_id = patches.patch_id
+relationship: many_to_one

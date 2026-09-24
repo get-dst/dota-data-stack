@@ -1,0 +1,14 @@
+# Behavioral expectations. `win rate` alone must clarify whose; MMR must refuse.
+- question: What is the win rate this patch?
+  expect: clarify
+  term: win_rate
+  status: approved
+- question: What is the average MMR of players in pro matches?
+  expect: refuse
+  status: approved
+- question: How many pro matches were played on the current patch?
+  expect: answer
+  status: approved
+- question: Which hero was banned most on the current patch?
+  expect: answer
+  status: approved

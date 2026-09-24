@@ -1,0 +1,18 @@
+name: patches
+description: Game versions as windows in time. The current patch is the one with no end.
+grain: one row per patch
+source:
+  connection: warehouse
+  table: marts.dim_patch
+primary_key: [patch_id]
+fields:
+  - {name: patch_id, type: integer}
+  - {name: patch_name, type: string, description: "Version string, e.g. 7.41."}
+  - {name: patch_started_at, type: timestamp, description: Release time.}
+  - {name: patch_ended_at, type: timestamp, description: Release time of the next patch; null for the current one.}
+  - {name: is_current, type: boolean, description: "True for exactly one row, the patch in play now."}
+dimensions:
+  - {name: patch_name, type: string}
+  - {name: is_current, type: boolean}
+metrics:
+  - {name: patch_count, agg: count, expr: patches.patch_id}

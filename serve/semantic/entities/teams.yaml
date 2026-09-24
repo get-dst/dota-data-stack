@@ -1,0 +1,22 @@
+name: teams
+description: Professional teams as OpenDota ranks them, with all-time records.
+grain: one row per team
+source:
+  connection: warehouse
+  table: marts.dim_team
+primary_key: [team_id]
+population: The top thousand teams by OpenDota rating; a team outside that list still
+  appears on its matches by name.
+fields:
+  - {name: team_id, type: integer}
+  - {name: team_name, type: string}
+  - {name: team_tag, type: string}
+  - {name: rating, type: number, description: OpenDota Elo-style rating.}
+  - {name: all_time_wins, type: integer, description: "Wins over the team's whole OpenDota history, not the loaded window."}
+  - {name: all_time_losses, type: integer}
+  - {name: last_match_at, type: timestamp}
+dimensions:
+  - {name: team_name, type: string}
+metrics:
+  - {name: team_count, agg: count, expr: teams.team_id}
+  - {name: avg_rating, agg: avg, expr: teams.rating}

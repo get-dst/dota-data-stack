@@ -1,0 +1,16 @@
+name: leagues
+description: Tournaments and leagues, with OpenDota's tier.
+grain: one row per league
+source:
+  connection: warehouse
+  table: marts.dim_league
+primary_key: [league_id]
+fields:
+  - {name: league_id, type: integer}
+  - {name: league_name, type: string}
+  - {name: league_tier, type: string, description: "professional, premium, amateur or excluded."}
+dimensions:
+  - {name: league_name, type: string}
+  - {name: league_tier, type: string}
+metrics:
+  - {name: league_count, agg: count, expr: leagues.league_id}

@@ -1,0 +1,4 @@
+left: player_performances
+right: pro_matches
+on: player_performances.match_id = pro_matches.match_id
+relationship: many_to_one

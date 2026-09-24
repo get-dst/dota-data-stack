@@ -1,0 +1,37 @@
+use_when:
+  - questions about professional Dota 2 matches, heroes, drafts, teams, leagues or patches
+  - hero pick, ban, contest and win rates in pro play
+  - team results and player performance stats such as GPM, XPM, KDA in pro matches
+sample_queries:
+  - question: How many pro matches were played on the current patch?
+    sql: |
+      SELECT COUNT(*) AS match_count
+      FROM marts.fact_match AS pro_matches
+      JOIN marts.dim_patch AS patches ON patches.patch_id = pro_matches.patch_id
+      WHERE patches.is_current = TRUE
+  - question: Which ten heroes were picked most on the current patch?
+    sql: |
+      SELECT hero_name, SUM(picks) AS total_picks
+      FROM marts.daily_hero_stats AS hero_daily_stats
+      JOIN marts.dim_patch AS patches ON patches.patch_id = hero_daily_stats.patch_id
+      WHERE patches.is_current = TRUE
+      GROUP BY hero_name
+      ORDER BY total_picks DESC
+      LIMIT 10
+  - question: Which hero has the highest win rate on the current patch with at least 10 games?
+    sql: |
+      SELECT hero_name,
+             COUNT(*) AS games,
+             SUM(CASE WHEN is_win THEN 1 ELSE 0 END) * 1.0 / COUNT(*) AS hero_win_rate
+      FROM marts.fact_player_match AS player_performances
+      JOIN marts.dim_patch AS patches ON patches.patch_id = player_performances.patch_id
+      WHERE patches.is_current = TRUE
+      GROUP BY hero_name
+      HAVING COUNT(*) >= 10
+      ORDER BY hero_win_rate DESC
+      LIMIT 1
+  - question: What is the average match duration in minutes this month?
+    sql: |
+      SELECT AVG(duration_min) AS avg_duration_min
+      FROM marts.fact_match AS pro_matches
+      WHERE started_at >= DATE_TRUNC('month', CURRENT_DATE)

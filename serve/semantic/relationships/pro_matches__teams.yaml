@@ -1,0 +1,4 @@
+left: pro_matches
+right: teams
+on: pro_matches.winner_team_id = teams.team_id
+relationship: many_to_one
