@@ -113,6 +113,7 @@ _DROP_PLAYER = {
     "healing",
     "neutral_tokens_log",
     "neutral_item_history",
+    "networth_t",
 }
 
 
