@@ -1,0 +1,45 @@
+name: pub_hero_stats
+description: Hero games and wins in the public sample, per patch, rank bracket and game
+  type. The table behind every "best hero at bracket X" question.
+grain: one row per hero per patch per bracket per game type
+use_cases:
+  - When ranking by a rate, keep rows with at least 20 games (the minimum_games term) and report the game count with every rate.
+  - Use for hero win rate and pick rate in pubs, by bracket and patch.
+  - Avoid for hero-versus-hero or hero-with-hero questions; those are pub_matchups and pub_duos.
+common_questions:
+  - Which heroes have the highest win rate at Legend this patch?
+  - What is Pudge's win rate at Herald?
+  - Which heroes are picked most at Immortal?
+source:
+  connection: warehouse
+  table: marts.pub_hero_stats
+default_time_field: null
+primary_key: [patch_id, bracket_id, game_type, hero_id]
+population: "Counted over a sample of public matchmaking games (the newest matches OpenDota
+  lists at each load), ranked All Pick only. Turbo and unranked games are excluded here."
+population_filter: "pub_hero_stats.game_type = 'ranked_all_pick'"
+fields:
+  - {name: patch_id, type: integer}
+  - {name: patch_name, type: string}
+  - {name: bracket_id, type: integer}
+  - {name: bracket_name, type: string, description: "Herald, Guardian, Crusader, Archon, Legend, Ancient, Divine, Immortal."}
+  - {name: game_type, type: string}
+  - {name: hero_id, type: integer}
+  - {name: hero_name, type: string}
+  - {name: games, type: integer, description: Sampled games the hero was picked in.}
+  - {name: wins, type: integer}
+  - {name: losses, type: integer}
+  - {name: matches_in_bracket, type: integer, description: "Sampled matches at this patch, bracket and game type; repeats on every hero row, so never sum it across heroes."}
+dimensions:
+  - {name: hero_name, type: string}
+  - {name: bracket_name, type: string}
+  - {name: patch_name, type: string}
+metrics:
+  - {name: hero_games, agg: sum, expr: pub_hero_stats.games}
+  - {name: hero_wins, agg: sum, expr: pub_hero_stats.wins}
+  - name: hero_win_rate
+    type: ratio
+    numerator: hero_wins
+    denominator: hero_games
+    format: percent
+    description: Wins divided by games for the hero over the selected brackets and patches.

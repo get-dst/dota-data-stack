@@ -1,0 +1,35 @@
+use_when:
+  - questions about the public matchmaking meta — hero win rates, pick rates, counters and
+    duos by rank bracket (Herald to Immortal)
+  - which hero to pick or avoid at a given rank, what beats a hero, what pairs with a hero
+sample_queries:
+  - question: Which heroes have the highest win rate at Legend this patch, with at least 20 games?
+    sql: |
+      SELECT hero_name, SUM(games) AS total_games,
+             SUM(wins) * 1.0 / SUM(games) AS hero_win_rate
+      FROM marts.pub_hero_stats AS pub_hero_stats
+      JOIN marts.dim_patch AS patches ON patches.patch_id = pub_hero_stats.patch_id
+      WHERE pub_hero_stats.game_type = 'ranked_all_pick'
+        AND pub_hero_stats.bracket_name = 'Legend' AND patches.is_current = TRUE
+      GROUP BY hero_name
+      HAVING SUM(games) >= 20
+      ORDER BY hero_win_rate DESC
+      LIMIT 10
+  - question: Who counters Invoker this patch?
+    sql: |
+      SELECT opponent_hero_name, SUM(games) AS total_games,
+             SUM(wins) * 1.0 / SUM(games) AS matchup_win_rate
+      FROM marts.pub_matchups AS pub_matchups
+      JOIN marts.dim_patch AS patches ON patches.patch_id = pub_matchups.patch_id
+      WHERE pub_matchups.game_type = 'ranked_all_pick'
+        AND pub_matchups.hero_name = 'Invoker' AND patches.is_current = TRUE
+      GROUP BY opponent_hero_name
+      HAVING SUM(games) >= 10
+      ORDER BY matchup_win_rate ASC
+      LIMIT 5
+  - question: How many ranked matches are in the sample on the current patch?
+    sql: |
+      SELECT COUNT(*) AS match_count
+      FROM marts.fact_pub_match AS pub_matches
+      JOIN marts.dim_patch AS patches ON patches.patch_id = pub_matches.patch_id
+      WHERE pub_matches.game_type = 'ranked_all_pick' AND patches.is_current = TRUE

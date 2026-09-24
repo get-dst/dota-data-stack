@@ -17,6 +17,8 @@ select:
     - patches
     - teams
     - leagues
+    - hero_item_builds
+    - team_head_to_head
   definitions:
     - hero_win_rate
     - team_win_rate
@@ -25,6 +27,7 @@ select:
     - contest_rate
     - current_patch
     - pro_match
+    - position
 not_computable:
   - measure: MMR
     aliases: [rank, skill bracket, rating of players, medal]
@@ -35,6 +38,9 @@ not_computable:
   - measure: item timings
     aliases: [purchase time, when was the item bought]
     reason: purchase logs are not loaded; only final inventories are
+  - measure: personal match history
+    aliases: [my matches, my win rate, my account, my games, steam id, dotabuff profile]
+    reason: this lens holds professional matches, not any individual player's public history
 access:
   allow:
     - {group: demo}

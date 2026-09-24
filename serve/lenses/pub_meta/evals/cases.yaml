@@ -1,0 +1,38 @@
+# Behavioral expectations: what an enthusiast asks must answer; what the sample cannot
+# carry must refuse, by name.
+- question: Which heroes have the highest win rate at Legend this patch?
+  expect: answer
+  status: approved
+- question: What is Pudge's win rate at Herald?
+  expect: answer
+  status: approved
+- question: Which heroes are picked most at Immortal?
+  expect: answer
+  status: approved
+- question: Who counters Invoker this patch?
+  expect: answer
+  status: approved
+- question: Which heroes pair best with Crystal Maiden?
+  expect: answer
+  status: approved
+- question: How does Anti-Mage do against Phantom Lancer?
+  expect: answer
+  status: approved
+- question: How long is an average ranked game at Divine?
+  expect: answer
+  status: approved
+- question: Is the Radiant side favoured in ranked pubs this patch?
+  expect: answer
+  status: approved
+- question: What is my win rate on Pudge?
+  expect: refuse
+  status: approved
+- question: What should I build on Juggernaut in pubs?
+  expect: refuse
+  status: approved
+- question: Which hero is banned most in ranked pubs?
+  expect: refuse
+  status: approved
+- question: What is the best hero in Turbo?
+  expect: refuse
+  status: approved

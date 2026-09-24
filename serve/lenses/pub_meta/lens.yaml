@@ -1,0 +1,46 @@
+name: pub_meta
+display_name: Dota 2 pub meta
+description: Hero win rates, counters and duos by rank bracket, from a sample of public
+  ranked matches on OpenDota.
+owner: dota-data-stack
+timezone: UTC
+stale_after_days: 2
+connections: [warehouse]
+select:
+  entities:
+    - pub_matches
+    - pub_hero_stats
+    - pub_matchups
+    - pub_duos
+    - heroes
+    - patches
+    - brackets
+  definitions:
+    - bracket
+    - counter
+    - synergy
+    - public_sample
+    - pub_pick_rate
+    - minimum_games
+    - current_patch
+not_computable:
+  - measure: personal match history
+    aliases: [my matches, my win rate, my account, my games, steam id, dotabuff profile, a specific player]
+    reason: the public sample carries no player identities, only heroes and outcomes
+  - measure: items in pubs
+    aliases: [item build, builds, what to buy, purchase]
+    reason: the public feed carries no items; pro item builds live on the pro_meta lens
+  - measure: positions in pubs
+    aliases: [role, lane, carry, mid, offlane, support]
+    reason: the public feed carries no lane data; positions exist for pro matches on pro_meta
+  - measure: ban rate in pubs
+    aliases: [bans, banned]
+    reason: the public feed carries picks only; bans exist for pro matches on pro_meta
+eval_gate: block
+access:
+  allow:
+    - {group: demo}
+    - {group: everyone}
+rate_limit:
+  per_caller_rpm: 60
+  per_caller_rpd: 50

@@ -1,0 +1,4 @@
+left: hero_item_builds
+right: patches
+on: hero_item_builds.patch_id = patches.patch_id
+relationship: many_to_one

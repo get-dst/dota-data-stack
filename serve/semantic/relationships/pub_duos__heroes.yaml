@@ -1,0 +1,4 @@
+left: pub_duos
+right: heroes
+on: pub_duos.hero_id = heroes.hero_id
+relationship: many_to_one

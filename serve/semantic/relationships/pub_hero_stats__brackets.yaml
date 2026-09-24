@@ -1,0 +1,4 @@
+left: pub_hero_stats
+right: brackets
+on: pub_hero_stats.bracket_id = brackets.bracket_id
+relationship: many_to_one

@@ -1,0 +1,14 @@
+name: brackets
+description: The eight rank brackets, Herald to Immortal.
+grain: one row per bracket
+source:
+  connection: warehouse
+  table: marts.dim_bracket
+primary_key: [bracket_id]
+fields:
+  - {name: bracket_id, type: integer, description: "1 Herald, 2 Guardian, 3 Crusader, 4 Archon, 5 Legend, 6 Ancient, 7 Divine, 8 Immortal."}
+  - {name: bracket_name, type: string}
+dimensions:
+  - {name: bracket_name, type: string}
+metrics:
+  - {name: bracket_count, agg: count, expr: brackets.bracket_id}

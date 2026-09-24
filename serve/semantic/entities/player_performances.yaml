@@ -46,6 +46,17 @@ fields:
   - {name: towers_killed, type: integer}
   - {name: teamfight_participation, type: number}
   - {name: stuns, type: number, description: Seconds of stun dealt.}
+  - {name: lane, type: integer, description: "1 safe lane, 2 mid, 3 off lane, 4 jungle, as OpenDota parsed it."}
+  - {name: lane_role, type: integer, description: "1 safe, 2 mid, 3 off, 4 jungle."}
+  - {name: is_roaming, type: boolean}
+  - {name: position, type: integer, description: "1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support — derived from lane and farm rank inside the side (the position definition)."}
+  - {name: item_0, type: integer}
+  - {name: item_1, type: integer}
+  - {name: item_2, type: integer}
+  - {name: item_3, type: integer}
+  - {name: item_4, type: integer}
+  - {name: item_5, type: integer}
+  - {name: item_neutral, type: integer}
   - {name: has_aghanims_scepter, type: boolean}
   - {name: has_aghanims_shard, type: boolean}
   - {name: leaver_status, type: integer}
@@ -65,6 +76,7 @@ dimensions:
   - {name: league_name, type: string}
   - {name: match_date, type: date}
   - {name: is_radiant, type: boolean}
+  - {name: position, type: integer}
 metrics:
   - {name: games, agg: count, expr: player_performances.match_id, description: "Player-games, i.e. rows."}
   - {name: wins, agg: sum, expr: "CASE WHEN player_performances.is_win THEN 1 ELSE 0 END"}

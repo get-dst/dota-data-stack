@@ -1,0 +1,4 @@
+left: team_head_to_head
+right: patches
+on: team_head_to_head.patch_id = patches.patch_id
+relationship: many_to_one

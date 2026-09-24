@@ -1,0 +1,41 @@
+name: pub_matchups
+description: Hero against hero in the public sample, per patch and game type. Both
+  orderings are present, so start from either hero.
+grain: one row per hero, opponent hero, patch and game type
+use_cases:
+  - When ranking by a rate, keep rows with at least 20 games (the minimum_games term) and report the game count with every rate.
+  - Use for counters and matchups — how a hero does against a specific opponent.
+  - Avoid for allies; that is pub_duos.
+common_questions:
+  - Who counters Invoker this patch?
+  - How does Anti-Mage do against Phantom Lancer?
+source:
+  connection: warehouse
+  table: marts.pub_matchups
+primary_key: [patch_id, game_type, hero_id, opponent_hero_id]
+population: "Counted over a sample of public matchmaking games, ranked All Pick only.
+  A matchup with few games says little; state the game count with the rate."
+population_filter: "pub_matchups.game_type = 'ranked_all_pick'"
+fields:
+  - {name: patch_id, type: integer}
+  - {name: patch_name, type: string}
+  - {name: game_type, type: string}
+  - {name: hero_id, type: integer}
+  - {name: hero_name, type: string, description: The hero the rate is measured for.}
+  - {name: opponent_hero_id, type: integer}
+  - {name: opponent_hero_name, type: string, description: The hero on the other side.}
+  - {name: games, type: integer, description: Sampled games the two were on opposite sides.}
+  - {name: wins, type: integer, description: Games hero_name's side won.}
+dimensions:
+  - {name: hero_name, type: string}
+  - {name: opponent_hero_name, type: string}
+  - {name: patch_name, type: string}
+metrics:
+  - {name: matchup_games, agg: sum, expr: pub_matchups.games}
+  - {name: matchup_wins, agg: sum, expr: pub_matchups.wins}
+  - name: matchup_win_rate
+    type: ratio
+    numerator: matchup_wins
+    denominator: matchup_games
+    format: percent
+    description: Share of games hero_name's side won against opponent_hero_name.

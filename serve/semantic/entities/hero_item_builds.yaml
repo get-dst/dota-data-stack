@@ -1,0 +1,40 @@
+name: hero_item_builds
+description: What pro players ended their games holding, per hero, item and patch — the six
+  main inventory slots at the end of the match.
+grain: one row per hero, item and patch
+use_cases:
+  - Use for what pros build on a hero and which items they win with.
+  - Avoid for when an item was bought; purchase timings are not loaded.
+common_questions:
+  - What do pros build on Juggernaut this patch?
+  - How often does Ember Spirit end with a Black King Bar?
+source:
+  connection: warehouse
+  table: marts.hero_item_builds
+primary_key: [patch_id, hero_id, item_id]
+population: Final inventories from professional matches in the loaded window; neutral items
+  and backpack slots are not counted.
+fields:
+  - {name: patch_id, type: integer}
+  - {name: patch_name, type: string}
+  - {name: hero_id, type: integer}
+  - {name: hero_name, type: string}
+  - {name: item_id, type: integer}
+  - {name: item_name, type: string, description: "Display name, e.g. Black King Bar."}
+  - {name: item_cost, type: integer, description: Shop price in gold.}
+  - {name: games_with_item, type: integer, description: Pro games the hero ended holding the item.}
+  - {name: wins_with_item, type: integer}
+  - {name: hero_games, type: integer, description: "Pro games the hero played on the patch; repeats on every item row, so never sum it across items."}
+dimensions:
+  - {name: hero_name, type: string}
+  - {name: item_name, type: string}
+  - {name: patch_name, type: string}
+metrics:
+  - {name: total_games_with_item, agg: sum, expr: hero_item_builds.games_with_item}
+  - {name: total_wins_with_item, agg: sum, expr: hero_item_builds.wins_with_item}
+  - name: item_win_rate
+    type: ratio
+    numerator: total_wins_with_item
+    denominator: total_games_with_item
+    format: percent
+    description: Share of the hero's games ending with the item that were won.

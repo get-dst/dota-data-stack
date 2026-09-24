@@ -1,0 +1,37 @@
+name: team_head_to_head
+description: Professional matches between two teams, from each team's point of view, per
+  patch. Both orderings are present, so start from either team.
+grain: one row per team, opponent and patch
+use_cases:
+  - Use for how one team has done against another.
+  - Avoid for a team's overall record; that is player_performances grouped by team, or pro_matches.
+common_questions:
+  - How has Team Spirit done against Team Liquid this patch?
+source:
+  connection: warehouse
+  table: marts.team_head_to_head
+primary_key: [team_id, opponent_team_id, patch_id]
+population: Professional matches in the loaded window where both teams are identified.
+fields:
+  - {name: team_id, type: integer}
+  - {name: team_name, type: string}
+  - {name: opponent_team_id, type: integer}
+  - {name: opponent_team_name, type: string}
+  - {name: patch_id, type: integer}
+  - {name: patch_name, type: string}
+  - {name: matches, type: integer}
+  - {name: wins, type: integer, description: Matches team_name won against opponent_team_name.}
+  - {name: first_match_date, type: date}
+  - {name: last_match_date, type: date}
+dimensions:
+  - {name: team_name, type: string}
+  - {name: opponent_team_name, type: string}
+  - {name: patch_name, type: string}
+metrics:
+  - {name: h2h_matches, agg: sum, expr: team_head_to_head.matches}
+  - {name: h2h_wins, agg: sum, expr: team_head_to_head.wins}
+  - name: head_to_head_win_rate
+    type: ratio
+    numerator: h2h_wins
+    denominator: h2h_matches
+    format: percent

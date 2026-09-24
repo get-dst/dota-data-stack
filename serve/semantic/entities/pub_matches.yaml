@@ -1,0 +1,49 @@
+name: pub_matches
+description: A sample of public matchmaking games from OpenDota's public feed, one row per
+  match, with the average rank bracket of its players and the patch it was played on.
+grain: one row per sampled public match
+use_cases:
+  - Use for how many public matches the sample holds, game length by bracket, and the Radiant
+    win rate in pubs.
+  - Avoid for anything per hero; that is pub_hero_stats, pub_matchups and pub_duos.
+common_questions:
+  - How long is an average ranked game at Divine?
+  - What is the Radiant win rate in ranked pubs this patch?
+source:
+  connection: warehouse
+  table: marts.fact_pub_match
+default_time_field: started_at
+primary_key: [match_id]
+population: "A sample of public matchmaking games: the newest matches OpenDota lists each
+  time the loader runs, not every game played. Ranked All Pick only; Turbo and unranked
+  games are excluded here."
+population_filter: "pub_matches.game_type = 'ranked_all_pick'"
+fields:
+  - {name: match_id, type: integer}
+  - {name: started_at, type: timestamp}
+  - {name: match_date, type: date}
+  - {name: duration_s, type: integer}
+  - {name: duration_min, type: number}
+  - {name: radiant_win, type: boolean}
+  - {name: avg_rank_tier, type: integer, description: "Average rank tier of the ten players: tens digit is the bracket, ones digit the stars."}
+  - {name: bracket_id, type: integer, description: "1 Herald … 8 Immortal."}
+  - {name: bracket_name, type: string}
+  - {name: game_type, type: string, description: "ranked_all_pick, unranked_all_pick or turbo."}
+  - {name: game_mode_id, type: integer}
+  - {name: lobby_type_id, type: integer}
+  - {name: patch_id, type: integer}
+  - {name: patch_name, type: string}
+dimensions:
+  - {name: bracket_name, type: string}
+  - {name: patch_name, type: string}
+  - {name: match_date, type: date}
+metrics:
+  - {name: match_count, agg: count, expr: pub_matches.match_id, description: Sampled matches.}
+  - {name: avg_duration_min, agg: avg, expr: pub_matches.duration_min}
+  - {name: radiant_wins, agg: sum, expr: "CASE WHEN pub_matches.radiant_win THEN 1 ELSE 0 END"}
+  - name: radiant_win_rate
+    type: ratio
+    numerator: radiant_wins
+    denominator: match_count
+    format: percent
+    description: Share of sampled matches the Radiant side won.

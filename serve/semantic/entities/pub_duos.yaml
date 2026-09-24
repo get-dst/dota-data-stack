@@ -1,0 +1,41 @@
+name: pub_duos
+description: Hero with hero on the same side in the public sample, per patch and game type.
+  Both orderings are present, so start from either hero.
+grain: one row per hero, ally hero, patch and game type
+use_cases:
+  - When ranking by a rate, keep rows with at least 20 games (the minimum_games term) and report the game count with every rate.
+  - Use for which heroes win together — lane partners, synergies.
+  - Avoid for opponents; that is pub_matchups.
+common_questions:
+  - Which heroes pair best with Crystal Maiden?
+  - Is Io and Tiny still a good combo?
+source:
+  connection: warehouse
+  table: marts.pub_duos
+primary_key: [patch_id, game_type, hero_id, ally_hero_id]
+population: "Counted over a sample of public matchmaking games, ranked All Pick only.
+  A pair with few games says little; state the game count with the rate."
+population_filter: "pub_duos.game_type = 'ranked_all_pick'"
+fields:
+  - {name: patch_id, type: integer}
+  - {name: patch_name, type: string}
+  - {name: game_type, type: string}
+  - {name: hero_id, type: integer}
+  - {name: hero_name, type: string}
+  - {name: ally_hero_id, type: integer}
+  - {name: ally_hero_name, type: string, description: The hero on the same side.}
+  - {name: games, type: integer, description: Sampled games the two were on the same side.}
+  - {name: wins, type: integer}
+dimensions:
+  - {name: hero_name, type: string}
+  - {name: ally_hero_name, type: string}
+  - {name: patch_name, type: string}
+metrics:
+  - {name: duo_games, agg: sum, expr: pub_duos.games}
+  - {name: duo_wins, agg: sum, expr: pub_duos.wins}
+  - name: duo_win_rate
+    type: ratio
+    numerator: duo_wins
+    denominator: duo_games
+    format: percent
+    description: Share of games the pair won together.

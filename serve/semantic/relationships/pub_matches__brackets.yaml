@@ -1,0 +1,4 @@
+left: pub_matches
+right: brackets
+on: pub_matches.bracket_id = brackets.bracket_id
+relationship: many_to_one

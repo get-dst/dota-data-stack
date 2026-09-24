@@ -1,0 +1,4 @@
+left: pub_matchups
+right: patches
+on: pub_matchups.patch_id = patches.patch_id
+relationship: many_to_one
