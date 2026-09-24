@@ -28,6 +28,7 @@ select:
     - current_patch
     - pro_match
     - position
+    - minimum_games
 not_computable:
   - measure: MMR
     aliases: [rank, skill bracket, rating of players, medal]

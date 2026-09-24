@@ -6,7 +6,7 @@
 - question: What is Pudge's win rate at Herald?
   expect: answer
   status: approved
-- question: Which heroes are picked most at Immortal?
+- question: Which heroes are picked most at Divine?
   expect: answer
   status: approved
 - question: Who counters Invoker this patch?
@@ -36,3 +36,7 @@
 - question: What is the best hero in Turbo?
   expect: refuse
   status: approved
+# Retired: Immortal games are rare in the public feed, so the bracket is usually absent.
+- question: Which heroes are picked most at Immortal?
+  expect: answer
+  status: retired
