@@ -1,0 +1,32 @@
+# Hourly: pull new pro matches into the warehouse and rebuild the marts.
+# Needs repository secrets: DATABASE_URL (dlt + dst), PGHOST/PGPORT/PGUSER/PGPASSWORD/
+# PGDATABASE (dbt), optionally OPENDOTA_API_KEY. With none set, the job runs against a
+# throwaway local DuckDB, which proves the pipeline but keeps nothing.
+name: load
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+jobs:
+  load:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      DSTACK_TARGET: ${{ secrets.DATABASE_URL != '' && 'postgres' || 'duckdb' }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      PGHOST: ${{ secrets.PGHOST }}
+      PGPORT: ${{ secrets.PGPORT }}
+      PGUSER: ${{ secrets.PGUSER }}
+      PGPASSWORD: ${{ secrets.PGPASSWORD }}
+      PGDATABASE: ${{ secrets.PGDATABASE }}
+      OPENDOTA_API_KEY: ${{ secrets.OPENDOTA_API_KEY }}
+      DOTA_SINCE_DAYS: "90"
+      DOTA_MAX_DETAIL_CALLS: "2500"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --frozen
+      - name: load (dlt)
+        run: uv run python load/opendota_pipeline.py
+      - name: transform (dbt)
+        run: cd transform && ../.venv/bin/dbt build --profiles-dir .
