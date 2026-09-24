@@ -17,7 +17,7 @@ in three stages that each do one job:
   curl can then ask, and every answer carries its SQL and its verification.
 
 The warehouse is whatever you point at. The default is a DuckDB file under `data/`,
-which needs no account; the showcase deployment runs the same files against a managed
+which needs no account; the public demo runs the same files against a managed
 Postgres.
 
 ## Run it locally
