@@ -1,4 +1,4 @@
-# dota-d-stack
+# dota-data-stack
 
 Professional Dota 2 matches, from OpenDota's API to a governed answer in your own AI,
 in three stages that each do one job:

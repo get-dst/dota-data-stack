@@ -1,5 +1,5 @@
 [project]
-name = "dota-d-stack"
+name = "dota-data-stack"
 version = "0.1.0"
 description = "dlt load → dbt transform → dst serve, over Dota 2 pro matches"
 requires-python = ">=3.12"
