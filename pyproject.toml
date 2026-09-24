@@ -1,0 +1,23 @@
+[project]
+name = "dota-d-stack"
+version = "0.1.0"
+description = "dlt load → dbt transform → dst serve, over Dota 2 pro matches"
+requires-python = ">=3.12"
+dependencies = [
+    "dlt[duckdb,postgres]>=1.30",
+    "dbt-core>=1.12",
+    "dbt-duckdb>=1.9",
+    "dbt-postgres>=1.9",
+    "requests>=2.32",
+    "python-dotenv>=1.2.3",
+]
+
+[dependency-groups]
+dev = ["ruff>=0.12", "pytest>=8"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]

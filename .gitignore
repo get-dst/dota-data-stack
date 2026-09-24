@@ -1,0 +1,15 @@
+.env
+.venv/
+data/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+# dlt runtime state lives in the destination; the local pipeline dir is scratch
+.dlt/secrets.toml
+load/.dlt/
+transform/target/
+transform/dbt_packages/
+transform/logs/
+serve/.env
+serve/.dst/
+serve/lenses/*/compiled.yaml
