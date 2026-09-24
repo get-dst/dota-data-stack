@@ -12,6 +12,11 @@ providers:
   jev:
     type: typesafe
     api_key_env: DST_API_KEY_JEV
+  # Certified-answer matching and routing. In-process, no key: the server needs
+  # `pip install 'dst-core[local-embed]'`. Swap for an openai-compatible entry with
+  # embedding_model in production.
+  embed:
+    type: local
 
 connections:
   # The marts dbt built. Local: the DuckDB file dlt wrote. Aiven: swap the block for

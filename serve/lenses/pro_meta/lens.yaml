@@ -17,7 +17,14 @@ select:
     - patches
     - teams
     - leagues
-  definitions: ['*']
+  definitions:
+    - hero_win_rate
+    - team_win_rate
+    - pick_rate
+    - ban_rate
+    - contest_rate
+    - current_patch
+    - pro_match
 not_computable:
   - measure: MMR
     aliases: [rank, skill bracket, rating of players, medal]

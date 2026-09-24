@@ -19,7 +19,7 @@
   status: active
 - question: What is the current patch?
   sql: |
-    SELECT patch_name, patch_started_at
+    SELECT patch_name
     FROM marts.dim_patch AS patches
     WHERE patches.is_current = TRUE
   status: active
