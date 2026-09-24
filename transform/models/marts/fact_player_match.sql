@@ -1,4 +1,17 @@
--- One row per player per pro match: the performance grain.
+-- One row per player per pro match: the performance grain. Position (1-5) is derived
+-- from the lane OpenDota parsed and the player's farm rank inside the side: mid is 2;
+-- the richer safe-laner is the carry (1) and the poorer the hard support (5); the
+-- richer offlaner is 3 and the poorer is 4. A convention, stated in the entity file.
+with ranked as (
+    select
+        pm.*,
+        row_number() over (
+            partition by pm.match_id, pm.is_radiant, pm.lane_role
+            order by pm.gold_per_min desc
+        ) as farm_rank_in_lane
+    from {{ ref('stg_match_players') }} as pm
+)
+
 select
     pm.match_id,
     pm.player_slot,
@@ -31,8 +44,26 @@ select
     pm.towers_killed,
     pm.teamfight_participation,
     pm.stuns,
+    pm.item_0,
+    pm.item_1,
+    pm.item_2,
+    pm.item_3,
+    pm.item_4,
+    pm.item_5,
+    pm.item_neutral,
     pm.aghanims_scepter = 1 as has_aghanims_scepter,
     pm.aghanims_shard = 1 as has_aghanims_shard,
+    pm.lane,
+    pm.lane_role,
+    pm.is_roaming,
+    case
+        when pm.lane_role = 2 then 2
+        when pm.lane_role = 1 and pm.farm_rank_in_lane = 1 then 1
+        when pm.lane_role = 1 then 5
+        when pm.lane_role = 3 and pm.farm_rank_in_lane = 1 then 3
+        when pm.lane_role = 3 then 4
+        else null
+    end as position,
     pm.leaver_status,
     pm.abandons,
     m.started_at,
@@ -42,6 +73,6 @@ select
     m.league_id,
     m.league_name,
     m.duration_min
-from {{ ref('stg_match_players') }} as pm
+from ranked as pm
 inner join {{ ref('fact_match') }} as m on m.match_id = pm.match_id
 left join {{ ref('stg_heroes') }} as h on h.hero_id = pm.hero_id

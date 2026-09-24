@@ -10,6 +10,9 @@ sources:
       - name: match_details__players
       - name: match_details__picks_bans
       - name: match_details__objectives
+      - name: public_matches
+      - name: public_matches__radiant_team
+      - name: public_matches__dire_team
       - name: heroes
       - name: heroes__roles
       - name: items

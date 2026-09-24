@@ -41,3 +41,26 @@ models:
     columns:
       - name: league_id
         tests: [unique, not_null]
+  - name: fact_pub_match
+    description: One row per sampled public matchmaking match.
+    columns:
+      - name: match_id
+        tests: [unique, not_null]
+      - name: game_type
+        tests:
+          - accepted_values:
+              values: [ranked_all_pick, unranked_all_pick, turbo]
+  - name: fact_pub_hero
+    description: One row per hero per sampled public match.
+    columns:
+      - name: hero_id
+        tests: [not_null]
+  - name: pub_hero_stats
+  - name: pub_matchups
+  - name: pub_duos
+  - name: hero_item_builds
+  - name: team_head_to_head
+  - name: dim_bracket
+    columns:
+      - name: bracket_id
+        tests: [unique, not_null]

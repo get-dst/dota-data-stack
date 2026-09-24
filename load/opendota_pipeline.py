@@ -156,6 +156,34 @@ def pro_matches(since_days: int) -> Iterator[list[dict[str, Any]]]:
 _SPENT = {"calls": 0}
 
 
+@dlt.resource(primary_key="match_id", write_disposition="merge")
+def public_matches(pages: int) -> Iterator[list[dict[str, Any]]]:
+    """A sample of public matchmaking games: the newest ``pages`` × 100 at run time,
+    walked backwards. One call carries the winner, duration, average rank tier and
+    the ten hero ids — enough for hero win rates by bracket, matchups and duos,
+    with no per-match detail call. Rows still in progress (duration 0, hero ids
+    0) are skipped; they come back complete on a later run. Sampling is by run
+    time, so an hourly schedule spreads it across the day; the lens says
+    "a sample", never "all public matches"."""
+    before: int | None = None
+    for _ in range(pages):
+        page = get("publicMatches", **({"less_than_match_id": before} if before else {}))
+        if not page:
+            return
+        done = [
+            m
+            for m in page
+            if m.get("duration")
+            and all(m.get("radiant_team") or [0])
+            and all(m.get("dire_team") or [0])
+        ]
+        if done:
+            yield done
+        if len(page) < 100:
+            return
+        before = page[-1]["match_id"]
+
+
 def _trim(match: dict[str, Any]) -> dict[str, Any]:
     out = {k: v for k, v in match.items() if k not in _DROP_MATCH}
     out["players"] = [
@@ -205,10 +233,11 @@ def _dimension(name: str, path: str, *, key: str) -> Any:
 
 
 @dlt.source
-def opendota(since_days: int, max_calls: int) -> Any:
+def opendota(since_days: int, max_calls: int, public_pages: int) -> Any:
     return [
         pro_matches(since_days),
         pro_matches(since_days) | match_details(max_calls),
+        public_matches(public_pages),
         _dimension("heroes", "heroes", key="id"),
         _dimension("items", "constants/items", key="name"),
         _dimension("patches", "constants/patch", key="id"),
@@ -232,17 +261,19 @@ def destination() -> Any:
 def main() -> None:
     since = int(os.environ.get("DOTA_SINCE_DAYS", "90"))
     budget = int(os.environ.get("DOTA_MAX_DETAIL_CALLS", "2500"))
+    public_pages = int(os.environ.get("DOTA_PUBLIC_PAGES", "60"))
     pipeline = dlt.pipeline(
         pipeline_name="opendota",
         destination=destination(),
         dataset_name="raw",
         pipelines_dir=str(Path(__file__).resolve().parent / ".dlt"),
     )
-    src = opendota(since, budget)
+    src = opendota(since, budget, public_pages)
     info = pipeline.run(src)
     print(info)
     with pipeline.sql_client() as c:
-        for t in ("pro_matches", "match_details", "match_details__players", "heroes", "patches"):
+        tables = ("pro_matches", "match_details", "match_details__players", "public_matches")
+        for t in tables:
             try:
                 n = c.execute_sql(f"SELECT count(*) FROM {t}")[0][0]
                 print(f"{t}: {n}")
