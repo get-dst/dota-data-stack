@@ -1,0 +1,20 @@
+version: 2
+
+sources:
+  - name: raw
+    description: Tables as dlt landed them from OpenDota (load/opendota_pipeline.py).
+    schema: raw
+    tables:
+      - name: pro_matches
+      - name: match_details
+      - name: match_details__players
+      - name: match_details__picks_bans
+      - name: match_details__objectives
+      - name: heroes
+      - name: heroes__roles
+      - name: items
+      - name: patches
+      - name: teams
+      - name: leagues
+      - name: game_modes
+      - name: lobby_types

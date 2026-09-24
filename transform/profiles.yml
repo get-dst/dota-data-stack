@@ -1,0 +1,19 @@
+# Two targets, one project. `duckdb` is the local file dlt wrote; `postgres` is the
+# Aiven service. Pick with DSTACK_TARGET (the same switch the loader reads).
+dota:
+  target: "{{ env_var('DSTACK_TARGET', 'duckdb') }}"
+  outputs:
+    duckdb:
+      type: duckdb
+      path: "{{ env_var('DSTACK_DUCKDB_ABS_PATH', '../data/dota.duckdb') }}"
+      threads: 4
+    postgres:
+      type: postgres
+      host: "{{ env_var('PGHOST') }}"
+      port: "{{ env_var('PGPORT', '5432') | int }}"
+      user: "{{ env_var('PGUSER') }}"
+      password: "{{ env_var('PGPASSWORD') }}"
+      dbname: "{{ env_var('PGDATABASE') }}"
+      schema: public
+      sslmode: require
+      threads: 4

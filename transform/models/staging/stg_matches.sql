@@ -1,0 +1,31 @@
+-- One row per pro match with full detail. Epoch seconds become timestamps here and
+-- nowhere else; the raw columns keep OpenDota's names.
+select
+    match_id,
+    to_timestamp(start_time) as started_at,
+    duration as duration_s,
+    radiant_win,
+    radiant_score,
+    dire_score,
+    radiant_team_id,
+    coalesce(radiant_team__name, radiant_name) as radiant_team_name,
+    dire_team_id,
+    coalesce(dire_team__name, dire_name) as dire_team_name,
+    leagueid as league_id,
+    league__name as league_name,
+    league__tier as league_tier,
+    patch as patch_id,
+    game_mode as game_mode_id,
+    lobby_type as lobby_type_id,
+    region as region_id,
+    series_id,
+    series_type,
+    first_blood_time as first_blood_s,
+    tower_status_radiant,
+    tower_status_dire,
+    barracks_status_radiant,
+    barracks_status_dire,
+    comeback,
+    stomp,
+    human_players
+from {{ source('raw', 'match_details') }}

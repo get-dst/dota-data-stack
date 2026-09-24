@@ -1,0 +1,43 @@
+version: 2
+
+models:
+  - name: fact_match
+    description: One row per professional Dota 2 match, winner resolved to a team.
+    columns:
+      - name: match_id
+        tests: [unique, not_null]
+      - name: started_at
+        tests: [not_null]
+      - name: radiant_win
+        tests: [not_null]
+  - name: fact_player_match
+    description: One row per player per professional match (tests/ten_players_per_match.sql
+      pins the grain).
+    columns:
+      - name: match_id
+        tests: [not_null]
+      - name: hero_id
+        tests: [not_null]
+  - name: fact_draft
+    description: Picks and bans per match in draft order.
+    columns:
+      - name: match_id
+        tests: [not_null]
+  - name: daily_hero_stats
+    description: Picks, bans and wins per hero per day per patch.
+  - name: dim_hero
+    columns:
+      - name: hero_id
+        tests: [unique, not_null]
+  - name: dim_patch
+    columns:
+      - name: patch_id
+        tests: [unique, not_null]
+  - name: dim_team
+    columns:
+      - name: team_id
+        tests: [unique, not_null]
+  - name: dim_league
+    columns:
+      - name: league_id
+        tests: [unique, not_null]
