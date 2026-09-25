@@ -53,7 +53,7 @@ _KEY = os.environ.get("OPENDOTA_API_KEY") or None
 # Detail calls in flight at once. OpenDota answers one in anything from half a second to
 # several, so one at a time spent most of a run waiting. Keyless stays sequential: the
 # free tier is 60 a minute and the interval below paces it.
-_FETCH_WORKERS = int(os.environ.get("DOTA_FETCH_WORKERS", "6")) if _KEY else 1
+_FETCH_WORKERS = int(os.environ.get("DOTA_FETCH_WORKERS", "8")) if _KEY else 1
 _LOCK = threading.Lock()
 _FREE_INTERVAL_S = 1.05  # keyless: 60 a minute
 _PAID_INTERVAL_S = 0.05  # keyed: 3 000 a minute allowed; no reason to use it
@@ -137,14 +137,16 @@ class Unavailable(RuntimeError):
     message: requests puts the full URL in its errors, and the URL carries it."""
 
 
-_CALL_DEADLINE_S = 30
+_CALL_DEADLINE_S = 150
 
 
 def _fetch(url: str, params: dict[str, Any]) -> requests.Response:
     """GET with a deadline on the whole response. requests' timeout bounds each socket
     read, so a server trickling bytes held one call open for hours."""
     started = time.monotonic()
-    r = SESSION.get(url, params=params, timeout=(10, 30), stream=True)
+    # A match older than a few months comes out of OpenDota's archive, 10-20 s to the
+    # first byte; recent ones answer in under a second.
+    r = SESSION.get(url, params=params, timeout=(10, 120), stream=True)
     body = bytearray()
     for chunk in r.iter_content(64 * 1024):
         body += chunk
@@ -357,7 +359,7 @@ def match_details(matches: list[dict[str, Any]], max_calls: int) -> Iterator[dic
             continue
         fetched.add(mid)
         state["fetched_ids"] = sorted(fetched)
-        if _SPENT["calls"] % 100 == 0:
+        if _SPENT["calls"] % 25 == 0:
             elapsed = time.monotonic() - _SPENT["started"]
             print(
                 f"match_details: {_SPENT['calls']} calls, {elapsed:.0f}s, "
