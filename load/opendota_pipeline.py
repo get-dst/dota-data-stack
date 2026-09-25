@@ -68,7 +68,6 @@ _DROP_MATCH = {
     "cosmetics",
     "all_word_counts",
     "my_word_counts",
-    "teamfights",
     "draft_timings",
     "od_data",
     "metadata",
@@ -86,17 +85,13 @@ _DROP_PLAYER = {
     "ability_uses",
     "actions",
     "benchmarks",
-    "buyback_log",
     "connection_log",
     "cosmetics",
-    "damage",
     "damage_inflictor",
     "damage_inflictor_received",
     "damage_targets",
-    "damage_taken",
     "dn_t",
     "gold_reasons",
-    "gold_t",
     "hero_damage_t",
     "hero_healing_t",
     "hero_hits",
@@ -105,28 +100,19 @@ _DROP_PLAYER = {
     "item_win",
     "kill_streaks",
     "killed",
-    "killed_by",
-    "kills_log",
-    "lane_pos",
-    "lh_t",
     "life_state",
     "max_hero_hit",
     "multi_kills",
     "obs",
     "obs_left_log",
-    "obs_log",
     "permanent_buffs",
     "pings",
     "purchase",
     "purchase_time",
     "runes",
-    "runes_log",
     "sen",
     "sen_left_log",
-    "sen_log",
-    "times",
     "xp_reasons",
-    "xp_t",
     "first_purchase_time",
     "deaths_log",
     "camps_stacked_t",
@@ -232,11 +218,62 @@ def public_matches(pages: int) -> Iterator[list[dict[str, Any]]]:
         before = page[-1]["match_id"]
 
 
+def _pairs(d: Any, key: str, value: str) -> list[dict[str, Any]]:
+    """A {name: number} map as rows: dlt would turn every hero name into a column."""
+    return [{key: k, value: v} for k, v in (d or {}).items()] if isinstance(d, dict) else []
+
+
+def _heatmap(d: Any) -> list[dict[str, int]]:
+    """lane_pos {x: {y: count}} as (x, y, count) rows."""
+    if not isinstance(d, dict):
+        return []
+    return [
+        {"x": int(x), "y": int(y), "count": int(n)}
+        for x, col in d.items()
+        if isinstance(col, dict)
+        for y, n in col.items()
+    ]
+
+
+def _player(p: dict[str, Any]) -> dict[str, Any]:
+    out = {k: v for k, v in p.items() if k not in _DROP_PLAYER}
+    out["killed_by"] = _pairs(p.get("killed_by"), "hero_key", "count")
+    out["damage_taken"] = _pairs(p.get("damage_taken"), "source_key", "amount")
+    out["damage"] = _pairs(p.get("damage"), "target_key", "amount")
+    out["lane_pos"] = _heatmap(p.get("lane_pos"))
+    return out
+
+
+def _teamfight(f: dict[str, Any]) -> dict[str, Any]:
+    """One fight: its window and, per player slot, the swing. Per-fight ability and
+    item use (keyed by name) and death positions are left out."""
+    players = []
+    for slot, fp in enumerate(f.get("players") or []):
+        players.append(
+            {
+                "slot_index": slot,
+                "deaths": fp.get("deaths"),
+                "buybacks": fp.get("buybacks"),
+                "damage": fp.get("damage"),
+                "healing": fp.get("healing"),
+                "gold_delta": fp.get("gold_delta"),
+                "xp_delta": fp.get("xp_delta"),
+                "killed": _pairs(fp.get("killed"), "hero_key", "count"),
+            }
+        )
+    return {
+        "start": f.get("start"),
+        "end": f.get("end"),
+        "last_death": f.get("last_death"),
+        "deaths": f.get("deaths"),
+        "players": players,
+    }
+
+
 def _trim(match: dict[str, Any]) -> dict[str, Any]:
     out = {k: v for k, v in match.items() if k not in _DROP_MATCH}
-    out["players"] = [
-        {k: v for k, v in p.items() if k not in _DROP_PLAYER} for p in match.get("players") or []
-    ]
+    out["players"] = [_player(p) for p in match.get("players") or []]
+    out["teamfights"] = [_teamfight(f) for f in match.get("teamfights") or []]
     for side in ("radiant_team", "dire_team", "league"):
         if isinstance(out.get(side), dict):
             out[side] = {
@@ -334,17 +371,20 @@ def refetch_missing_adv(match_ids: list[int], max_calls: int) -> Iterator[dict[s
 
 
 def _missing_adv(pipeline: Any) -> list[int]:
-    """Matches in the warehouse with no Radiant gold-advantage rows."""
+    """Matches in the warehouse loaded before the loader kept their per-minute and
+    per-fight detail: no Radiant gold-advantage rows, or no teamfight rows."""
+    missing: set[int] = set()
     with pipeline.sql_client() as c:
-        try:
-            rows = c.execute_sql(
-                "SELECT m.match_id FROM match_details AS m WHERE NOT EXISTS "
-                "(SELECT 1 FROM match_details__radiant_gold_adv AS a "
-                "WHERE a._dlt_parent_id = m._dlt_id)"
-            )
-        except Exception:  # no advantage table yet: every stored match lacks them
-            rows = c.execute_sql("SELECT match_id FROM match_details")
-    return [int(r[0]) for r in rows]
+        for child in ("match_details__radiant_gold_adv", "match_details__teamfights"):
+            try:
+                rows = c.execute_sql(
+                    "SELECT m.match_id FROM match_details AS m WHERE NOT EXISTS "
+                    f"(SELECT 1 FROM {child} AS a WHERE a._dlt_parent_id = m._dlt_id)"
+                )
+            except Exception:  # the child table does not exist yet: every match lacks it
+                rows = c.execute_sql("SELECT match_id FROM match_details")
+            missing.update(int(r[0]) for r in rows)
+    return sorted(missing)
 
 
 def _dimension(name: str, path: str, *, key: str) -> Any:
@@ -475,7 +515,7 @@ def main() -> None:
     refetch = None
     if os.environ.get("DOTA_REFETCH_MISSING_ADV") == "1":
         refetch = _missing_adv(pipeline)
-        print(f"refetch: {len(refetch)} stored matches lack the advantage arrays")
+        print(f"refetch: {len(refetch)} stored matches lack advantage or teamfight detail")
     src = opendota(since, budget, public_pages, refetch)
     info = pipeline.run(src)
     print(info)
