@@ -8,8 +8,10 @@ a receipt on every answer.
 ![OpenDota → dlt → MotherDuck (raw → dbt → marts) → dst → your AI](docs/architecture.svg)
 
 On 25 September 2026 the warehouse held 1,587 professional matches (every pro match since
-27 June, with full match detail), 15,870 player rows, and 34,620 public matchmaking games
-with their rank bracket. A GitHub Actions job adds whatever is new every hour.
+27 June, with full match detail: 779,007 item purchases, every pick and ban, every
+objective, the per-minute gold and experience curves), 15,870 player rows, and 34,620
+public matchmaking games with their rank bracket. A GitHub Actions job adds whatever is
+new every hour.
 
 ## Ask it
 
@@ -42,12 +44,26 @@ population, so every query over it carries the filter.
 patches table, not a guess from match dates.
 
 ```
-pro_meta › Which hero was banned most on the current patch?
+drafts › Which hero is contested most on the current patch?
 
-On the current patch (7.41), Lone Druid was banned most, with 880 total bans — ahead of
-Treant Protector (830) and Shadow Fiend (676) …
+Treant Protector is the most contested hero on the current patch, with 1,260 contests …
+ahead of Lone Druid (1,141) and Shadow Fiend (1,097). This covers only Captains Mode
+professional matches whose draft OpenDota recorded …
 
 status ok · typed · tag declared · confidence verified · data as of 2026-09-25
+```
+
+**A certified answer.** The question matched one a person approved, so the approved SQL
+ran as written.
+
+```
+pro_meta › How often does the side that kills Roshan first win on the current patch?
+
+On the current patch, the side that takes the first Roshan wins 0.7680763983628922 of the
+time (76.8%). This covers only professional matches in the loaded window in which a side
+actually took the objective …
+
+status ok · typed · tag certified · confidence verified · data as of 2026-09-25
 ```
 
 **A question that does not type, answered and disclosed.** A team can be the Radiant or the
@@ -89,11 +105,25 @@ matches the warehouse already holds and skips them; every paid call is counted i
 `api_usage` table and a monthly ceiling (`DOTA_PAID_CALLS_MONTH`) stops the run when
 reached. `.github/workflows/load.yml` runs load and transform every hour.
 
-**dbt** (`transform/`) turns 29 raw tables into 12 staging views and 22 marts: one row
-per pro match, one per player per match with a derived position, every pick and ban, item
-builds and timings per hero, team head-to-head, league standings, patch notes; and over
-the public sample, hero stats by rank bracket, matchups, duos, daily trends, and win rate
-by game length. 25 tests pin the grains. Every model and all 261 mart columns are
+**dbt** (`transform/`) turns the raw tables into 15 staging views and 40 marts, in four
+areas:
+
+- **Matches and heroes**: one row per pro match, one per player per match with a derived
+  position, heroes per patch and per position, patch-over-patch trends, team head-to-head,
+  league standings, patch notes; and over the public sample, hero stats by rank bracket,
+  matchups, duos, daily trends, and win rate by game length.
+- **Itemization** (`marts/items/`): a major-item definition (a completed item of at least
+  2,000 gold, or one with its own active), the first, second and third major item per hero
+  with their timings, win rate by purchase-minute window, starting items and whole starting
+  builds, and end-of-game inventories with neutral items by tier.
+- **Drafts** (`marts/drafts/`): every pick and ban with its draft phase, per-hero first-pick,
+  last-pick and contest rates, pro hero-versus-hero draft matchups, lane partners, team
+  lineups and signature heroes.
+- **Timings** (`marts/timings/`): the gold and experience lead per minute, the lead at 10,
+  15, 20 and 25 minutes, comebacks from 10,000 gold behind, and first blood, first tower
+  and first Roshan with how often the side that took them won.
+
+70 tests pin the grains and the draft shape. Every model and all 549 mart columns are
 documented, and `persist_docs` writes those descriptions into the warehouse as comments.
 Match dates are the UTC date, pinned in SQL, whoever runs dbt.
 
@@ -103,13 +133,22 @@ so nothing served can write. Switching dlt and dbt between MotherDuck, a local D
 file and Postgres is one variable, `DSTACK_TARGET`; dst's side is the `warehouse` block in
 `serve/dst.yaml`.
 
-**dst** (`serve/`) declares what the marts mean: 21 entities with their metrics, the 32
-joins between them, 16 governed terms (bracket, position, counter, synergy, the current
-patch, the minimum-games rule), what each lens must refuse (MMR, prize money, personal
-match history, items in pubs), and which end of a metric is the better one. Three lenses:
-`pro_meta` over professional matches, `pro_players` over the players in them, and
-`pub_meta` over the public sample. Answers are typed first, compiled from the declared
-layer, and fall back to disclosed model-written SQL only when a question cannot be typed.
+**dst** (`serve/`) declares what the marts mean: 39 entities with their metrics, the 73
+joins between them, 27 governed terms (bracket, position, major item, first pick, counter,
+comeback, the current patch, the minimum-games rule), what each lens must refuse (MMR,
+prize money, personal match history, items in pubs), and which end of a metric is the
+better one. Five lenses, each the one home for its kind of question:
+
+| lens | answers |
+|---|---|
+| `pro_meta` | professional matches: heroes per patch and position, teams, leagues, gold leads, comebacks, objectives |
+| `pro_players` | the players in them: who plays what, how well, for which team |
+| `drafts` | picks and bans, draft phases, contested heroes, draft counters, lineups |
+| `items` | item builds, core items, timings, starting items, neutral items |
+| `pub_meta` | the public sample: heroes by rank bracket, counters, duos, trends |
+
+Answers are typed first, compiled from the declared layer, and fall back to disclosed
+model-written SQL only when a question cannot be typed.
 `dst probe` reads the warehouse's own column descriptions, value lists for the declared
 dimensions (127 heroes, every team), and each table's freshness.
 
@@ -117,7 +156,7 @@ dimensions (127 heroes, every team), and each table's freshness.
 
 `.github/workflows/dst-test.yml` runs on every pull request that touches `serve/` or
 `transform/`: it starts a throwaway dst server, applies the semantic layer, and runs
-every lens's test suite against the live warehouse. What an enthusiast asks must answer;
+every lens's test suite against the live warehouse (105 cases across the five lenses). What an enthusiast asks must answer;
 what the data cannot carry must refuse by name. A failing case fails the pull request, and
 an empty suite fails it too, since a suite that ran nothing proved nothing.
 
