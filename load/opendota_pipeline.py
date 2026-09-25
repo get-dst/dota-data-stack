@@ -128,6 +128,24 @@ class Unavailable(RuntimeError):
     message: requests puts the full URL in its errors, and the URL carries it."""
 
 
+_CALL_DEADLINE_S = 90
+
+
+def _fetch(url: str, params: dict[str, Any]) -> requests.Response:
+    """GET with a deadline on the whole response. requests' timeout bounds each socket
+    read, so a server trickling bytes held one call open for hours."""
+    started = time.monotonic()
+    r = SESSION.get(url, params=params, timeout=(10, 30), stream=True)
+    body = bytearray()
+    for chunk in r.iter_content(64 * 1024):
+        body += chunk
+        if time.monotonic() - started > _CALL_DEADLINE_S:
+            r.close()
+            raise TimeoutError(f"no complete response in {_CALL_DEADLINE_S}s")
+    r._content = bytes(body)
+    return r
+
+
 def get(path: str, *, paid: bool = False, **params: Any) -> Any:
     global _last_call
     paid = paid and _KEY is not None
@@ -144,8 +162,8 @@ def get(path: str, *, paid: bool = False, **params: Any) -> Any:
     last = "no attempt"
     for attempt in range(3):
         try:
-            r = SESSION.get(f"{API}/{path}", params=params, timeout=60)
-        except requests.RequestException as exc:
+            r = _fetch(f"{API}/{path}", params)
+        except (requests.RequestException, TimeoutError) as exc:
             time.sleep(2 * (attempt + 1))
             last = f"{type(exc).__name__}"
             continue
