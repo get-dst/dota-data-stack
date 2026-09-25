@@ -8,7 +8,7 @@ load:            ## OpenDota → raw tables (dlt)
 	uv run python load/opendota_pipeline.py
 
 transform:       ## raw → staging → marts (dbt), with the grain tests
-	cd transform && ../.venv/bin/dbt build --profiles-dir .
+	set -a; [ -f .env ] && . ./.env; set +a; cd transform && ../.venv/bin/dbt build --profiles-dir .
 
 serve-dev:       ## a local dst server over the marts (Postgres for dst's own state via docker)
 	cd serve && dst dev

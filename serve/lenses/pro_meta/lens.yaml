@@ -51,5 +51,7 @@ rate_limit:
   per_caller_rpm: 60
   per_caller_rpd: 50
 
+eval_gate: block
+
 # Typed first; a question that does not type falls to raw SQL, disclosed UNTYPED.
 untyped_fallback: true
