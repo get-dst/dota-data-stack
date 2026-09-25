@@ -244,16 +244,30 @@ def _trim(match: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
+# Match ids whose details the warehouse already holds, read at the start of each
+# run. The warehouse is the record of what was bought: dlt state is only a cache of
+# it, and a cache that lost ids (a fresh pipelines dir, a copied database) made
+# every run re-buy details it already had.
+_IN_WAREHOUSE: set[int] = set()
+
+# A detail call for a match OpenDota has not parsed yet is paid and returns no
+# players. It is retried on later runs, but not forever.
+_UNPARSED_TRIES = 3
+
+
 @dlt.transformer(data_from=pro_matches, primary_key="match_id", write_disposition="merge")
 def match_details(matches: list[dict[str, Any]], max_calls: int) -> Iterator[dict[str, Any]]:
     """One detail call per match not fetched before; newest first; bounded per run."""
     state = dlt.current.resource_state()
-    fetched: set[int] = set(state.setdefault("fetched_ids", []))
+    fetched: set[int] = set(state.setdefault("fetched_ids", [])) | _IN_WAREHOUSE
+    unparsed: dict[str, int] = state.setdefault("unparsed_ids", {})
     failed: dict[str, int] = state.setdefault("failed_ids", {})
     for m in sorted(matches, key=lambda x: -x["match_id"]):
         mid = m["match_id"]
         if mid in fetched or failed.get(str(mid), 0) >= 2:
             continue  # fetched, or unavailable twice: OpenDota does not have it
+        if unparsed.get(str(mid), 0) >= _UNPARSED_TRIES:
+            continue  # paid for a few times and still unparsed: stop paying for it
         if _SPENT["calls"] >= max_calls:
             return
         try:
@@ -269,7 +283,10 @@ def match_details(matches: list[dict[str, Any]], max_calls: int) -> Iterator[dic
             continue
         _SPENT["calls"] += 1
         if not d.get("players"):
-            continue  # not parsed yet on OpenDota's side; try again next run
+            # Not parsed yet on OpenDota's side: try again on a later run, a few times.
+            unparsed[str(mid)] = unparsed.get(str(mid), 0) + 1
+            state["unparsed_ids"] = unparsed
+            continue
         fetched.add(mid)
         state["fetched_ids"] = sorted(fetched)
         if _SPENT["calls"] % 100 == 0:
@@ -395,6 +412,14 @@ def main() -> None:
             used = 0
         _PAID["remaining"] -= int(used or 0)
     print(f"paid calls this month so far: {used}; remaining under the cap: {_PAID['remaining']}")
+    with pipeline.sql_client() as c:
+        try:
+            _IN_WAREHOUSE.update(
+                int(r[0]) for r in c.execute_sql("SELECT DISTINCT match_id FROM match_details")
+            )
+        except Exception:  # first run: no details table yet
+            pass
+    print(f"match details already in the warehouse: {len(_IN_WAREHOUSE)}")
 
     src = opendota(since, budget, public_pages)
     info = pipeline.run(src)
