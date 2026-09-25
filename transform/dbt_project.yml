@@ -8,6 +8,10 @@ clean-targets: ["target", "dbt_packages"]
 
 models:
   dota:
+    # Descriptions from the schema.yml files land as COMMENTs on tables, views and columns.
+    +persist_docs:
+      relation: true
+      columns: true
     staging:
       +materialized: view
       +schema: staging

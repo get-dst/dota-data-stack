@@ -3,7 +3,7 @@
 select
     m.match_id,
     m.started_at,
-    cast(m.started_at as date) as match_date,
+    cast(timezone('UTC', m.started_at) as date) as match_date,  -- UTC, whoever runs dbt
     m.duration_s,
     m.duration_s / 60.0 as duration_min,
     m.radiant_win,

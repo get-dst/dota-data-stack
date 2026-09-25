@@ -4,7 +4,7 @@ description: What pro players ended their games holding, per hero, item and patc
 grain: one row per hero, item and patch
 use_cases:
   - Use for what pros build on a hero and which items they win with.
-  - Avoid for when an item was bought; purchase timings are not loaded.
+  - Avoid for when an item was bought; that is item_timings.
 common_questions:
   - What do pros build on Juggernaut this patch?
   - How often does Ember Spirit end with a Black King Bar?

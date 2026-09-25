@@ -17,7 +17,7 @@ with complete as (
 select
     m.match_id,
     to_timestamp(m.start_time) as started_at,
-    cast(to_timestamp(m.start_time) as date) as match_date,
+    cast(timezone('UTC', to_timestamp(m.start_time)) as date) as match_date,  -- UTC, whoever runs dbt
     m.duration as duration_s,
     m.duration / 60.0 as duration_min,
     m.radiant_win,

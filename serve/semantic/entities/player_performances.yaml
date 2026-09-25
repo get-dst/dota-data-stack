@@ -30,7 +30,7 @@ fields:
   - {name: kills, type: integer}
   - {name: deaths, type: integer}
   - {name: assists, type: integer}
-  - {name: kda, type: number, description: "(kills + assists) / max(deaths, 1) as OpenDota computes it."}
+  - {name: kda, type: number, description: "(kills + assists) / (deaths + 1), rounded to two decimals, as OpenDota computes it."}
   - {name: last_hits, type: integer}
   - {name: denies, type: integer}
   - {name: gold_per_min, type: integer}
@@ -48,8 +48,8 @@ fields:
   - {name: towers_killed, type: integer}
   - {name: teamfight_participation, type: number}
   - {name: stuns, type: number, description: Seconds of stun dealt.}
-  - {name: lane, type: integer, description: "1 safe lane, 2 mid, 3 off lane, 4 jungle, as OpenDota parsed it."}
-  - {name: lane_role, type: integer, description: "1 safe, 2 mid, 3 off, 4 jungle."}
+  - {name: lane, type: integer, description: "Map lane OpenDota parsed: 1 bottom, 2 middle, 3 top, 4 Radiant jungle, 5 Dire jungle (bottom is Radiant's safe lane, Dire's off lane). For the lane relative to the player's side use lane_role."}
+  - {name: lane_role, type: integer, description: "Lane relative to the player's side: 1 safe lane, 2 mid, 3 off lane, 4 jungle; null when not parsed."}
   - {name: is_roaming, type: boolean}
   - {name: position, type: integer, description: "1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support — derived from lane and farm rank inside the side (the position definition)."}
   - {name: item_0, type: integer}
@@ -98,3 +98,6 @@ metrics:
   - {name: avg_hero_damage, agg: avg, expr: player_performances.hero_damage}
   - {name: avg_tower_damage, agg: avg, expr: player_performances.tower_damage}
   - {name: avg_net_worth, agg: avg, expr: player_performances.net_worth}
+  - {name: avg_obs_placed, agg: avg, expr: player_performances.obs_placed, description: "Observer wards placed per game."}
+  - {name: avg_sen_placed, agg: avg, expr: player_performances.sen_placed, description: "Sentry wards placed per game."}
+  - {name: avg_wards_placed, agg: avg, expr: "player_performances.obs_placed + player_performances.sen_placed", description: "Observer plus sentry wards placed per game."}

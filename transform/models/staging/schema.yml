@@ -1,0 +1,186 @@
+version: 2
+
+# Staging views: one per raw OpenDota table, renamed to the project's column names.
+# Column meaning is documented in full on the marts (marts/schema.yml); here it is brief.
+
+models:
+  - name: stg_heroes
+    description: One row per hero from raw.heroes, roles folded into one string.
+    columns:
+      - {name: hero_id, description: OpenDota hero id.}
+      - {name: hero_name, description: "Display name, e.g. Windranger."}
+      - {name: hero_key, description: "Internal key, e.g. npc_dota_hero_windrunner."}
+      - {name: primary_attribute, description: "str, agi, int or all."}
+      - {name: attack_type, description: Melee or Ranged.}
+      - {name: roles, description: "Comma-separated roles in OpenDota's order."}
+
+  - name: stg_items
+    description: One row per item from OpenDota's item constants; rows without an id are dropped.
+    columns:
+      - {name: item_id, description: OpenDota item id; the value in the player item slots.}
+      - {name: item_key, description: "Internal key without the item_ prefix, e.g. black_king_bar; the key in purchase logs."}
+      - {name: item_name, description: "Display name, e.g. Black King Bar; null for a few internal items."}
+      - {name: cost, description: Shop price in gold; 0 or null when the item has no price.}
+      - {name: quality, description: "OpenDota item quality: component, rare, epic, consumable, artifact, common, secret_shop; null for many items."}
+      - {name: neutral_tier, description: Neutral item tier 1-5; null for shop items.}
+
+  - name: stg_leagues
+    description: One row per league from raw.leagues.
+    columns:
+      - {name: league_id, description: OpenDota league id.}
+      - {name: league_name, description: League or tournament name.}
+      - {name: league_tier, description: "professional, premium, amateur or excluded; null for a few."}
+
+  - name: stg_match_players
+    description: Ten rows per pro match, one per player, with the parent match id resolved to match_id.
+    columns:
+      - {name: match_id, description: OpenDota match id.}
+      - {name: player_slot, description: "0-4 Radiant, 128-132 Dire."}
+      - {name: is_radiant, description: True on the Radiant side.}
+      - {name: account_id, description: Steam account id (32-bit).}
+      - {name: player_name, description: Steam persona name at match time.}
+      - {name: hero_id, description: Hero played.}
+      - {name: hero_variant, description: OpenDota hero variant code; 0 on every loaded row.}
+      - {name: kills, description: Hero kills.}
+      - {name: deaths, description: Deaths.}
+      - {name: assists, description: Assists.}
+      - {name: last_hits, description: Creeps last-hit.}
+      - {name: denies, description: Creeps and structures denied.}
+      - {name: gold_per_min, description: Average gold per minute.}
+      - {name: xp_per_min, description: Average experience per minute.}
+      - {name: level, description: Hero level at game end.}
+      - {name: net_worth, description: Net worth in gold at game end.}
+      - {name: hero_damage, description: Damage to enemy heroes.}
+      - {name: tower_damage, description: Damage to buildings.}
+      - {name: hero_healing, description: Healing done to heroes.}
+      - {name: obs_placed, description: Observer wards placed (parsed replays only).}
+      - {name: sen_placed, description: Sentry wards placed (parsed replays only).}
+      - {name: camps_stacked, description: Neutral camps stacked (parsed replays only).}
+      - {name: rune_pickups, description: Runes picked up (parsed replays only).}
+      - {name: roshans_killed, description: Roshan kills (parsed replays only).}
+      - {name: towers_killed, description: Towers killed (parsed replays only).}
+      - {name: teamfight_participation, description: "OpenDota teamfight participation, roughly (kills + assists) / side kills."}
+      - {name: stuns, description: Seconds of stun dealt (parsed replays only).}
+      - {name: item_0, description: Item id in main slot 0 at game end; 0 = empty.}
+      - {name: item_1, description: Item id in main slot 1 at game end; 0 = empty.}
+      - {name: item_2, description: Item id in main slot 2 at game end; 0 = empty.}
+      - {name: item_3, description: Item id in main slot 3 at game end; 0 = empty.}
+      - {name: item_4, description: Item id in main slot 4 at game end; 0 = empty.}
+      - {name: item_5, description: Item id in main slot 5 at game end; 0 = empty.}
+      - {name: item_neutral, description: Neutral item id at game end; 0 = empty.}
+      - {name: aghanims_scepter, description: 1 when the Aghanim's Scepter upgrade is reported at game end, else 0.}
+      - {name: aghanims_shard, description: 1 when the Aghanim's Shard upgrade is reported at game end, else 0.}
+      - {name: lane, description: "Map lane: 1 bottom, 2 middle, 3 top, 4 Radiant jungle, 5 Dire jungle."}
+      - {name: lane_role, description: "1 safe lane, 2 mid, 3 off lane, 4 jungle."}
+      - {name: is_roaming, description: True when OpenDota flags the player as roaming.}
+      - {name: leaver_status, description: "Valve leaver code: 0 none, 1 disconnected."}
+      - {name: abandons, description: OpenDota abandon count.}
+      - {name: kda, description: "(kills + assists) / (deaths + 1), rounded to two decimals."}
+      - {name: is_win, description: True when the player's side won.}
+
+  - name: stg_matches
+    description: One row per pro match with full detail from raw.match_details; epoch seconds become timestamps here.
+    columns:
+      - {name: match_id, description: OpenDota match id.}
+      - {name: started_at, description: Match start time (timestamp with time zone).}
+      - {name: duration_s, description: Game length in seconds.}
+      - {name: radiant_win, description: True when Radiant won.}
+      - {name: radiant_score, description: Radiant hero kills.}
+      - {name: dire_score, description: Dire hero kills.}
+      - {name: radiant_team_id, description: Radiant team id; null when not identified.}
+      - {name: radiant_team_name, description: Radiant team name (team record first, then the match's name field).}
+      - {name: dire_team_id, description: Dire team id; null when not identified.}
+      - {name: dire_team_name, description: Dire team name (team record first, then the match's name field).}
+      - {name: league_id, description: League id.}
+      - {name: league_name, description: League name.}
+      - {name: league_tier, description: "professional, premium, amateur or excluded."}
+      - {name: patch_id, description: OpenDota patch id.}
+      - {name: game_mode_id, description: "Game mode code: 2 Captains Mode, 1 All Pick, 22 All Draft."}
+      - {name: lobby_type_id, description: Lobby type code; 1 = practice (tournament lobby).}
+      - {name: region_id, description: Valve server region code.}
+      - {name: series_id, description: OpenDota series id.}
+      - {name: series_type, description: "0 best of 1, 1 best of 3, 2 best of 5, 3 best of 2."}
+      - {name: first_blood_s, description: Seconds of game time until first blood.}
+      - {name: tower_status_radiant, description: Bitmask of Radiant towers still standing at game end (11 bits).}
+      - {name: tower_status_dire, description: Bitmask of Dire towers still standing at game end (11 bits).}
+      - {name: barracks_status_radiant, description: Bitmask of Radiant barracks still standing at game end (6 bits).}
+      - {name: barracks_status_dire, description: Bitmask of Dire barracks still standing at game end (6 bits).}
+      - {name: comeback, description: OpenDota comeback value (largest gold deficit the winner overcame); often null.}
+      - {name: stomp, description: OpenDota stomp value (largest gold lead the winner held); often null.}
+      - {name: human_players, description: Human players in the match; 10 on every loaded row.}
+
+  - name: stg_patches
+    description: One row per patch as a time window, ending when the next patch starts.
+    columns:
+      - {name: patch_id, description: OpenDota patch id.}
+      - {name: patch_name, description: "Version string, e.g. 7.41."}
+      - {name: patch_started_at, description: Release time.}
+      - {name: patch_ended_at, description: Release time of the next patch; null for the current one.}
+
+  - name: stg_picks_bans
+    description: One row per pick or ban per pro match, in draft order.
+    columns:
+      - {name: match_id, description: OpenDota match id.}
+      - {name: draft_order, description: Position in the draft, 0-based.}
+      - {name: is_pick, description: True for a pick, false for a ban.}
+      - {name: hero_id, description: Hero picked or banned.}
+      - {name: is_radiant, description: True when Radiant made it (OpenDota team 0).}
+
+  - name: stg_pro_players
+    description: One row per account OpenDota lists as pro; rows without a competitive name are dropped.
+    columns:
+      - {name: account_id, description: Steam account id (32-bit).}
+      - {name: player_name, description: Competitive name.}
+      - {name: persona_name, description: Steam persona name.}
+      - {name: team_id, description: Last team id; 0 when none.}
+      - {name: team_name, description: Last team name.}
+      - {name: team_tag, description: Last team tag.}
+      - {name: country_code, description: Two-letter country code, lowercase.}
+      - {name: fantasy_role, description: OpenDota fantasy role code (0-4); not carried to the marts.}
+      - {name: last_match_at, description: Most recent match time OpenDota knows.}
+
+  - name: stg_public_match_heroes
+    description: Ten rows per sampled public match, one per hero, from the Radiant and Dire hero lists.
+    columns:
+      - {name: match_id, description: OpenDota match id.}
+      - {name: hero_id, description: Hero in the match.}
+      - {name: is_radiant, description: True on the Radiant side.}
+      - {name: is_win, description: True when the hero's side won.}
+
+  - name: stg_public_matches
+    description: One row per sampled public match with ten distinct heroes, game modes 1, 22 and 23 only, game type decided once here.
+    columns:
+      - {name: match_id, description: OpenDota match id.}
+      - {name: started_at, description: Match start time (timestamp with time zone).}
+      - {name: match_date, description: UTC calendar date of started_at.}
+      - {name: duration_s, description: Game length in seconds.}
+      - {name: duration_min, description: Game length in minutes.}
+      - {name: radiant_win, description: True when Radiant won.}
+      - {name: avg_rank_tier, description: "Average rank tier of the players: tens digit bracket, ones digit stars."}
+      - {name: bracket_id, description: Tens digit of avg_rank_tier (1 Herald to 8 Immortal).}
+      - {name: game_mode_id, description: "1 All Pick, 22 All Draft (ranked All Pick), 23 Turbo."}
+      - {name: lobby_type_id, description: "7 ranked, 0 normal, 4 co-op with bots, 1 practice."}
+      - {name: game_type, description: "ranked_all_pick (mode 22 in lobby 7), turbo (mode 23), else unranked_all_pick."}
+      - {name: cluster_id, description: Valve server cluster id.}
+      - {name: _dlt_id, description: dlt row id, kept to join the hero child tables.}
+
+  - name: stg_purchases
+    description: One row per item purchase per player per pro match, from the purchase log.
+    columns:
+      - {name: match_id, description: OpenDota match id.}
+      - {name: player_slot, description: "0-4 Radiant, 128-132 Dire."}
+      - {name: hero_id, description: Hero of the buyer.}
+      - {name: bought_at_s, description: Game time of the purchase in seconds; negative before the horn.}
+      - {name: bought_at_min, description: Game time of the purchase in minutes.}
+      - {name: item_key, description: Item internal key; joins stg_items.item_key.}
+
+  - name: stg_teams
+    description: One row per named team from OpenDota's team ranking.
+    columns:
+      - {name: team_id, description: OpenDota team id.}
+      - {name: team_name, description: Team name.}
+      - {name: team_tag, description: Team tag.}
+      - {name: rating, description: OpenDota Elo-style rating.}
+      - {name: all_time_wins, description: Wins over the team's OpenDota history.}
+      - {name: all_time_losses, description: Losses over the team's OpenDota history.}
+      - {name: last_match_at, description: Most recent match time.}

@@ -6,21 +6,66 @@ sources:
     schema: raw
     tables:
       - name: pro_matches
+        description: OpenDota's pro-match list (/proMatches) for the loaded window, one row per match, merged on match_id.
+        columns:
+          - {name: match_id, description: OpenDota match id.}
       - name: match_details
+        description: Full match record (/matches/{id}) for each pro match fetched so far, one row per match; the children below hang off _dlt_id.
+        columns:
+          - {name: match_id, description: OpenDota match id.}
+          - {name: start_time, description: Match start in Unix epoch seconds.}
+          - {name: duration, description: Game length in seconds.}
+          - {name: patch, description: OpenDota patch id.}
       - name: match_details__players
+        description: Ten rows per fetched pro match, one per player; _dlt_parent_id points at match_details._dlt_id.
+        columns:
+          - {name: player_slot, description: "0-4 Radiant, 128-132 Dire."}
+          - {name: account_id, description: Steam account id (32-bit).}
+          - {name: hero_id, description: Hero played.}
       - name: match_details__picks_bans
+        description: Picks and bans of each fetched pro match; team 0 = Radiant, 1 = Dire; _dlt_parent_id points at match_details._dlt_id.
       - name: match_details__objectives
+        description: Timed objective events (first blood, towers, Roshan and the like) of each fetched pro match; not used by the models.
       - name: match_details__players__purchase_log
+        description: Every item purchase of each player in each fetched pro match; time in game seconds (negative before the horn), key = item key; _dlt_parent_id points at match_details__players._dlt_id.
       - name: public_matches
+        description: A sample of public matchmaking games from /publicMatches, the newest pages at each load, kept for a limited number of days, one row per match.
+        columns:
+          - {name: match_id, description: OpenDota match id.}
+          - {name: start_time, description: Match start in Unix epoch seconds.}
+          - {name: avg_rank_tier, description: "Average rank tier of the players: tens digit bracket, ones digit stars."}
       - name: public_matches__radiant_team
+        description: The five Radiant hero ids of each sampled public match (value = hero_id).
       - name: public_matches__dire_team
+        description: The five Dire hero ids of each sampled public match (value = hero_id).
       - name: heroes
+        description: The hero roster from /heroes, one row per hero; replaced on every load.
+        columns:
+          - {name: id, description: OpenDota hero id.}
       - name: heroes__roles
+        description: The roles of each hero in OpenDota's order (value = role name).
       - name: items
+        description: OpenDota's item constants, one row per item key; replaced on every load.
+        columns:
+          - {name: id, description: OpenDota item id.}
+          - {name: name, description: Item key, e.g. black_king_bar.}
       - name: patches
+        description: OpenDota's patch constants, one row per game version with its release date; replaced on every load.
       - name: teams
+        description: OpenDota's team ranking (/teams), the top teams by rating; replaced on every load.
+        columns:
+          - {name: team_id, description: OpenDota team id.}
       - name: pro_players
+        description: Accounts OpenDota lists as professional (/proPlayers); replaced on every load.
+        columns:
+          - {name: account_id, description: Steam account id (32-bit).}
       - name: patch_notes
+        description: OpenDota's patch notes flattened by the loader, one row per note line (patch_name, section, subject, heading, line_no, note); replaced on every load.
       - name: leagues
+        description: OpenDota's league list (/leagues), one row per league; replaced on every load.
+        columns:
+          - {name: leagueid, description: OpenDota league id.}
       - name: game_modes
+        description: OpenDota's game mode constants (id, name such as game_mode_captains_mode); lookup only, not joined by the models.
       - name: lobby_types
+        description: OpenDota's lobby type constants (id, name such as lobby_type_ranked); lookup only, not joined by the models.

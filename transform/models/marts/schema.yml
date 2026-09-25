@@ -1,75 +1,658 @@
 version: 2
 
+# Every mart and every column is described here; persist_docs (dbt_project.yml) writes
+# these as COMMENTs on the warehouse tables. Two samples live in the marts and never mix:
+# "pro" = professional matches from OpenDota's pro-match feed with full match detail;
+# "public sample" = a sample of public matchmaking games from OpenDota's public feed
+# (the newest games at each load, not every game played).
+#
+# Dates: match_date is the UTC calendar date of started_at, pinned in the SQL, so it
+# does not depend on the time zone of whoever runs dbt.
+
 models:
   - name: fact_match
     description: One row per professional Dota 2 match, winner resolved to a team.
     columns:
       - name: match_id
+        description: OpenDota match id; primary key.
         tests: [unique, not_null]
       - name: started_at
+        description: Match start time (timestamp with time zone).
         tests: [not_null]
+      - name: match_date
+        description: UTC calendar date of started_at.
+      - name: duration_s
+        description: Game length in seconds.
+      - name: duration_min
+        description: Game length in minutes (duration_s / 60).
       - name: radiant_win
+        description: True when the Radiant side won.
         tests: [not_null]
+      - name: winner_team_id
+        description: Team id of the winning side; null when that side's team is not identified.
+      - name: loser_team_id
+        description: Team id of the losing side; null when that side's team is not identified.
+      - name: radiant_team_id
+        description: Team id on the Radiant side; joins dim_team.team_id; null when not identified.
+      - name: radiant_team_name
+        description: Team name on the Radiant side as the match record carries it.
+      - name: dire_team_id
+        description: Team id on the Dire side; joins dim_team.team_id; null when not identified.
+      - name: dire_team_name
+        description: Team name on the Dire side as the match record carries it.
+      - name: radiant_kills
+        description: Hero kills by the Radiant side (the Radiant score).
+      - name: dire_kills
+        description: Hero kills by the Dire side (the Dire score).
+      - name: total_kills
+        description: Hero kills by both sides combined.
+      - name: league_id
+        description: League or tournament id; joins dim_league.league_id.
+      - name: league_name
+        description: League or tournament name as the match record carries it.
+      - name: league_tier
+        description: "OpenDota league tier: professional, premium, amateur or excluded."
+      - name: patch_id
+        description: Game version id the match was played on; joins dim_patch.patch_id.
+      - name: patch_name
+        description: Game version the match was played on, e.g. 7.41.
+      - name: game_mode_id
+        description: "Game mode code (OpenDota game_modes): 2 Captains Mode, 1 All Pick, 22 All Draft."
+      - name: lobby_type_id
+        description: "Lobby type code (OpenDota lobby_types); 1 = practice lobby, the tournament lobby type."
+      - name: region_id
+        description: Valve server region code; no lookup table is loaded; null when not reported.
+      - name: series_id
+        description: OpenDota series id shared by the games of one series; null when not reported.
+      - name: series_type
+        description: "Series format: 0 best of 1, 1 best of 3, 2 best of 5, 3 best of 2; null when not reported."
+      - name: first_blood_s
+        description: Seconds of game time until first blood.
+      - name: first_blood_min
+        description: Minutes of game time until first blood (first_blood_s / 60).
+      - name: comeback
+        description: OpenDota's comeback value, the largest gold deficit the winner overcame; null for about half the matches, where OpenDota does not supply it.
+      - name: stomp
+        description: OpenDota's stomp value, the largest gold lead the winner held; null where OpenDota does not supply it.
+
   - name: fact_player_match
     description: One row per player per professional match (tests/ten_players_per_match.sql
       pins the grain).
     columns:
       - name: match_id
+        description: OpenDota match id; joins fact_match.match_id.
         tests: [not_null]
+      - name: player_slot
+        description: Slot in the match, 0-4 Radiant and 128-132 Dire; with match_id the primary key.
+      - name: is_radiant
+        description: True when the player was on the Radiant side.
+      - name: team_id
+        description: Team the player played for in this match (the side's team id); null when not identified.
+      - name: team_name
+        description: Name of the team the player played for in this match.
+      - name: account_id
+        description: Steam account id (32-bit); joins dim_pro_player.account_id.
+      - name: player_name
+        description: The pro's competitive name when OpenDota lists the account as pro, else the Steam persona name.
+      - name: pro_name
+        description: Competitive name from dim_pro_player; null when OpenDota does not list the account as pro.
+      - name: player_country
+        description: Two-letter country code from dim_pro_player (lowercase); null for non-listed players.
       - name: hero_id
+        description: Hero played; joins dim_hero.hero_id.
         tests: [not_null]
+      - name: hero_name
+        description: Display name of the hero played, e.g. Windranger.
+      - name: is_win
+        description: True when this player's side won.
+      - name: kills
+        description: Hero kills by the player.
+      - name: deaths
+        description: Deaths of the player.
+      - name: assists
+        description: Assists by the player.
+      - name: kda
+        description: (kills + assists) / (deaths + 1), rounded to two decimals, as OpenDota computes it.
+      - name: last_hits
+        description: Creeps last-hit over the game.
+      - name: denies
+        description: Allied creeps and structures denied over the game.
+      - name: gold_per_min
+        description: Average gold earned per minute of the game.
+      - name: xp_per_min
+        description: Average experience earned per minute of the game.
+      - name: level
+        description: Hero level at the end of the game (max 30).
+      - name: net_worth
+        description: Net worth in gold at the end of the game.
+      - name: hero_damage
+        description: Damage dealt to enemy heroes over the game.
+      - name: tower_damage
+        description: Damage dealt to buildings over the game.
+      - name: hero_healing
+        description: Healing done to heroes over the game.
+      - name: obs_placed
+        description: Observer wards placed; null when the replay is not parsed.
+      - name: sen_placed
+        description: Sentry wards placed; null when the replay is not parsed.
+      - name: camps_stacked
+        description: Neutral camps stacked; null when the replay is not parsed.
+      - name: rune_pickups
+        description: Runes picked up; null when the replay is not parsed.
+      - name: roshans_killed
+        description: Roshan kills credited to the player; null when the replay is not parsed.
+      - name: towers_killed
+        description: Towers killed by the player; null when the replay is not parsed.
+      - name: teamfight_participation
+        description: OpenDota's teamfight participation, roughly (kills + assists) / side kills as a 0-1 share; can exceed 1 in the source; null when not parsed.
+      - name: stuns
+        description: Seconds of stun dealt to enemies, from the parsed replay; the source occasionally carries negative values.
+      - name: item_0
+        description: Item id in main inventory slot 0 at game end; 0 = empty; joins stg_items.item_id.
+      - name: item_1
+        description: Item id in main inventory slot 1 at game end; 0 = empty.
+      - name: item_2
+        description: Item id in main inventory slot 2 at game end; 0 = empty.
+      - name: item_3
+        description: Item id in main inventory slot 3 at game end; 0 = empty.
+      - name: item_4
+        description: Item id in main inventory slot 4 at game end; 0 = empty.
+      - name: item_5
+        description: Item id in main inventory slot 5 at game end; 0 = empty.
+      - name: item_neutral
+        description: Neutral item id in the neutral slot at game end; 0 = empty.
+      - name: has_aghanims_scepter
+        description: True when the match record reports the Aghanim's Scepter upgrade on the hero at game end.
+      - name: has_aghanims_shard
+        description: True when the match record reports the Aghanim's Shard upgrade on the hero at game end.
+      - name: lane
+        description: "Map lane OpenDota parsed: 1 bottom, 2 middle, 3 top, 4 Radiant jungle, 5 Dire jungle (bottom is Radiant's safe lane, Dire's off lane)."
+      - name: lane_role
+        description: "Lane relative to the player's side: 1 safe lane, 2 mid, 3 off lane, 4 jungle; null when not parsed."
+      - name: is_roaming
+        description: True when OpenDota flags the player as roaming; null when not parsed.
+      - name: position
+        description: "Derived role 1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support: mid is 2; in the safe and off lanes the higher-GPM player of the side is 1/3 and the other 5/4; null for jungle or unparsed lanes."
+      - name: leaver_status
+        description: "Valve leaver code: 0 none, 1 disconnected; higher codes (abandon, AFK) do not occur in the loaded data."
+      - name: abandons
+        description: OpenDota abandon count for the player in this match; 0 on every loaded row.
+      - name: started_at
+        description: Match start time (timestamp with time zone), from fact_match.
+      - name: match_date
+        description: UTC calendar date of started_at.
+      - name: patch_id
+        description: Game version id the match was played on; joins dim_patch.patch_id.
+      - name: patch_name
+        description: Game version the match was played on, e.g. 7.41.
+      - name: league_id
+        description: League or tournament id; joins dim_league.league_id.
+      - name: league_name
+        description: League or tournament name as the match record carries it.
+      - name: duration_min
+        description: Game length in minutes, repeated from fact_match.
+
   - name: fact_draft
-    description: Picks and bans per match in draft order.
+    description: Picks and bans per professional match in draft order, one row per pick or
+      ban; matches whose draft OpenDota did not record have no rows.
     columns:
       - name: match_id
+        description: OpenDota match id; with draft_order the primary key; joins fact_match.match_id.
         tests: [not_null]
+      - name: draft_order
+        description: Position in the draft sequence, 0-based (0-23).
+      - name: is_pick
+        description: True for a pick.
+      - name: is_ban
+        description: True for a ban (the negation of is_pick).
+      - name: hero_id
+        description: Hero picked or banned; joins dim_hero.hero_id.
+      - name: hero_name
+        description: Display name of the hero picked or banned.
+      - name: is_radiant
+        description: True when the Radiant side made this pick or ban.
+      - name: team_id
+        description: Team id of the side that made the pick or ban; null when not identified.
+      - name: team_name
+        description: Team name of the side that made the pick or ban.
+      - name: side_won
+        description: True when the side that made this pick or ban won the match.
+      - name: started_at
+        description: Match start time (timestamp with time zone).
+      - name: match_date
+        description: UTC calendar date of started_at.
+      - name: patch_id
+        description: Game version id the match was played on; joins dim_patch.patch_id.
+      - name: patch_name
+        description: Game version the match was played on, e.g. 7.41.
+      - name: league_id
+        description: League or tournament id; joins dim_league.league_id.
+      - name: league_name
+        description: League or tournament name as the match record carries it.
+
   - name: daily_hero_stats
-    description: Picks, bans and wins per hero per day per patch.
+    description: Picks, bans and wins per hero per day per patch over professional matches;
+      a hero with bans but no picks that day has no row.
+    columns:
+      - name: match_date
+        description: UTC match date (see fact_match.match_date); with patch_id and hero_id the primary key.
+      - name: patch_id
+        description: Game version id; joins dim_patch.patch_id.
+      - name: patch_name
+        description: Game version, e.g. 7.41.
+      - name: hero_id
+        description: Hero; joins dim_hero.hero_id.
+      - name: hero_name
+        description: Display name of the hero.
+      - name: picks
+        description: Pro player-games on the hero that day (from fact_player_match).
+      - name: bans
+        description: Bans of the hero that day from the recorded drafts; 0 when none.
+      - name: wins
+        description: Picks of the hero that day whose side won.
+      - name: losses
+        description: Picks minus wins.
+      - name: matches_that_day
+        description: Pro matches played that day on that patch; repeats on every hero row, so never sum it across heroes.
+
   - name: dim_hero
+    description: The hero roster, one row per hero, with primary attribute, attack type and roles.
     columns:
       - name: hero_id
+        description: OpenDota hero id; primary key.
         tests: [unique, not_null]
+      - name: hero_name
+        description: Display name, e.g. Windranger.
+      - name: hero_key
+        description: Internal key, e.g. npc_dota_hero_windrunner.
+      - name: primary_attribute
+        description: "Primary attribute: str, agi, int or all (universal)."
+      - name: attack_type
+        description: Melee or Ranged.
+      - name: roles
+        description: Comma-separated roles in OpenDota's order, e.g. Carry, Escape, Nuker.
+
   - name: dim_patch
+    description: Game versions as time windows, one row per patch; a patch runs from its
+      release until the next one, and the current patch has no end.
     columns:
       - name: patch_id
+        description: OpenDota patch id, sequential from 0 = 6.70; primary key.
         tests: [unique, not_null]
+      - name: patch_name
+        description: Version string, e.g. 7.41; letter sub-patches (7.40c) are not separate rows.
+      - name: patch_started_at
+        description: Release time of the patch (timestamp with time zone).
+      - name: patch_ended_at
+        description: Release time of the next patch; null for the current one.
+      - name: is_current
+        description: True for exactly one row, the patch with no end.
+
   - name: dim_team
+    description: Professional teams from OpenDota's team ranking (the top thousand by rating),
+      one row per team, with all-time records; unnamed teams are dropped.
     columns:
       - name: team_id
+        description: OpenDota team id; primary key.
         tests: [unique, not_null]
+      - name: team_name
+        description: Team name.
+      - name: team_tag
+        description: Short team tag.
+      - name: rating
+        description: OpenDota Elo-style team rating.
+      - name: all_time_wins
+        description: Wins over the team's whole OpenDota history, not the loaded window.
+      - name: all_time_losses
+        description: Losses over the team's whole OpenDota history, not the loaded window.
+      - name: last_match_at
+        description: Start time of the team's most recent match OpenDota knows.
+
   - name: dim_league
+    description: Leagues and tournaments as OpenDota lists them, one row per league.
     columns:
       - name: league_id
+        description: OpenDota league id; primary key.
         tests: [unique, not_null]
+      - name: league_name
+        description: League or tournament name.
+      - name: league_tier
+        description: "OpenDota tier: professional, premium, amateur or excluded; null for a few leagues."
+
   - name: fact_pub_match
     description: One row per sampled public matchmaking match.
     columns:
       - name: match_id
+        description: OpenDota match id; primary key.
         tests: [unique, not_null]
+      - name: started_at
+        description: Match start time (timestamp with time zone).
+      - name: match_date
+        description: UTC calendar date of started_at.
+      - name: duration_s
+        description: Game length in seconds.
+      - name: duration_min
+        description: Game length in minutes (duration_s / 60).
+      - name: radiant_win
+        description: True when the Radiant side won.
+      - name: avg_rank_tier
+        description: Average rank tier of the players, tens digit the bracket (1 Herald to 8 Immortal) and ones digit the stars, e.g. 54 = Legend 4.
+      - name: bracket_id
+        description: Rank bracket, the tens digit of avg_rank_tier (1 Herald to 8 Immortal); joins dim_bracket.bracket_id.
+      - name: bracket_name
+        description: Bracket name, Herald to Immortal.
       - name: game_type
+        description: "ranked_all_pick (All Draft mode 22 in a ranked lobby 7), turbo (mode 23), or unranked_all_pick (any other All Pick or All Draft game)."
         tests:
           - accepted_values:
               values: [ranked_all_pick, unranked_all_pick, turbo]
+      - name: game_mode_id
+        description: "Game mode code: 22 All Draft (ranked All Pick), 23 Turbo, 1 All Pick; other modes are dropped in staging."
+      - name: lobby_type_id
+        description: "Lobby type code: 7 ranked, 0 normal, 4 co-op with bots, 1 practice."
+      - name: patch_id
+        description: Game version the match was played on, resolved from the patch windows by started_at; joins dim_patch.patch_id.
+      - name: patch_name
+        description: Game version the match was played on, e.g. 7.41.
+
   - name: fact_pub_hero
-    description: One row per hero per sampled public match.
+    description: One row per hero per sampled public match (ten per match, pinned by
+      tests/ten_heroes_per_pub_match.sql).
     columns:
+      - name: match_id
+        description: OpenDota match id; with hero_id the primary key; joins fact_pub_match.match_id.
       - name: hero_id
+        description: Hero; joins dim_hero.hero_id.
         tests: [not_null]
+      - name: hero_name
+        description: Display name of the hero.
+      - name: is_radiant
+        description: True when the hero was on the Radiant side.
+      - name: is_win
+        description: True when the hero's side won.
+      - name: match_date
+        description: UTC calendar date of started_at.
+      - name: started_at
+        description: Match start time (timestamp with time zone).
+      - name: patch_id
+        description: Game version id, resolved from the patch windows; joins dim_patch.patch_id.
+      - name: patch_name
+        description: Game version, e.g. 7.41.
+      - name: bracket_id
+        description: Rank bracket of the match (1 Herald to 8 Immortal); joins dim_bracket.bracket_id.
+      - name: bracket_name
+        description: Bracket name, Herald to Immortal.
+      - name: game_type
+        description: ranked_all_pick, unranked_all_pick or turbo (see fact_pub_match.game_type).
+      - name: duration_min
+        description: Game length in minutes.
+
   - name: pub_hero_stats
+    description: Hero games and wins over the public sample, one row per patch, bracket,
+      game type and hero; all three game types are present, filter game_type.
+    columns:
+      - name: patch_id
+        description: Game version id; joins dim_patch.patch_id.
+      - name: patch_name
+        description: Game version, e.g. 7.41.
+      - name: bracket_id
+        description: Rank bracket (1 Herald to 8 Immortal); joins dim_bracket.bracket_id.
+      - name: bracket_name
+        description: Bracket name, Herald to Immortal.
+      - name: game_type
+        description: ranked_all_pick, unranked_all_pick or turbo.
+      - name: hero_id
+        description: Hero; joins dim_hero.hero_id.
+      - name: hero_name
+        description: Display name of the hero.
+      - name: games
+        description: Sampled games the hero was in at this patch, bracket and game type.
+      - name: wins
+        description: Of those games, the ones the hero's side won.
+      - name: losses
+        description: Games minus wins.
+      - name: matches_in_bracket
+        description: Sampled matches at this patch, bracket and game type (the pick-rate denominator is 10 heroes per match); repeats on every hero row, so never sum it across heroes.
+
   - name: pub_matchups
+    description: Hero against hero over the public sample, one row per patch, game type,
+      hero and opponent hero; both orderings are present.
+    columns:
+      - name: patch_id
+        description: Game version id; joins dim_patch.patch_id.
+      - name: patch_name
+        description: Game version, e.g. 7.41.
+      - name: game_type
+        description: ranked_all_pick, unranked_all_pick or turbo.
+      - name: hero_id
+        description: The hero the counts are measured for; joins dim_hero.hero_id.
+      - name: hero_name
+        description: Display name of the hero the counts are measured for.
+      - name: opponent_hero_id
+        description: The hero on the other side; joins dim_hero.hero_id.
+      - name: opponent_hero_name
+        description: Display name of the hero on the other side.
+      - name: games
+        description: Sampled games the two heroes were on opposite sides.
+      - name: wins
+        description: Of those games, the ones hero_id's side won.
+
   - name: pub_duos
+    description: Hero with hero on the same side over the public sample, one row per patch,
+      game type, hero and ally hero; both orderings are present.
+    columns:
+      - name: patch_id
+        description: Game version id; joins dim_patch.patch_id.
+      - name: patch_name
+        description: Game version, e.g. 7.41.
+      - name: game_type
+        description: ranked_all_pick, unranked_all_pick or turbo.
+      - name: hero_id
+        description: The first hero of the pair; joins dim_hero.hero_id.
+      - name: hero_name
+        description: Display name of the first hero.
+      - name: ally_hero_id
+        description: The hero on the same side; joins dim_hero.hero_id.
+      - name: ally_hero_name
+        description: Display name of the hero on the same side.
+      - name: games
+        description: Sampled games the two heroes were on the same side.
+      - name: wins
+        description: Of those games, the ones the pair's side won.
+
   - name: hero_item_builds
+    description: Final inventories of pro players, one row per patch, hero and item - how many
+      pro games ended with the item in the six main slots and how many were won (neutral
+      and backpack slots not counted).
+    columns:
+      - name: patch_id
+        description: Game version id; joins dim_patch.patch_id.
+      - name: patch_name
+        description: Game version, e.g. 7.41.
+      - name: hero_id
+        description: Hero; joins dim_hero.hero_id.
+      - name: hero_name
+        description: Display name of the hero.
+      - name: item_id
+        description: Item id; joins stg_items.item_id.
+      - name: item_name
+        description: Item display name, e.g. Black King Bar.
+      - name: item_cost
+        description: Shop price in gold from OpenDota's item constants; 0 for items with no price there (e.g. Observer Ward, Aegis, lotuses).
+      - name: games_with_item
+        description: Pro games the hero ended holding the item in a main slot (a game holding two counts twice).
+      - name: wins_with_item
+        description: Of those games, the ones the hero's side won.
+      - name: hero_games
+        description: Pro games the hero played on the patch; repeats on every item row, so never sum it across items.
+
   - name: team_head_to_head
+    description: Pro matches between two identified teams, one row per team, opponent and patch;
+      both orderings are present.
+    columns:
+      - name: team_id
+        description: The team the record is from the point of view of; joins dim_team.team_id.
+      - name: team_name
+        description: Name of that team.
+      - name: opponent_team_id
+        description: The opposing team; joins dim_team.team_id.
+      - name: opponent_team_name
+        description: Name of the opposing team.
+      - name: patch_id
+        description: Game version id; joins dim_patch.patch_id.
+      - name: patch_name
+        description: Game version, e.g. 7.41.
+      - name: matches
+        description: Pro matches (games, not series) between the two teams on the patch.
+      - name: wins
+        description: Of those matches, the ones team_id won.
+      - name: first_match_date
+        description: Date of the first such match.
+      - name: last_match_date
+        description: Date of the latest such match.
+
   - name: dim_bracket
+    description: The eight rank brackets, Herald to Immortal, one row per bracket.
     columns:
       - name: bracket_id
+        description: "1 Herald, 2 Guardian, 3 Crusader, 4 Archon, 5 Legend, 6 Ancient, 7 Divine, 8 Immortal; the tens digit of a rank tier."
         tests: [unique, not_null]
+      - name: bracket_name
+        description: Bracket name.
+
   - name: dim_pro_player
+    description: Players OpenDota lists as professional, one row per account, with the
+      competitive name, last team and country; rows without a name are dropped.
     columns:
       - name: account_id
+        description: Steam account id (32-bit); primary key; joins fact_player_match.account_id.
         tests: [unique, not_null]
+      - name: player_name
+        description: Competitive name, e.g. Yatoro.
+      - name: persona_name
+        description: Steam persona name; changes often, prefer player_name.
+      - name: team_id
+        description: Last team OpenDota has for the player; 0 when none.
+      - name: team_name
+        description: Name of that team.
+      - name: team_tag
+        description: Tag of that team.
+      - name: country_code
+        description: Two-letter country code, lowercase; empty or null when unknown.
+      - name: last_match_at
+        description: Start time of the player's most recent match OpenDota knows; null when unknown.
+
   - name: hero_item_timings
+    description: When pros first buy an item on a hero, one row per patch, hero and item -
+      first purchase per player-game, items costing 1 000 gold or more, pre-game purchases
+      excluded.
+    columns:
+      - name: patch_id
+        description: Game version id; joins dim_patch.patch_id.
+      - name: patch_name
+        description: Game version, e.g. 7.41.
+      - name: hero_id
+        description: Hero; joins dim_hero.hero_id.
+      - name: hero_name
+        description: Display name of the hero.
+      - name: item_id
+        description: Item id; joins stg_items.item_id.
+      - name: item_name
+        description: Item display name.
+      - name: item_cost
+        description: Shop price in gold (1 000 or more).
+      - name: games_bought
+        description: Pro player-games on the hero that bought the item at least once.
+      - name: wins_when_bought
+        description: Of those games, the ones the hero's side won.
+      - name: avg_first_bought_min
+        description: Average game minute of the first purchase across those games.
+      - name: earliest_bought_min
+        description: Earliest game minute of a first purchase across those games.
+
   - name: league_standings
+    description: Each identified team's record inside each league, one row per league and
+      team, from the pro matches loaded (a league that started before the window shows
+      only the matches inside it).
+    columns:
+      - name: league_id
+        description: League or tournament id; joins dim_league.league_id.
+      - name: league_name
+        description: League or tournament name.
+      - name: team_id
+        description: Team; joins dim_team.team_id.
+      - name: team_name
+        description: Team name as the match record carries it.
+      - name: matches
+        description: Pro matches (games, not series) the team played in the league.
+      - name: wins
+        description: Of those matches, the ones the team won.
+      - name: losses
+        description: Matches minus wins.
+      - name: first_match_date
+        description: Date of the team's first loaded match in the league.
+      - name: last_match_date
+        description: Date of the team's latest loaded match in the league.
+
   - name: daily_pub_hero_stats
+    description: Hero games and wins per day over the public sample, ranked All Pick only,
+      one row per day, patch and hero.
+    columns:
+      - name: match_date
+        description: UTC match date (see fact_pub_match.match_date).
+      - name: patch_id
+        description: Game version id; joins dim_patch.patch_id.
+      - name: patch_name
+        description: Game version, e.g. 7.41.
+      - name: hero_id
+        description: Hero; joins dim_hero.hero_id.
+      - name: hero_name
+        description: Display name of the hero.
+      - name: games
+        description: Sampled ranked All Pick games the hero was in that day.
+      - name: wins
+        description: Of those games, the ones the hero's side won.
+
   - name: pub_hero_by_duration
+    description: Hero games and wins by game length over the public sample, ranked All Pick
+      only, one row per patch, bracket, hero and duration bucket.
+    columns:
+      - name: patch_id
+        description: Game version id; joins dim_patch.patch_id.
+      - name: patch_name
+        description: Game version, e.g. 7.41.
+      - name: bracket_id
+        description: Rank bracket (1 Herald to 8 Immortal); joins dim_bracket.bracket_id.
+      - name: bracket_name
+        description: Bracket name, Herald to Immortal.
+      - name: hero_id
+        description: Hero; joins dim_hero.hero_id.
+      - name: hero_name
+        description: Display name of the hero.
+      - name: duration_bucket
+        description: "Game length: under 25 min, 25-35 min, 35-45 min, 45 min and over (lower bound inclusive)."
+      - name: duration_bucket_order
+        description: 1 to 4, shortest bucket to longest; sort key for duration_bucket.
+      - name: games
+        description: Sampled ranked All Pick games the hero was in within the bucket.
+      - name: wins
+        description: Of those games, the ones the hero's side won.
+
   - name: dim_patch_note
+    description: OpenDota's patch notes, one row per note line, with the hero or item the
+      line is about resolved to its display name.
+    columns:
+      - name: patch_name
+        description: Version the note belongs to, including letter sub-patches, e.g. 7.40c; matches dim_patch.patch_name only for main versions.
+      - name: section
+        description: general, heroes or items.
+      - name: subject
+        description: Internal key of the hero (without npc_dota_hero_) or item the line is about, or general.
+      - name: subject_name
+        description: Display name of the hero or item, e.g. Pudge or Black King Bar; falls back to subject when no match.
+      - name: heading
+        description: "Heroes section only: the ability key (e.g. tiny_grow) or group (talents, general, hero_facet) the line sits under; null elsewhere."
+      - name: line_no
+        description: Order of the line within its patch, section and subject, 0-based; gaps where blank lines were dropped.
+      - name: note
+        description: The text of the patch-note line.

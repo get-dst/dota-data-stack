@@ -41,7 +41,7 @@ fields:
   - {name: lobby_type_id, type: integer}
   - {name: region_id, type: integer}
   - {name: series_id, type: integer}
-  - {name: series_type, type: integer, description: "0 = single game, 1 = best of 3, 2 = best of 5."}
+  - {name: series_type, type: integer, description: "0 = best of 1, 1 = best of 3, 2 = best of 5, 3 = best of 2; null when not reported."}
   - {name: first_blood_s, type: integer, description: Seconds until first blood.}
   - {name: first_blood_min, type: number}
   - {name: comeback, type: integer, description: Largest gold deficit the winner overcame.}
