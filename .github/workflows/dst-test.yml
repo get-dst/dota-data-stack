@@ -1,0 +1,81 @@
+# On a PR that touches the models or the semantic layer: stand up a throwaway dst
+# (its own Postgres, a one-run secret key), publish serve/ into it and run the whole
+# suite against the real MotherDuck marts. A transform change can break an answer
+# without touching serve/, so both paths trigger it.
+#
+# Fails loud by design (ci/dst-test.sh): missing secrets, a server that never gets
+# ready, a skipped eval gate, an empty suite or a lens that ran no cases are all red.
+name: dst-test
+on:
+  pull_request:
+    paths:
+      - "serve/**"
+      - "transform/**"
+      - "ci/**"
+      - ".github/workflows/dst-test.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: dst-test-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  dst-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      db:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: dst
+          POSTGRES_PASSWORD: dst_dev
+          POSTGRES_DB: dst
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U dst"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      # Owner role runs migrations; `dst migrate` creates the app role and sets its
+      # password from DATABASE_URL, so the two only have to agree with each other.
+      DATABASE_ADMIN_URL: postgresql+psycopg://dst:dst_dev@localhost:5432/dst
+      DATABASE_URL: postgresql+psycopg://dst_app:dst_app_dev@localhost:5432/dst
+      DST_API_KEY_WAREHOUSE: ${{ secrets.MOTHERDUCK_TOKEN }}
+      DST_API_KEY_DEEPSEEK: ${{ secrets.DST_API_KEY_DEEPSEEK }}
+      DST_API_KEY_JEV: ${{ secrets.DST_API_KEY_JEV }}
+      # Typed first; the lenses set untyped_fallback, so an untyped question still answers.
+      DST_TYPED_SERVING: auto
+      FASTEMBED_CACHE_PATH: ${{ github.workspace }}/.cache/fastembed
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+          enable-cache: true
+          # The pin below is the only dependency; key the cache on it.
+          cache-dependency-glob: .github/workflows/dst-test.yml
+      - name: Install dst
+        run: |
+          uv tool install 'dst-core[local-embed]==0.5.0'
+          uv tool dir --bin >> "$GITHUB_PATH"
+      # The local embedder downloads its model on first use; don't pay that per run.
+      - uses: actions/cache@v4
+        with:
+          path: .cache/fastembed
+          key: fastembed-dst-core-0.5.0
+      - name: plan, apply, test
+        env:
+          OUT_DIR: ${{ runner.temp }}/dst
+        run: bash ci/dst-test.sh
+      - name: Keep the server log and test rows
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dst-test
+          path: ${{ runner.temp }}/dst
+          if-no-files-found: ignore
