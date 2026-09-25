@@ -19,12 +19,13 @@ providers:
     type: local
 
 connections:
-  # The marts dbt built. Local: the DuckDB file dlt wrote. MotherDuck: the same marts in
-  # the cloud, read through a read-scaling token (read-only), the token in .env:
-  #   warehouse: {type: duckdb, config: {path: md:dota, schema: marts, statement_timeout_ms: 30000},
-  #               secret_env: DST_API_KEY_WAREHOUSE}
+  # The marts dbt built, on MotherDuck. The connection opens read-only under any token;
+  # a read-scaling token (MotherDuck's SELECT-only credential) is the one to serve with.
+  # Local instead: {type: duckdb, config: {path: ../data/dota.duckdb, schema: marts,
+  #                 statement_timeout_ms: 30000}}
   # Postgres: {type: postgres, config: {host: …, port: 5432, database: …, user: dst_ro,
   #            schema: marts, sslmode: require, statement_timeout_ms: 30000}, secret_env: …}
   warehouse:
     type: duckdb
-    config: {path: ../data/dota.duckdb, schema: marts, statement_timeout_ms: 30000}
+    config: {path: md:dota, schema: marts, statement_timeout_ms: 30000}
+    secret_env: DST_API_KEY_WAREHOUSE
