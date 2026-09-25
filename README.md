@@ -4,20 +4,23 @@ Professional Dota 2 matches, from OpenDota's API to a governed answer in your ow
 in three stages that each do one job:
 
 - **dlt** loads. `load/opendota_pipeline.py` pulls the pro-match list, one detail record
-  per match, a sample of public matchmaking games with their rank tier, and the
-  dimension tables (heroes, items, patches, leagues, teams) into raw tables. Merged on
-  match id, so re-runs are idempotent; the detail backfill and the public sample are
-  bounded per run so a run fits OpenDota's free tier.
+  per match with its purchase log, a sample of public matchmaking games with their rank
+  tier, and the dimension tables (heroes, items, patches, patch notes, leagues, teams,
+  pro players) into raw tables. Merged on match id, so re-runs are idempotent. Only the
+  match-detail calls use an OpenDota key; everything else is keyless and free, and the
+  paid calls are counted in the warehouse and capped per month.
 - **dbt** transforms. `transform/` turns the raw tables into marts: one row per pro
-  match, one per player per match with a derived position, every pick and ban, item
-  builds per hero, team head-to-head; and over the public sample, hero stats by rank
-  bracket, hero-versus-hero matchups and same-side duos. Grain tests pin the shapes.
+  match, one per player per match with a derived position and the pro's name, every pick
+  and ban, item builds and item timings per hero, team head-to-head, league standings,
+  patch notes by hero and item; and over the public sample, hero stats by rank bracket,
+  hero-versus-hero matchups, same-side duos, daily trends, and win rate by game length.
+  Grain tests pin the shapes.
 - **dst (data serve tool)** serves. `serve/` declares what the marts mean: fifteen
   entities with their metrics, the joins between them, the governed terms (bracket,
   position, counter, synergy, the current patch, the minimum-games rule), what each lens
   must refuse (MMR, prize money, personal match history, items in pubs), and the
-  questions that are certified. Two lenses: `pro_meta` over professional matches and
-  `pub_meta` over the public sample. Any MCP client, any OpenAI-compatible client, or
+  questions that are certified. Three lenses: `pro_meta` over professional matches,
+  `pro_players` over the players in them, and `pub_meta` over the public sample. Any MCP client, any OpenAI-compatible client, or
   curl can then ask, and every answer carries its SQL and its verification.
 
 The warehouse is whatever you point at. The default is a DuckDB file under `data/`,
@@ -29,13 +32,16 @@ Postgres.
 ```
 cp .env.example .env
 uv sync
-make load          # a few minutes on the free tier: 3 000 calls a day, 60 a minute
+make load          # keyless: 3 000 calls a day, 60 a minute; a key speeds up match details
 make transform
 ```
 
 `make load` walks the pro-match list back `DOTA_SINCE_DAYS` and fetches details for the
-newest matches first, up to `DOTA_MAX_DETAIL_CALLS` per run. Run it again tomorrow and it
-continues where it stopped. A paid OpenDota key in `.env` removes the wait.
+newest matches first, up to `DOTA_MAX_DETAIL_CALLS` per run, plus `DOTA_PUBLIC_PAGES`
+pages of the public feed. Run it again tomorrow and it continues where it stopped.
+`load/backfill.sh` runs it in chunks until nothing is new. With an OpenDota key in `.env`
+the detail calls go fast and cost a hundredth of a cent each; `DOTA_PAID_CALLS_MONTH` is
+the ceiling, enforced from the `api_usage` table.
 
 To serve, dst needs a Postgres of its own for its state and a model. Fill
 `DST_API_KEY_DEEPSEEK` and `DST_API_KEY_JEV` in `serve/.env` (or change the providers
