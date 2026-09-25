@@ -1,8 +1,10 @@
--- Hero win rate by how long the game went, over the public sample (ranked All Pick):
--- the "does Anti-Mage win the long games?" table.
+-- Hero win rate by how long the game went, per rank bracket, over the public sample
+-- (ranked All Pick): the "does Anti-Mage win the long games at Legend?" table.
 select
     patch_id,
     patch_name,
+    bracket_id,
+    bracket_name,
     hero_id,
     hero_name,
     case
@@ -21,4 +23,4 @@ select
     sum(case when is_win then 1 else 0 end) as wins
 from {{ ref('fact_pub_hero') }}
 where game_type = 'ranked_all_pick'
-group by 1, 2, 3, 4, 5, 6
+group by 1, 2, 3, 4, 5, 6, 7, 8

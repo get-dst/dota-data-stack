@@ -1,21 +1,24 @@
 name: pub_hero_by_duration
-description: Hero win rate by how long the game went, over the public sample, ranked All
-  Pick only — which heroes win the short games and which the long ones.
-grain: one row per hero, patch and duration bucket
+description: Hero win rate by how long the game went, per rank bracket, over the public
+  sample, ranked All Pick only — which heroes win the short games and which the long ones.
+grain: one row per hero, patch, rank bracket and duration bucket
 use_cases:
   - Use for whether a hero wins more in long or short games.
   - Avoid for overall win rate; that is pub_hero_stats.
 common_questions:
   - Does Anti-Mage win more in games over 45 minutes?
   - Which heroes are best in short games?
+  - Which heroes are best in games under 25 minutes at Legend?
 source:
   connection: warehouse
   table: marts.pub_hero_by_duration
-primary_key: [patch_id, hero_id, duration_bucket_order]
+primary_key: [patch_id, bracket_id, hero_id, duration_bucket_order]
 population: Counted over a sample of public matchmaking games, ranked All Pick only.
 fields:
   - {name: patch_id, type: integer}
   - {name: patch_name, type: string}
+  - {name: bracket_id, type: integer}
+  - {name: bracket_name, type: string, description: "Herald, Guardian, Crusader, Archon, Legend, Ancient, Divine, Immortal."}
   - {name: hero_id, type: integer}
   - {name: hero_name, type: string}
   - {name: duration_bucket, type: string, description: "under 25 min, 25-35 min, 35-45 min, 45 min and over."}
@@ -25,6 +28,7 @@ fields:
 dimensions:
   - {name: hero_name, type: string}
   - {name: duration_bucket, type: string}
+  - {name: bracket_name, type: string}
   - {name: patch_name, type: string}
 metrics:
   - {name: bucket_games, agg: sum, expr: pub_hero_by_duration.games}
