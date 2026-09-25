@@ -365,6 +365,8 @@ def refetch_missing_adv(match_ids: list[int], max_calls: int) -> Iterator[dict[s
             _SPENT["calls"] += 1
             continue
         _SPENT["calls"] += 1
+        if _SPENT["calls"] % 50 == 0:
+            print(f"refetch: {_SPENT['calls']} calls", file=sys.stderr, flush=True)
         if not d.get("players"):
             continue
         yield _trim(d)
