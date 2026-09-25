@@ -2,7 +2,7 @@
 # needs no registry credentials:
 #
 #   gcloud builds submit deploy --config deploy/cloudbuild.yaml \
-#     --substitutions=_DST_VERSION=0.5.0,_IMAGE=europe-west1-docker.pkg.dev/<project>/dst/dota-demo:0.5.0
+#     --substitutions=_DST_VERSION=0.5.3,_IMAGE=europe-west1-docker.pkg.dev/<project>/dst/dota-demo:0.5.3
 #
 # Step 2 is dst's own Dockerfile with the local-embed extra; step 3 is deploy/Dockerfile,
 # which bakes the embedding weights in.
@@ -15,5 +15,5 @@ steps:
     args: [build, -f, Dockerfile, --build-arg, BASE=dst-base, -t, "${_IMAGE}", .]
 images: ["${_IMAGE}"]
 substitutions:
-  _DST_VERSION: "0.5.0"
+  _DST_VERSION: "0.5.3"
 timeout: 1800s
