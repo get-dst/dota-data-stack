@@ -1,0 +1,110 @@
+version: 2
+
+# The raw child tables and staging views behind the behaviour marts (marts/behaviour/):
+# what happens inside a parsed pro match — teamfights, per-minute farm curves, kills,
+# damage taken, runes, wards and buybacks. Every child row joins its parent through
+# _dlt_parent_id = parent._dlt_id; list children carry _dlt_list_idx.
+
+sources:
+  - name: raw_behaviour
+    description: Per-match and per-player detail of parsed pro matches as dlt landed it
+      (load/opendota_pipeline.py). Unparsed matches have no rows here.
+    schema: raw
+    tables:
+      - name: match_details__teamfights
+        description: One row per teamfight OpenDota's parser found (start, end, last_death in game seconds; deaths in the fight).
+      - name: match_details__teamfights__players
+        description: Ten rows per teamfight; slot_index 0-9 in player order (player_slot 0-4, then 128-132); deaths, buybacks, damage and healing to heroes, gold and XP gained in the fight.
+      - name: match_details__teamfights__players__killed
+        description: Heroes a player killed in the fight (hero_key, count).
+      - name: match_details__players__gold_t
+        description: A player's gold earned so far at each minute (value; _dlt_list_idx = minute).
+      - name: match_details__players__xp_t
+        description: A player's experience at each minute (value; _dlt_list_idx = minute).
+      - name: match_details__players__lh_t
+        description: A player's last hits so far at each minute (value; _dlt_list_idx = minute).
+      - name: match_details__players__times
+        description: The game second of each per-minute sample (value = _dlt_list_idx × 60).
+      - name: match_details__players__kills_log
+        description: Each hero kill by the player (time in game seconds, key = the victim's hero key, smoke).
+      - name: match_details__players__damage_taken
+        description: Damage the player's hero took over the match per source unit (source_key, amount).
+      - name: match_details__players__runes_log
+        description: Each rune the player took (time, key = OpenDota rune code 0-9).
+      - name: match_details__players__obs_log
+        description: Each observer ward the player placed (time, x, y on the 0-256 grid).
+      - name: match_details__players__sen_log
+        description: Each sentry ward the player placed (time, x, y on the 0-256 grid).
+      - name: match_details__players__buyback_log
+        description: Each buyback by the player (time in game seconds).
+
+models:
+  - name: stg_teamfight_players
+    description: Ten rows per teamfight of a parsed pro match, one per player, with the list index resolved to player_slot.
+    columns:
+      - {name: match_id, description: OpenDota match id.}
+      - {name: fight_index, description: "Position of the fight in the match's teamfight list, 0 = first."}
+      - {name: fight_start_s, description: Game second the fight window opens.}
+      - {name: fight_end_s, description: Game second the fight window closes.}
+      - {name: fight_deaths, description: Hero deaths OpenDota counted in the fight.}
+      - {name: player_slot, description: "0-4 Radiant, 128-132 Dire."}
+      - {name: deaths, description: The player's deaths in the fight.}
+      - {name: buybacks, description: The player's buybacks in the fight.}
+      - {name: damage, description: Damage the player dealt to heroes in the fight window.}
+      - {name: healing, description: Healing the player did to heroes in the fight window.}
+      - {name: gold_delta, description: Gold the player gained (negative = lost) over the fight.}
+      - {name: xp_delta, description: Experience the player gained over the fight.}
+      - {name: kills, description: Heroes the player killed in the fight.}
+
+  - name: stg_player_minutes
+    description: One row per player per minute of a parsed pro match with gold earned, experience and last hits so far.
+    columns:
+      - {name: match_id, description: OpenDota match id.}
+      - {name: player_slot, description: "0-4 Radiant, 128-132 Dire."}
+      - {name: minute, description: "Game minute, 0 = the horn."}
+      - {name: gold, description: Gold earned since the horn at that minute; starting gold not included.}
+      - {name: xp, description: Experience at that minute.}
+      - {name: last_hits, description: Last hits so far at that minute.}
+
+  - name: stg_player_hero_kills
+    description: Every hero kill in a parsed pro match, from the killer's kills log.
+    columns:
+      - {name: match_id, description: OpenDota match id.}
+      - {name: killer_slot, description: "player_slot of the killer: 0-4 Radiant, 128-132 Dire."}
+      - {name: time_s, description: Game second of the kill; negative before the horn.}
+      - {name: victim_hero_key, description: "Internal key of the hero killed, e.g. npc_dota_hero_rattletrap; joins stg_heroes.hero_key."}
+      - {name: under_smoke, description: True when the killer was under Smoke of Deceit.}
+
+  - name: stg_player_damage_taken
+    description: Damage each player's hero took in a parsed pro match, per source unit.
+    columns:
+      - {name: match_id, description: OpenDota match id.}
+      - {name: player_slot, description: "0-4 Radiant, 128-132 Dire."}
+      - {name: source_key, description: "Internal key of the unit that dealt it: a hero (npc_dota_hero_*), creep, neutral, tower or Roshan; the hero's own key is self-damage."}
+      - {name: amount, description: Damage taken from that source over the match.}
+
+  - name: stg_player_runes
+    description: Every rune a player took in a parsed pro match, with its type.
+    columns:
+      - {name: match_id, description: OpenDota match id.}
+      - {name: player_slot, description: "0-4 Radiant, 128-132 Dire."}
+      - {name: time_s, description: Game second the rune was taken.}
+      - {name: rune_code, description: OpenDota rune code 0-9.}
+      - {name: rune_type, description: "double_damage, haste, illusion, invisibility, regeneration, bounty, arcane, water, wisdom or shield."}
+
+  - name: stg_player_wards
+    description: Every observer and sentry ward placed in a parsed pro match.
+    columns:
+      - {name: match_id, description: OpenDota match id.}
+      - {name: player_slot, description: "0-4 Radiant, 128-132 Dire."}
+      - {name: ward_type, description: observer or sentry.}
+      - {name: time_s, description: Game second the ward was placed; negative before the horn.}
+      - {name: x, description: Map x on OpenDota's 0-256 grid.}
+      - {name: y, description: Map y on OpenDota's 0-256 grid.}
+
+  - name: stg_player_buybacks
+    description: Every buyback in a parsed pro match.
+    columns:
+      - {name: match_id, description: OpenDota match id.}
+      - {name: player_slot, description: "0-4 Radiant, 128-132 Dire."}
+      - {name: time_s, description: Game second of the buyback.}
