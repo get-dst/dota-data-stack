@@ -64,3 +64,12 @@ models:
     columns:
       - name: bracket_id
         tests: [unique, not_null]
+  - name: dim_pro_player
+    columns:
+      - name: account_id
+        tests: [unique, not_null]
+  - name: hero_item_timings
+  - name: league_standings
+  - name: daily_pub_hero_stats
+  - name: pub_hero_by_duration
+  - name: dim_patch_note

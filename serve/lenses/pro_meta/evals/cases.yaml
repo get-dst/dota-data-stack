@@ -35,3 +35,12 @@
 - question: What is my win rate on Pudge?
   expect: refuse
   status: approved
+- question: When do pros buy Black King Bar on Juggernaut?
+  expect: answer
+  status: approved
+- question: Which team has the best record in PGL Wallachia?
+  expect: answer
+  status: approved
+- question: What changed for Pudge in the latest patch?
+  expect: answer
+  status: approved

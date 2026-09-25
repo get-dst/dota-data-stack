@@ -10,6 +10,7 @@ sources:
       - name: match_details__players
       - name: match_details__picks_bans
       - name: match_details__objectives
+      - name: match_details__players__purchase_log
       - name: public_matches
       - name: public_matches__radiant_team
       - name: public_matches__dire_team
@@ -18,6 +19,8 @@ sources:
       - name: items
       - name: patches
       - name: teams
+      - name: pro_players
+      - name: patch_notes
       - name: leagues
       - name: game_modes
       - name: lobby_types

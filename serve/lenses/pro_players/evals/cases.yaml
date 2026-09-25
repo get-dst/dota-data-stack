@@ -1,0 +1,22 @@
+# Behavioral expectations for the player lens.
+- question: Which pro players have the highest average GPM this patch?
+  expect: answer
+  status: approved
+- question: Which carries have the best win rate in pro matches this patch?
+  expect: answer
+  status: approved
+- question: Which supports place the most wards per game?
+  expect: answer
+  status: approved
+- question: Which pro players have the highest KDA this patch?
+  expect: answer
+  status: approved
+- question: Which country has the most active pro players this patch?
+  expect: answer
+  status: approved
+- question: What is my win rate on Pudge?
+  expect: refuse
+  status: approved
+- question: How much prize money has Yatoro earned?
+  expect: refuse
+  status: approved

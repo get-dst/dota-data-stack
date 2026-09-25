@@ -19,7 +19,9 @@ select
     case when pm.is_radiant then m.radiant_team_id else m.dire_team_id end as team_id,
     case when pm.is_radiant then m.radiant_team_name else m.dire_team_name end as team_name,
     pm.account_id,
-    pm.player_name,
+    coalesce(pp.player_name, pm.player_name) as player_name,
+    pp.player_name as pro_name,
+    pp.country_code as player_country,
     pm.hero_id,
     h.hero_name,
     pm.is_win,
@@ -76,3 +78,4 @@ select
 from ranked as pm
 inner join {{ ref('fact_match') }} as m on m.match_id = pm.match_id
 left join {{ ref('stg_heroes') }} as h on h.hero_id = pm.hero_id
+left join {{ ref('stg_pro_players') }} as pp on pp.account_id = pm.account_id

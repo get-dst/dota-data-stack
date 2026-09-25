@@ -1,0 +1,30 @@
+use_when:
+  - questions about individual professional players — their heroes, stats (GPM, XPM, KDA,
+    kills, last hits), win rates, positions, teams, and countries
+  - "who is the best carry, mid or support; what does Yatoro play; which players win most"
+sample_queries:
+  - question: Which pro players have the highest average GPM this patch, with at least 10 games?
+    sql: |
+      SELECT player_name, COUNT(*) AS games, AVG(gold_per_min) AS avg_gpm
+      FROM marts.fact_player_match AS player_performances
+      JOIN marts.dim_patch AS patches ON patches.patch_id = player_performances.patch_id
+      WHERE patches.is_current = TRUE
+      GROUP BY player_name
+      HAVING COUNT(*) >= 10
+      ORDER BY avg_gpm DESC
+      LIMIT 10
+  - question: Which heroes does Yatoro play most?
+    sql: |
+      SELECT hero_name, COUNT(*) AS games,
+             SUM(CASE WHEN is_win THEN 1 ELSE 0 END) * 1.0 / COUNT(*) AS hero_win_rate
+      FROM marts.fact_player_match AS player_performances
+      WHERE player_performances.pro_name = 'Yatoro'
+      GROUP BY hero_name
+      ORDER BY games DESC
+      LIMIT 10
+  - question: How many pro players from Finland played this patch?
+    sql: |
+      SELECT COUNT(DISTINCT account_id) AS players
+      FROM marts.fact_player_match AS player_performances
+      JOIN marts.dim_patch AS patches ON patches.patch_id = player_performances.patch_id
+      WHERE patches.is_current = TRUE AND player_performances.player_country = 'fi'

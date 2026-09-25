@@ -36,6 +36,15 @@
 - question: What is the best hero in Turbo?
   expect: refuse
   status: approved
+- question: Does Anti-Mage win more in games over 45 minutes?
+  expect: answer
+  status: approved
+- question: Which heroes are best in games under 25 minutes at Legend?
+  expect: answer
+  status: approved
+- question: Is Pudge's win rate going up this week?
+  expect: answer
+  status: approved
 # Retired: Immortal games are rare in the public feed, so the bracket is usually absent.
 - question: Which heroes are picked most at Immortal?
   expect: answer

@@ -1,0 +1,4 @@
+left: item_timings
+right: heroes
+on: item_timings.hero_id = heroes.hero_id
+relationship: many_to_one

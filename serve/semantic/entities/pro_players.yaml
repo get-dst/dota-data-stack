@@ -1,0 +1,25 @@
+name: pro_players
+description: Professional players as OpenDota lists them — the name fans know, the team,
+  the country.
+grain: one row per pro player
+source:
+  connection: warehouse
+  table: marts.dim_pro_player
+primary_key: [account_id]
+population: Players OpenDota flags as professional; a player who left the scene keeps
+  their row with the last team they had.
+fields:
+  - {name: account_id, type: integer, description: Steam account id.}
+  - {name: player_name, type: string, description: "The competitive name, e.g. Yatoro."}
+  - {name: persona_name, type: string, description: "Steam persona name; changes often, prefer player_name."}
+  - {name: team_id, type: integer}
+  - {name: team_name, type: string}
+  - {name: team_tag, type: string}
+  - {name: country_code, type: string, description: Two-letter country code.}
+  - {name: last_match_at, type: timestamp}
+dimensions:
+  - {name: player_name, type: string}
+  - {name: team_name, type: string}
+  - {name: country_code, type: string}
+metrics:
+  - {name: player_count, agg: count, expr: pro_players.account_id}

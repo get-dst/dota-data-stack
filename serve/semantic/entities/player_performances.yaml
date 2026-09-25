@@ -21,7 +21,9 @@ fields:
   - {name: team_id, type: integer, description: The team this player played for in this match.}
   - {name: team_name, type: string}
   - {name: account_id, type: integer, description: Steam account id.}
-  - {name: player_name, type: string, description: Steam persona name at match time.}
+  - {name: player_name, type: string, description: "The pro's competitive name when OpenDota knows it, else the Steam persona name."}
+  - {name: pro_name, type: string, description: Competitive name; null for players OpenDota does not list as pro.}
+  - {name: player_country, type: string}
   - {name: hero_id, type: integer}
   - {name: hero_name, type: string}
   - {name: is_win, type: boolean, description: True when this player's side won.}

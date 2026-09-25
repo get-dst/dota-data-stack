@@ -1,0 +1,28 @@
+name: patch_notes
+description: The patch notes, one line each, with the hero or item the line is about.
+grain: one row per patch-note line
+use_cases:
+  - Use for what changed for a hero or item in a patch.
+  - Avoid for numbers about matches; the notes are text.
+common_questions:
+  - What changed for Pudge in 7.41?
+  - Which items were changed in the latest patch?
+source:
+  connection: warehouse
+  table: marts.dim_patch_note
+primary_key: [patch_name, section, subject, line_no]
+population: The notes OpenDota carries; older patches may be missing or partial.
+fields:
+  - {name: patch_name, type: string, description: "e.g. 7.41 or 7.40c."}
+  - {name: section, type: string, description: "general, heroes or items."}
+  - {name: subject, type: string, description: "Internal key of the hero or item, or general."}
+  - {name: subject_name, type: string, description: "Display name, e.g. Pudge or Black King Bar."}
+  - {name: heading, type: string, description: "The ability or heading the line sits under, e.g. Rot; null for top-level lines."}
+  - {name: line_no, type: integer}
+  - {name: note, type: string, description: The line of the patch note.}
+dimensions:
+  - {name: patch_name, type: string}
+  - {name: section, type: string}
+  - {name: subject_name, type: string}
+metrics:
+  - {name: note_count, agg: count, expr: patch_notes.line_no}

@@ -299,9 +299,22 @@ def _dimension(name: str, path: str, *, key: str) -> Any:
 @dlt.resource(name="patch_notes", write_disposition="replace")
 def patch_notes() -> Iterator[list[dict[str, Any]]]:
     """OpenDota's patch notes, one row per line: patch, section (general | items |
-    heroes), subject (a hero or item key, or 'general'), the note."""
+    heroes), subject (a hero or item key, or 'general'), the ability or heading the
+    line sits under when there is one, and the note. Hero notes nest one level
+    (hero -> ability -> lines); the flattening keeps that as ``heading``."""
     data = get("constants/patchnotes")
     rows: list[dict[str, Any]] = []
+
+    def lines(node: Any, heading: str | None) -> Iterator[tuple[str | None, str]]:
+        if isinstance(node, str):
+            yield heading, node
+        elif isinstance(node, list):
+            for item in node:
+                yield from lines(item, heading)
+        elif isinstance(node, dict):
+            for key, val in node.items():
+                yield from lines(val, str(key))
+
     for patch_key, sections in data.items():
         patch_name = patch_key.replace("_", ".")
         if not isinstance(sections, dict):
@@ -309,8 +322,7 @@ def patch_notes() -> Iterator[list[dict[str, Any]]]:
         for section, body in sections.items():
             subjects = body.items() if isinstance(body, dict) else [("general", body)]
             for subject, notes in subjects:
-                for i, note in enumerate(notes if isinstance(notes, list) else [notes]):
-                    text = note if isinstance(note, str) else str(note)
+                for i, (heading, text) in enumerate(lines(notes, None)):
                     if text.strip() in ("", "<br>"):
                         continue
                     rows.append(
@@ -318,6 +330,7 @@ def patch_notes() -> Iterator[list[dict[str, Any]]]:
                             "patch_name": patch_name,
                             "section": section,
                             "subject": subject,
+                            "heading": heading,
                             "line_no": i,
                             "note": text,
                         }

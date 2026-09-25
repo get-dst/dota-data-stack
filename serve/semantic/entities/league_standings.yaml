@@ -1,0 +1,37 @@
+name: league_standings
+description: Each team's record inside each league or tournament, from the pro matches loaded.
+grain: one row per team per league
+use_cases:
+  - Use for who is winning a tournament, a team's record in an event.
+  - Avoid for two teams against each other; that is team_head_to_head.
+common_questions:
+  - Who has the best record in PGL Wallachia?
+  - How many matches has Team Spirit won in the current league?
+source:
+  connection: warehouse
+  table: marts.league_standings
+primary_key: [league_id, team_id]
+population: Professional matches in the loaded window; a league that started before the
+  window shows only the matches inside it.
+fields:
+  - {name: league_id, type: integer}
+  - {name: league_name, type: string}
+  - {name: team_id, type: integer}
+  - {name: team_name, type: string}
+  - {name: matches, type: integer}
+  - {name: wins, type: integer}
+  - {name: losses, type: integer}
+  - {name: first_match_date, type: date}
+  - {name: last_match_date, type: date}
+dimensions:
+  - {name: league_name, type: string}
+  - {name: team_name, type: string}
+metrics:
+  - {name: league_matches, agg: sum, expr: league_standings.matches}
+  - {name: league_wins, agg: sum, expr: league_standings.wins}
+  - {name: league_losses, agg: sum, expr: league_standings.losses}
+  - name: league_win_rate
+    type: ratio
+    numerator: league_wins
+    denominator: league_matches
+    format: percent

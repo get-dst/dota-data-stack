@@ -1,0 +1,4 @@
+left: league_standings
+right: teams
+on: league_standings.team_id = teams.team_id
+relationship: many_to_one

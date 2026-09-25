@@ -12,6 +12,8 @@ select:
     - pub_hero_stats
     - pub_matchups
     - pub_duos
+    - pub_hero_trends
+    - pub_hero_by_duration
     - heroes
     - patches
     - brackets
@@ -22,6 +24,7 @@ select:
     - public_sample
     - pub_pick_rate
     - minimum_games
+    - trend
     - current_patch
 not_computable:
   - measure: personal match history

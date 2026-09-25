@@ -1,0 +1,15 @@
+# Certified answers: scalar shapes only, re-verified on every apply and by `dst test`.
+- question: How many distinct pro players played on the current patch?
+  sql: |
+    SELECT COUNT(DISTINCT account_id) AS players
+    FROM marts.fact_player_match AS player_performances
+    JOIN marts.dim_patch AS patches ON patches.patch_id = player_performances.patch_id
+    WHERE patches.is_current = TRUE
+  status: active
+- question: What is the average GPM across all pro player-games on the current patch?
+  sql: |
+    SELECT AVG(gold_per_min) AS avg_gpm
+    FROM marts.fact_player_match AS player_performances
+    JOIN marts.dim_patch AS patches ON patches.patch_id = player_performances.patch_id
+    WHERE patches.is_current = TRUE
+  status: active

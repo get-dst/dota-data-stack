@@ -1,0 +1,41 @@
+name: item_timings
+description: When pros first buy an item on a hero, per patch — the typical minute, how
+  many games bought it, and how many of those were won. Items costing 1 000 gold or more.
+grain: one row per hero, item and patch
+use_cases:
+  - Use for "when do pros buy X on Y" and which items a hero rushes.
+  - Avoid for what a hero ends the game holding; that is hero_item_builds.
+common_questions:
+  - When do pros buy Black King Bar on Juggernaut?
+  - What does Anti-Mage rush this patch?
+source:
+  connection: warehouse
+  table: marts.hero_item_timings
+primary_key: [patch_id, hero_id, item_id]
+population: First purchases in professional matches in the loaded window, items of 1 000
+  gold or more, timed from the horn; pre-game purchases are excluded.
+fields:
+  - {name: patch_id, type: integer}
+  - {name: patch_name, type: string}
+  - {name: hero_id, type: integer}
+  - {name: hero_name, type: string}
+  - {name: item_id, type: integer}
+  - {name: item_name, type: string}
+  - {name: item_cost, type: integer}
+  - {name: games_bought, type: integer, description: Pro games in which the hero bought the item at least once.}
+  - {name: wins_when_bought, type: integer}
+  - {name: avg_first_bought_min, type: number, description: Average minute of the first purchase across those games.}
+  - {name: earliest_bought_min, type: number}
+dimensions:
+  - {name: hero_name, type: string}
+  - {name: item_name, type: string}
+  - {name: patch_name, type: string}
+metrics:
+  - {name: total_games_bought, agg: sum, expr: item_timings.games_bought}
+  - {name: total_wins_when_bought, agg: sum, expr: item_timings.wins_when_bought}
+  - {name: typical_minute, agg: avg, expr: item_timings.avg_first_bought_min, description: Typical first-purchase minute.}
+  - name: win_rate_when_bought
+    type: ratio
+    numerator: total_wins_when_bought
+    denominator: total_games_bought
+    format: percent

@@ -19,6 +19,9 @@ select:
     - leagues
     - hero_item_builds
     - team_head_to_head
+    - item_timings
+    - league_standings
+    - patch_notes
   definitions:
     - hero_win_rate
     - team_win_rate
@@ -29,6 +32,7 @@ select:
     - pro_match
     - position
     - minimum_games
+    - item_timing
 not_computable:
   - measure: MMR
     aliases: [rank, skill bracket, rating of players, medal]
@@ -36,9 +40,6 @@ not_computable:
   - measure: prize money
     aliases: [earnings, winnings, prize pool]
     reason: OpenDota's match feed carries no prize data
-  - measure: item timings
-    aliases: [purchase time, when was the item bought]
-    reason: purchase logs are not loaded; only final inventories are
   - measure: personal match history
     aliases: [my matches, my win rate, my account, my games, steam id, dotabuff profile]
     reason: this lens holds professional matches, not any individual player's public history
