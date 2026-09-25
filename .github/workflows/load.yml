@@ -1,8 +1,12 @@
-# Hourly: pull new pro matches into the warehouse and rebuild the marts.
-# Needs repository secrets: DATABASE_URL (dlt + dst), PGHOST/PGPORT/PGUSER/PGPASSWORD/
-# PGDATABASE (dbt), optionally OPENDOTA_API_KEY. With none set, the job runs against a
-# throwaway local DuckDB, which proves the pipeline but keeps nothing.
+# Hourly: pull new pro matches and the public sample into the warehouse and rebuild
+# the marts. Target by secret: MOTHERDUCK_TOKEN → MotherDuck (database `dota`);
+# else DATABASE_URL + PG* → Postgres; else a throwaway local DuckDB that keeps nothing.
+# OPENDOTA_API_KEY pays for match details; the monthly cap below is enforced from the
+# warehouse's own api_usage table, so no schedule can spend past it.
 name: load
+concurrency:
+  group: load
+  cancel-in-progress: false
 on:
   schedule:
     - cron: "17 * * * *"
@@ -12,7 +16,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 55
     env:
-      DSTACK_TARGET: ${{ secrets.DATABASE_URL != '' && 'postgres' || 'duckdb' }}
+      DSTACK_TARGET: ${{ secrets.MOTHERDUCK_TOKEN != '' && 'motherduck' || (secrets.DATABASE_URL != '' && 'postgres' || 'duckdb') }}
+      MOTHERDUCK_TOKEN: ${{ secrets.MOTHERDUCK_TOKEN }}
+      MOTHERDUCK_DATABASE: dota
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       PGHOST: ${{ secrets.PGHOST }}
       PGPORT: ${{ secrets.PGPORT }}
@@ -22,6 +28,7 @@ jobs:
       OPENDOTA_API_KEY: ${{ secrets.OPENDOTA_API_KEY }}
       DOTA_SINCE_DAYS: "90"
       DOTA_MAX_DETAIL_CALLS: "2500"
+      DOTA_PAID_CALLS_MONTH: "90000"
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
