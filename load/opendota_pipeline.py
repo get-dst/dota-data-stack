@@ -34,8 +34,10 @@ from __future__ import annotations
 
 import os
 import sys
+import threading
 import time
 from collections.abc import Iterator
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
 
@@ -48,6 +50,11 @@ load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 API = "https://api.opendota.com/api"
 SESSION = requests.Session()
 _KEY = os.environ.get("OPENDOTA_API_KEY") or None
+# Detail calls in flight at once. OpenDota answers one in anything from half a second to
+# several, so one at a time spent most of a run waiting. Keyless stays sequential: the
+# free tier is 60 a minute and the interval below paces it.
+_FETCH_WORKERS = int(os.environ.get("DOTA_FETCH_WORKERS", "6")) if _KEY else 1
+_LOCK = threading.Lock()
 _FREE_INTERVAL_S = 1.05  # keyless: 60 a minute
 _PAID_INTERVAL_S = 0.05  # keyed: 3 000 a minute allowed; no reason to use it
 _last_call = 0.0
@@ -183,9 +190,10 @@ def get(path: str, *, paid: bool = False, **params: Any) -> Any:
             continue
         if r.status_code >= 400:
             raise Unavailable(f"{path}: HTTP {r.status_code}")
-        CALLS["paid" if paid else "free"] += 1
-        if paid:
-            _PAID["remaining"] -= 1
+        with _LOCK:
+            CALLS["paid" if paid else "free"] += 1
+            if paid:
+                _PAID["remaining"] -= 1
         return r.json()
     raise Unavailable(f"{path}: {last}")
 
@@ -303,6 +311,18 @@ _IN_WAREHOUSE: set[int] = set()
 _UNPARSED_TRIES = 3
 
 
+def _details(match_ids: list[int]) -> Iterator[tuple[int, Any]]:
+    """Detail records for the ids, a few calls in flight at once, yielded in order.
+    The second element is the record, or the exception ``get`` raised for it."""
+    with ThreadPoolExecutor(max_workers=_FETCH_WORKERS) as ex:
+        futures = [ex.submit(get, f"matches/{mid}", paid=True) for mid in match_ids]
+        for mid, fut in zip(match_ids, futures, strict=True):
+            try:
+                yield mid, fut.result()
+            except Exception as exc:  # noqa: BLE001 — sorted out by the caller
+                yield mid, exc
+
+
 @dlt.transformer(data_from=pro_matches, primary_key="match_id", write_disposition="merge")
 def match_details(matches: list[dict[str, Any]], max_calls: int) -> Iterator[dict[str, Any]]:
     """One detail call per match not fetched before; newest first; bounded per run."""
@@ -310,26 +330,26 @@ def match_details(matches: list[dict[str, Any]], max_calls: int) -> Iterator[dic
     fetched: set[int] = set(state.setdefault("fetched_ids", [])) | _IN_WAREHOUSE
     unparsed: dict[str, int] = state.setdefault("unparsed_ids", {})
     failed: dict[str, int] = state.setdefault("failed_ids", {})
+    wanted: list[int] = []
     for m in sorted(matches, key=lambda x: -x["match_id"]):
         mid = m["match_id"]
         if mid in fetched or failed.get(str(mid), 0) >= 2:
             continue  # fetched, or unavailable twice: OpenDota does not have it
         if unparsed.get(str(mid), 0) >= _UNPARSED_TRIES:
             continue  # paid for a few times and still unparsed: stop paying for it
-        if _SPENT["calls"] >= max_calls:
+        wanted.append(mid)
+    for mid, d in _details(wanted[: max(max_calls - _SPENT["calls"], 0)]):
+        if isinstance(d, PaidBudgetExhausted):
+            print(f"match_details: stopped — {d}")
             return
-        try:
-            d = get(f"matches/{mid}", paid=True)
-        except PaidBudgetExhausted as exc:
-            print(f"match_details: stopped — {exc}")
-            return
-        except Unavailable:
+        _SPENT["calls"] += 1
+        if isinstance(d, Unavailable):
             # One bad match must not sink the run; it gets one more try next run.
             failed[str(mid)] = failed.get(str(mid), 0) + 1
             state["failed_ids"] = failed
-            _SPENT["calls"] += 1
             continue
-        _SPENT["calls"] += 1
+        if isinstance(d, Exception):
+            raise d
         if not d.get("players"):
             # Not parsed yet on OpenDota's side: try again on a later run, a few times.
             unparsed[str(mid)] = unparsed.get(str(mid), 0) + 1
@@ -361,18 +381,16 @@ def refetch_missing_adv(match_ids: list[int], max_calls: int) -> Iterator[dict[s
     match list, so nothing new is bought here. Same per-run budget, same monthly cap,
     same api_usage count as any detail call. A record without players never replaces
     the one already stored."""
-    for mid in sorted(match_ids, reverse=True):
-        if _SPENT["calls"] >= max_calls:
+    wanted = sorted(match_ids, reverse=True)[: max(max_calls - _SPENT["calls"], 0)]
+    for _mid, d in _details(wanted):
+        if isinstance(d, PaidBudgetExhausted):
+            print(f"refetch: stopped — {d}")
             return
-        try:
-            d = get(f"matches/{mid}", paid=True)
-        except PaidBudgetExhausted as exc:
-            print(f"refetch: stopped — {exc}")
-            return
-        except Unavailable:
-            _SPENT["calls"] += 1
-            continue
         _SPENT["calls"] += 1
+        if isinstance(d, Unavailable):
+            continue
+        if isinstance(d, Exception):
+            raise d
         if _SPENT["calls"] % 50 == 0:
             print(f"refetch: {_SPENT['calls']} calls", file=sys.stderr, flush=True)
         if not d.get("players"):
@@ -545,12 +563,15 @@ def main() -> None:
 
     cutoff = int(time.time() - keep_days * 86400)
     with pipeline.sql_client() as c:
-        for child in ("public_matches__radiant_team", "public_matches__dire_team"):
-            c.execute_sql(
-                f"DELETE FROM {child} WHERE _dlt_parent_id IN "
-                f"(SELECT _dlt_id FROM public_matches WHERE start_time < {cutoff})"
-            )
-        c.execute_sql(f"DELETE FROM public_matches WHERE start_time < {cutoff}")
+        try:
+            for child in ("public_matches__radiant_team", "public_matches__dire_team"):
+                c.execute_sql(
+                    f"DELETE FROM {child} WHERE _dlt_parent_id IN "
+                    f"(SELECT _dlt_id FROM public_matches WHERE start_time < {cutoff})"
+                )
+            c.execute_sql(f"DELETE FROM public_matches WHERE start_time < {cutoff}")
+        except Exception:  # no public matches loaded yet: nothing to prune
+            pass
     with pipeline.sql_client() as c:
         tables = ("pro_matches", "match_details", "match_details__players", "public_matches")
         for t in tables:
