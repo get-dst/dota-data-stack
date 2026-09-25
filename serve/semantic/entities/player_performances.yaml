@@ -83,21 +83,22 @@ metrics:
   - {name: games, agg: count, expr: player_performances.match_id, description: "Player-games, i.e. rows."}
   - {name: wins, agg: sum, expr: "CASE WHEN player_performances.is_win THEN 1 ELSE 0 END"}
   - name: win_rate
+    better: higher
     type: ratio
     numerator: wins
     denominator: games
     format: percent
     description: Wins divided by games, at whatever grouping the question asks (hero, team, player).
-  - {name: avg_gpm, agg: avg, expr: player_performances.gold_per_min}
-  - {name: avg_xpm, agg: avg, expr: player_performances.xp_per_min}
-  - {name: avg_kills, agg: avg, expr: player_performances.kills}
-  - {name: avg_deaths, agg: avg, expr: player_performances.deaths}
-  - {name: avg_assists, agg: avg, expr: player_performances.assists}
-  - {name: avg_kda, agg: avg, expr: player_performances.kda}
-  - {name: avg_last_hits, agg: avg, expr: player_performances.last_hits}
-  - {name: avg_hero_damage, agg: avg, expr: player_performances.hero_damage}
-  - {name: avg_tower_damage, agg: avg, expr: player_performances.tower_damage}
-  - {name: avg_net_worth, agg: avg, expr: player_performances.net_worth}
+  - {name: avg_gpm, agg: avg, expr: player_performances.gold_per_min, better: higher}
+  - {name: avg_xpm, agg: avg, expr: player_performances.xp_per_min, better: higher}
+  - {name: avg_kills, agg: avg, expr: player_performances.kills, better: higher}
+  - {name: avg_deaths, agg: avg, expr: player_performances.deaths, better: lower}
+  - {name: avg_assists, agg: avg, expr: player_performances.assists, better: higher}
+  - {name: avg_kda, agg: avg, expr: player_performances.kda, better: higher}
+  - {name: avg_last_hits, agg: avg, expr: player_performances.last_hits, better: higher}
+  - {name: avg_hero_damage, agg: avg, expr: player_performances.hero_damage, better: higher}
+  - {name: avg_tower_damage, agg: avg, expr: player_performances.tower_damage, better: higher}
+  - {name: avg_net_worth, agg: avg, expr: player_performances.net_worth, better: higher}
   - {name: avg_obs_placed, agg: avg, expr: player_performances.obs_placed, description: "Observer wards placed per game."}
   - {name: avg_sen_placed, agg: avg, expr: player_performances.sen_placed, description: "Sentry wards placed per game."}
   - {name: avg_wards_placed, agg: avg, expr: "player_performances.obs_placed + player_performances.sen_placed", description: "Observer plus sentry wards placed per game."}

@@ -34,6 +34,7 @@ metrics:
   - {name: matchup_games, agg: sum, expr: pub_matchups.games}
   - {name: matchup_wins, agg: sum, expr: pub_matchups.wins}
   - name: matchup_win_rate
+    better: higher
     type: ratio
     numerator: matchup_wins
     denominator: matchup_games

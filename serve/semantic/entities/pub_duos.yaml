@@ -34,6 +34,7 @@ metrics:
   - {name: duo_games, agg: sum, expr: pub_duos.games}
   - {name: duo_wins, agg: sum, expr: pub_duos.wins}
   - name: duo_win_rate
+    better: higher
     type: ratio
     numerator: duo_wins
     denominator: duo_games

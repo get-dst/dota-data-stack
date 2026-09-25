@@ -36,6 +36,7 @@ metrics:
   - {name: total_wins, agg: sum, expr: hero_daily_stats.wins}
   - {name: total_losses, agg: sum, expr: hero_daily_stats.losses}
   - name: hero_win_rate
+    better: higher
     type: ratio
     numerator: total_wins
     denominator: total_picks

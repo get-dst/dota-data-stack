@@ -33,6 +33,7 @@ metrics:
   - {name: total_games_with_item, agg: sum, expr: hero_item_builds.games_with_item}
   - {name: total_wins_with_item, agg: sum, expr: hero_item_builds.wins_with_item}
   - name: item_win_rate
+    better: higher
     type: ratio
     numerator: total_wins_with_item
     denominator: total_games_with_item

@@ -38,6 +38,7 @@ metrics:
   - {name: hero_games, agg: sum, expr: pub_hero_stats.games}
   - {name: hero_wins, agg: sum, expr: pub_hero_stats.wins}
   - name: hero_win_rate
+    better: higher
     type: ratio
     numerator: hero_wins
     denominator: hero_games

@@ -34,6 +34,7 @@ metrics:
   - {name: bucket_games, agg: sum, expr: pub_hero_by_duration.games}
   - {name: bucket_wins, agg: sum, expr: pub_hero_by_duration.wins}
   - name: bucket_win_rate
+    better: higher
     type: ratio
     numerator: bucket_wins
     denominator: bucket_games

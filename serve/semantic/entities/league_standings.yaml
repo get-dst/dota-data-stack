@@ -31,6 +31,7 @@ metrics:
   - {name: league_wins, agg: sum, expr: league_standings.wins}
   - {name: league_losses, agg: sum, expr: league_standings.losses}
   - name: league_win_rate
+    better: higher
     type: ratio
     numerator: league_wins
     denominator: league_matches

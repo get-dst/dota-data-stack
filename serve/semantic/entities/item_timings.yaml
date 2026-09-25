@@ -35,6 +35,7 @@ metrics:
   - {name: total_wins_when_bought, agg: sum, expr: item_timings.wins_when_bought}
   - {name: typical_minute, agg: avg, expr: item_timings.avg_first_bought_min, description: Typical first-purchase minute.}
   - name: win_rate_when_bought
+    better: higher
     type: ratio
     numerator: total_wins_when_bought
     denominator: total_games_bought

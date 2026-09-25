@@ -19,4 +19,4 @@ dimensions:
   - {name: team_name, type: string}
 metrics:
   - {name: team_count, agg: count, expr: teams.team_id}
-  - {name: avg_rating, agg: avg, expr: teams.rating}
+  - {name: avg_rating, agg: avg, expr: teams.rating, better: higher}

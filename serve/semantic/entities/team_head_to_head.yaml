@@ -31,6 +31,7 @@ metrics:
   - {name: h2h_matches, agg: sum, expr: team_head_to_head.matches}
   - {name: h2h_wins, agg: sum, expr: team_head_to_head.wins}
   - name: head_to_head_win_rate
+    better: higher
     type: ratio
     numerator: h2h_wins
     denominator: h2h_matches

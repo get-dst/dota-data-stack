@@ -40,6 +40,8 @@ not_computable:
     aliases: [bans, banned]
     reason: the public feed carries picks only; bans exist for pro matches on pro_meta
 eval_gate: block
+# Typed first; a question that does not type falls to raw SQL, disclosed UNTYPED.
+untyped_fallback: true
 access:
   allow:
     - {group: demo}

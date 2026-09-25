@@ -31,6 +31,7 @@ metrics:
   - {name: daily_games, agg: sum, expr: pub_hero_trends.games}
   - {name: daily_wins, agg: sum, expr: pub_hero_trends.wins}
   - name: daily_win_rate
+    better: higher
     type: ratio
     numerator: daily_wins
     denominator: daily_games
