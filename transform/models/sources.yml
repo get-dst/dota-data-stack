@@ -25,7 +25,7 @@ sources:
       - name: match_details__picks_bans
         description: Picks and bans of each fetched pro match; team 0 = Radiant, 1 = Dire; _dlt_parent_id points at match_details._dlt_id.
       - name: match_details__objectives
-        description: Timed objective events (first blood, towers, Roshan and the like) of each fetched pro match; not used by the models.
+        description: Timed objective events (first blood, buildings, Roshan, Aegis and the like) of each fetched pro match; read by stg_match_objectives.
       - name: match_details__players__purchase_log
         description: Every item purchase of each player in each fetched pro match; time in game seconds (negative before the horn), key = item key; _dlt_parent_id points at match_details__players._dlt_id.
       - name: public_matches

@@ -1,0 +1,65 @@
+name: match_objectives
+description: One professional match's first blood, first tower and first Roshan (when, which
+  side, and whether that side won), with Roshan kills and Aegis pickups per side.
+grain: one row per match
+use_cases:
+  - Use for when first objectives happen, who took them, and Roshan and Aegis counts.
+  - Avoid for how often taking a first objective wins; that is objective_win_rates.
+common_questions:
+  - When is Roshan first killed on average?
+  - How many Roshan kills does a pro match have on average?
+  - Which side takes the first Roshan more often?
+source:
+  connection: warehouse
+  table: marts.match_objectives
+default_time_field: started_at
+primary_key: [match_id]
+population: Every professional match in the loaded window. A match whose objective log is
+  empty (has_objective_log false) has null objective columns; first Roshan columns are
+  null when Roshan was never killed.
+fields:
+  - {name: match_id, type: integer}
+  - {name: started_at, type: timestamp, description: "Match start, UTC."}
+  - {name: match_date, type: date, description: "Match start date, UTC."}
+  - {name: patch_id, type: integer}
+  - {name: patch_name, type: string}
+  - {name: league_id, type: integer}
+  - {name: league_name, type: string}
+  - {name: radiant_win, type: boolean}
+  - {name: winner_side, type: string, description: "radiant or dire."}
+  - {name: radiant_team_name, type: string}
+  - {name: dire_team_name, type: string}
+  - {name: has_objective_log, type: boolean}
+  - {name: first_blood_s, type: integer, description: "Game seconds of first blood; negative before the horn."}
+  - {name: first_blood_min, type: number}
+  - {name: first_blood_side, type: string, description: "radiant or dire: the side that made the first kill."}
+  - {name: first_blood_side_won, type: boolean}
+  - {name: first_tower_s, type: integer, description: Game seconds when the first tower fell.}
+  - {name: first_tower_min, type: number}
+  - {name: first_tower_side, type: string, description: "radiant or dire: the side that did not own the first tower to fall."}
+  - {name: first_tower_side_won, type: boolean}
+  - {name: first_roshan_s, type: integer, description: Game seconds of the first Roshan kill.}
+  - {name: first_roshan_min, type: number}
+  - {name: first_roshan_side, type: string, description: "radiant or dire: the side that killed Roshan first."}
+  - {name: first_roshan_side_won, type: boolean}
+  - {name: roshan_kills, type: integer, description: Roshan kills by both sides.}
+  - {name: radiant_roshan_kills, type: integer}
+  - {name: dire_roshan_kills, type: integer}
+  - {name: radiant_aegis, type: integer, description: "Aegis pickups by Radiant heroes, stolen ones included."}
+  - {name: dire_aegis, type: integer, description: "Aegis pickups by Dire heroes, stolen ones included."}
+  - {name: aegis_stolen, type: integer, description: Aegis pickups by the side that did not kill Roshan.}
+dimensions:
+  - {name: patch_name, type: string}
+  - {name: league_name, type: string}
+  - {name: match_date, type: date}
+  - {name: first_blood_side, type: string}
+  - {name: first_tower_side, type: string}
+  - {name: first_roshan_side, type: string}
+  - {name: winner_side, type: string}
+metrics:
+  - {name: objective_matches, agg: count, expr: match_objectives.match_id, description: Pro matches.}
+  - {name: avg_first_tower_min, agg: avg, expr: match_objectives.first_tower_min, description: Average minute the first tower falls.}
+  - {name: avg_first_roshan_min, agg: avg, expr: match_objectives.first_roshan_min, description: "Average minute of the first Roshan kill, over matches where Roshan died."}
+  - {name: avg_roshan_kills, agg: avg, expr: match_objectives.roshan_kills, description: Roshan kills per match.}
+  - {name: total_roshan_kills, agg: sum, expr: match_objectives.roshan_kills}
+  - {name: total_aegis_stolen, agg: sum, expr: match_objectives.aegis_stolen}

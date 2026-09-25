@@ -1,6 +1,7 @@
 name: pro_meta
 display_name: Dota 2 pro meta
-description: Professional Dota 2 matches from OpenDota — heroes, drafts, teams, patches.
+description: Professional Dota 2 matches from OpenDota — heroes, drafts, teams, patches,
+  gold leads, objectives and positions.
 owner: dota-d-stack
 # Match times are UTC epochs; the business day is UTC.
 timezone: UTC
@@ -22,6 +23,12 @@ select:
     - item_timings
     - league_standings
     - patch_notes
+    - advantage_timeline
+    - match_leads
+    - match_objectives
+    - objective_win_rates
+    - hero_patch_trends
+    - hero_position_meta
   definitions:
     - hero_win_rate
     - team_win_rate
@@ -33,6 +40,8 @@ select:
     - position
     - minimum_games
     - item_timing
+    - comeback
+    - first_objective
 not_computable:
   - measure: MMR
     aliases: [rank, skill bracket, rating of players, medal]

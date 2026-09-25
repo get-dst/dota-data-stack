@@ -1,0 +1,4 @@
+left: match_objectives
+right: patches
+on: match_objectives.patch_id = patches.patch_id
+relationship: many_to_one

@@ -1,0 +1,301 @@
+version: 2
+
+# Timings, objectives and meta over professional matches. Same conventions as
+# marts/schema.yml: every model and column described, match_date is the UTC date.
+# Sides are 'radiant' or 'dire'. Gold and XP advantages are Radiant minus Dire unless
+# the column says winner_: those are from the eventual winner's side.
+
+models:
+  - name: gold_advantage_timeline
+    description: One row per professional match per game minute with the gold and experience
+      advantage, from OpenDota's per-minute Radiant advantage. Matches whose advantage was
+      never loaded have no rows.
+    columns:
+      - name: match_id
+        description: OpenDota match id; joins fact_match.match_id; with minute the primary key.
+        tests: [not_null]
+      - name: minute
+        description: Game minute, 0 = the horn; the last minute is the one the match ended in.
+        tests: [not_null]
+      - name: radiant_gold_adv
+        description: Radiant net worth minus Dire net worth at that minute, in gold; negative = Dire ahead.
+      - name: radiant_xp_adv
+        description: Radiant experience minus Dire experience at that minute; negative = Dire ahead.
+      - name: winner_gold_adv
+        description: Gold advantage of the side that went on to win; negative = the winner was behind.
+      - name: winner_xp_adv
+        description: Experience advantage of the side that went on to win; negative = the winner was behind.
+      - name: radiant_win
+        description: True when the Radiant side won the match.
+      - name: started_at
+        description: Match start time (timestamp with time zone).
+      - name: match_date
+        description: UTC calendar date of started_at.
+      - name: patch_id
+        description: Game version id; joins dim_patch.patch_id.
+      - name: patch_name
+        description: Game version the match was played on, e.g. 7.41.
+      - name: league_id
+        description: League or tournament id; joins dim_league.league_id.
+      - name: league_name
+        description: League or tournament name as the match record carries it.
+
+  - name: match_leads
+    description: One row per professional match with a per-minute advantage — the gold and
+      XP lead at 10, 15, 20 and 25 minutes, the largest lead each side held, and whether the
+      winner came back from 10 000 gold or more behind.
+    columns:
+      - name: match_id
+        description: OpenDota match id; primary key; joins fact_match.match_id.
+        tests: [unique, not_null]
+      - name: started_at
+        description: Match start time (timestamp with time zone).
+      - name: match_date
+        description: UTC calendar date of started_at.
+      - name: patch_id
+        description: Game version id; joins dim_patch.patch_id.
+      - name: patch_name
+        description: Game version the match was played on, e.g. 7.41.
+      - name: league_id
+        description: League or tournament id; joins dim_league.league_id.
+      - name: league_name
+        description: League or tournament name as the match record carries it.
+      - name: duration_min
+        description: Game length in minutes.
+      - name: radiant_win
+        description: True when the Radiant side won.
+      - name: winner_side
+        description: "Side that won: radiant or dire."
+      - name: radiant_team_name
+        description: Team name on the Radiant side as the match record carries it.
+      - name: dire_team_name
+        description: Team name on the Dire side as the match record carries it.
+      - name: winner_team_name
+        description: Name of the winning team; null when that side's team is not identified.
+      - name: loser_team_name
+        description: Name of the losing team; null when that side's team is not identified.
+      - name: radiant_gold_adv_10
+        description: Radiant gold advantage at minute 10; negative = Dire ahead; null when the match ended before minute 10.
+      - name: radiant_gold_adv_15
+        description: Radiant gold advantage at minute 15; null when the match ended before minute 15.
+      - name: radiant_gold_adv_20
+        description: Radiant gold advantage at minute 20; null when the match ended before minute 20.
+      - name: radiant_gold_adv_25
+        description: Radiant gold advantage at minute 25; null when the match ended before minute 25.
+      - name: radiant_xp_adv_10
+        description: Radiant experience advantage at minute 10; null when the match ended before it.
+      - name: radiant_xp_adv_15
+        description: Radiant experience advantage at minute 15; null when the match ended before it.
+      - name: radiant_xp_adv_20
+        description: Radiant experience advantage at minute 20; null when the match ended before it.
+      - name: radiant_xp_adv_25
+        description: Radiant experience advantage at minute 25; null when the match ended before it.
+      - name: winner_gold_adv_10
+        description: The eventual winner's gold advantage at minute 10; negative = the winner was behind.
+      - name: winner_gold_adv_15
+        description: The eventual winner's gold advantage at minute 15; negative = the winner was behind.
+      - name: winner_gold_adv_20
+        description: The eventual winner's gold advantage at minute 20; negative = the winner was behind.
+      - name: winner_gold_adv_25
+        description: The eventual winner's gold advantage at minute 25; negative = the winner was behind.
+      - name: max_radiant_gold_lead
+        description: Largest Radiant gold advantage at any minute; negative when Radiant never led.
+      - name: max_dire_gold_lead
+        description: Largest Dire gold advantage at any minute; negative when Dire never led.
+      - name: max_winner_deficit
+        description: Largest gold deficit the winner faced at any minute; 0 when the winner never trailed.
+      - name: max_winner_lead
+        description: Largest gold lead the winner held at any minute; 0 when the winner never led.
+      - name: is_comeback
+        description: True when the winner trailed by 10 000 gold or more at some minute. The same
+          match is a throw for the losing side, which held that lead.
+        tests: [not_null]
+      - name: comeback_team_name
+        description: The winning team in a comeback match; null when the match is not a comeback or the team is not identified.
+      - name: throw_team_name
+        description: The losing team in a comeback match, the side that lost a lead of 10 000 gold or more; null otherwise.
+      - name: leader_at_10_won
+        description: True when the side ahead in gold at minute 10 won; null when the gold was level or the match ended before minute 10.
+      - name: leader_at_20_won
+        description: True when the side ahead in gold at minute 20 won; null when the gold was level or the match ended before minute 20.
+
+  - name: match_objectives
+    description: One row per professional match with the first blood, first tower and first
+      Roshan (time, side, and whether that side won), Roshan kills and Aegis pickups per side,
+      from the match's objective log.
+    columns:
+      - name: match_id
+        description: OpenDota match id; primary key; joins fact_match.match_id.
+        tests: [unique, not_null]
+      - name: started_at
+        description: Match start time (timestamp with time zone).
+      - name: match_date
+        description: UTC calendar date of started_at.
+      - name: patch_id
+        description: Game version id; joins dim_patch.patch_id.
+      - name: patch_name
+        description: Game version the match was played on, e.g. 7.41.
+      - name: league_id
+        description: League or tournament id; joins dim_league.league_id.
+      - name: league_name
+        description: League or tournament name as the match record carries it.
+      - name: radiant_win
+        description: True when the Radiant side won.
+      - name: winner_side
+        description: "Side that won: radiant or dire."
+      - name: radiant_team_name
+        description: Team name on the Radiant side as the match record carries it.
+      - name: dire_team_name
+        description: Team name on the Dire side as the match record carries it.
+      - name: has_objective_log
+        description: False when OpenDota returned no objective events for the match; every objective column is then null.
+      - name: first_blood_s
+        description: Game seconds of first blood from the objective log; negative when it came before the horn
+          (fact_match.first_blood_s shows 0 for those).
+      - name: first_blood_min
+        description: first_blood_s in minutes.
+      - name: first_blood_side
+        description: "Side whose hero made the first kill: radiant or dire; null without a log."
+      - name: first_blood_side_won
+        description: True when the side that drew first blood won the match.
+      - name: first_tower_s
+        description: Game seconds when the first tower of the match fell.
+      - name: first_tower_min
+        description: first_tower_s in minutes.
+      - name: first_tower_side
+        description: "Side credited with the first tower: the side that did not own it (a deny counts as lost by the owner)."
+      - name: first_tower_side_won
+        description: True when the side credited with the first tower won the match.
+      - name: first_roshan_s
+        description: Game seconds of the first Roshan kill; null when Roshan was never killed.
+      - name: first_roshan_min
+        description: first_roshan_s in minutes.
+      - name: first_roshan_side
+        description: "Side that killed Roshan first: radiant or dire; null when Roshan was never killed."
+      - name: first_roshan_side_won
+        description: True when the side that killed Roshan first won the match; null when Roshan was never killed.
+      - name: roshan_kills
+        description: Roshan kills in the match by both sides; null without a log.
+      - name: radiant_roshan_kills
+        description: Roshan kills by the Radiant side.
+      - name: dire_roshan_kills
+        description: Roshan kills by the Dire side.
+      - name: radiant_aegis
+        description: Aegis pickups by Radiant heroes, stolen ones included.
+      - name: dire_aegis
+        description: Aegis pickups by Dire heroes, stolen ones included.
+      - name: aegis_stolen
+        description: Aegis pickups by the side that did not kill Roshan (a stolen Aegis).
+
+  - name: objective_win_rates
+    description: Per patch and first objective (first_blood, first_tower, first_roshan) over
+      professional matches, how often the side that took it won. Matches where nobody took
+      the objective, or without an objective log, are not counted.
+    columns:
+      - name: patch_id
+        description: Game version id; joins dim_patch.patch_id; with objective the primary key.
+        tests: [not_null]
+      - name: patch_name
+        description: Game version, e.g. 7.41.
+      - name: objective
+        description: "Which first objective: first_blood, first_tower or first_roshan."
+        tests:
+          - not_null
+          - accepted_values: {arguments: {values: [first_blood, first_tower, first_roshan]}}
+      - name: matches
+        description: Pro matches on the patch in which a side took the objective.
+      - name: taker_wins
+        description: Of those, matches the side that took the objective won.
+      - name: taker_win_rate
+        description: taker_wins / matches, 0-1.
+
+  - name: hero_patch_trends
+    description: Per hero and patch over professional matches, picks, bans, wins and the rates,
+      beside the same numbers on the previous patch (dim_patch release order) and the change.
+      A hero neither picked nor banned on a patch has no row for it.
+    columns:
+      - name: patch_id
+        description: Game version id; joins dim_patch.patch_id; with hero_id the primary key.
+        tests: [not_null]
+      - name: patch_name
+        description: Game version, e.g. 7.41.
+      - name: patch_started_at
+        description: Release time of the patch.
+      - name: is_current_patch
+        description: True for the patch in play now (dim_patch.is_current).
+      - name: hero_id
+        description: Hero; joins dim_hero.hero_id.
+        tests: [not_null]
+      - name: hero_name
+        description: Display name of the hero.
+      - name: matches_on_patch
+        description: Pro matches played on the patch; repeats on every hero row, so never sum it across heroes.
+      - name: picks
+        description: Pro matches on the patch in which the hero was picked (one pick per match at most).
+      - name: bans
+        description: Bans of the hero on the patch from the recorded drafts.
+      - name: wins
+        description: Picks of the hero on the patch whose side won.
+      - name: losses
+        description: Picks minus wins.
+      - name: win_rate
+        description: wins / picks, 0-1; null when the hero was banned but never picked.
+      - name: pick_rate
+        description: picks / matches_on_patch, 0-1.
+      - name: ban_rate
+        description: bans / matches_on_patch, 0-1.
+      - name: previous_patch_id
+        description: The patch released before this one (dim_patch order); null for the first patch.
+      - name: previous_patch_name
+        description: Name of the previous patch, e.g. 7.40.
+      - name: previous_matches
+        description: Pro matches on the previous patch in the loaded window; null when there are none.
+      - name: previous_picks
+        description: The hero's picks on the previous patch; null when the window holds no match of that patch.
+      - name: previous_bans
+        description: The hero's bans on the previous patch; null when the window holds no match of that patch.
+      - name: previous_win_rate
+        description: The hero's win rate on the previous patch; null without previous-patch picks.
+      - name: previous_pick_rate
+        description: The hero's pick rate on the previous patch; null when the window holds no match of that patch.
+      - name: previous_ban_rate
+        description: The hero's ban rate on the previous patch; null when the window holds no match of that patch.
+      - name: win_rate_change
+        description: win_rate minus previous_win_rate, in rate points (0.05 = five points); null when either is null.
+      - name: pick_rate_change
+        description: pick_rate minus previous_pick_rate; null when the window holds no match of the previous patch.
+      - name: ban_rate_change
+        description: ban_rate minus previous_ban_rate; null when the window holds no match of the previous patch.
+
+  - name: hero_position_meta
+    description: Per hero, patch and position (1-5, derived in fact_player_match) over
+      professional matches, games, wins, the win rate and the share of the hero's games
+      played in that position. Player-games without a derived position are left out.
+    columns:
+      - name: patch_id
+        description: Game version id; joins dim_patch.patch_id; with hero_id and position the primary key.
+        tests: [not_null]
+      - name: patch_name
+        description: Game version, e.g. 7.41.
+      - name: hero_id
+        description: Hero; joins dim_hero.hero_id.
+        tests: [not_null]
+      - name: hero_name
+        description: Display name of the hero.
+      - name: position
+        description: "1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support (see fact_player_match.position)."
+        tests:
+          - not_null
+          - accepted_values: {arguments: {values: [1, 2, 3, 4, 5], quote: false}}
+      - name: games
+        description: Pro player-games on the hero in that position on the patch.
+      - name: wins
+        description: Of those, games the hero's side won.
+      - name: losses
+        description: games minus wins.
+      - name: win_rate
+        description: wins / games, 0-1.
+      - name: hero_games
+        description: The hero's pro games on the patch in any derived position; repeats on each of the hero's position rows.
+      - name: position_share
+        description: games / hero_games, 0-1; the five positions of a hero on a patch sum to 1.

@@ -1,0 +1,4 @@
+left: match_leads
+right: patches
+on: match_leads.patch_id = patches.patch_id
+relationship: many_to_one

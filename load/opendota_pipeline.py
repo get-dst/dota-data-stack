@@ -12,6 +12,10 @@ Three kinds of resource:
   ``objectives`` into child tables.
 - ``public_matches``: a sample of public games, ``DOTA_PUBLIC_PAGES`` × 100 per run,
   kept for ``DOTA_PUBLIC_KEEP_DAYS``.
+- ``radiant_gold_adv`` / ``radiant_xp_adv``: kept on each match detail, one value per
+  minute; dlt lands them as child tables with the minute in ``_dlt_list_idx``. Matches
+  loaded before they were kept are re-bought only on an explicit, one-off opt-in
+  (``DOTA_REFETCH_MISSING_ADV=1``, see ``refetch_missing_adv``).
 - dimensions (``heroes``, ``items``, ``patches``, ``leagues``, ``teams``, ``pro_players``,
   ``patch_notes``, ``game_modes``, ``lobby_types``): replaced on every run.
 
@@ -57,7 +61,8 @@ class PaidBudgetExhausted(RuntimeError):
 
 
 # Match-detail fields that are large per-second arrays, chat, or cosmetics — not
-# analytics. Dropped before the row is stored; everything else is kept.
+# analytics. Dropped before the row is stored; everything else is kept, including the
+# per-minute Radiant gold and XP advantage (one small integer a minute).
 _DROP_MATCH = {
     "chat",
     "cosmetics",
@@ -65,8 +70,6 @@ _DROP_MATCH = {
     "my_word_counts",
     "teamfights",
     "draft_timings",
-    "radiant_gold_adv",
-    "radiant_xp_adv",
     "od_data",
     "metadata",
     "pauses",
@@ -300,6 +303,50 @@ def match_details(matches: list[dict[str, Any]], max_calls: int) -> Iterator[dic
         yield _trim(d)
 
 
+@dlt.resource(
+    name="match_details_refetch",
+    table_name="match_details",
+    primary_key="match_id",
+    write_disposition="merge",
+)
+def refetch_missing_adv(match_ids: list[int], max_calls: int) -> Iterator[dict[str, Any]]:
+    """One-off backfill: re-buy the detail of matches the warehouse already holds but
+    without the advantage arrays (loaded before the loader kept them). Only runs on
+    ``DOTA_REFETCH_MISSING_ADV=1``; the ids come from the warehouse, not from the
+    match list, so nothing new is bought here. Same per-run budget, same monthly cap,
+    same api_usage count as any detail call. A record without players never replaces
+    the one already stored."""
+    for mid in sorted(match_ids, reverse=True):
+        if _SPENT["calls"] >= max_calls:
+            return
+        try:
+            d = get(f"matches/{mid}", paid=True)
+        except PaidBudgetExhausted as exc:
+            print(f"refetch: stopped — {exc}")
+            return
+        except Unavailable:
+            _SPENT["calls"] += 1
+            continue
+        _SPENT["calls"] += 1
+        if not d.get("players"):
+            continue
+        yield _trim(d)
+
+
+def _missing_adv(pipeline: Any) -> list[int]:
+    """Matches in the warehouse with no Radiant gold-advantage rows."""
+    with pipeline.sql_client() as c:
+        try:
+            rows = c.execute_sql(
+                "SELECT m.match_id FROM match_details AS m WHERE NOT EXISTS "
+                "(SELECT 1 FROM match_details__radiant_gold_adv AS a "
+                "WHERE a._dlt_parent_id = m._dlt_id)"
+            )
+        except Exception:  # no advantage table yet: every stored match lacks them
+            rows = c.execute_sql("SELECT match_id FROM match_details")
+    return [int(r[0]) for r in rows]
+
+
 def _dimension(name: str, path: str, *, key: str) -> Any:
     @dlt.resource(name=name, primary_key=key, write_disposition="replace")
     def rows() -> Iterator[list[dict[str, Any]]]:
@@ -356,7 +403,11 @@ def patch_notes() -> Iterator[list[dict[str, Any]]]:
 
 
 @dlt.source
-def opendota(since_days: int, max_calls: int, public_pages: int) -> Any:
+def opendota(
+    since_days: int, max_calls: int, public_pages: int, refetch: list[int] | None = None
+) -> Any:
+    if refetch is not None:  # the one-off backfill fetches nothing else
+        return [refetch_missing_adv(refetch, max_calls)]
     return [
         pro_matches(since_days),
         pro_matches(since_days) | match_details(max_calls),
@@ -421,7 +472,11 @@ def main() -> None:
             pass
     print(f"match details already in the warehouse: {len(_IN_WAREHOUSE)}")
 
-    src = opendota(since, budget, public_pages)
+    refetch = None
+    if os.environ.get("DOTA_REFETCH_MISSING_ADV") == "1":
+        refetch = _missing_adv(pipeline)
+        print(f"refetch: {len(refetch)} stored matches lack the advantage arrays")
+    src = opendota(since, budget, public_pages, refetch)
     info = pipeline.run(src)
     print(info)
     pipeline.run(

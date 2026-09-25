@@ -2,6 +2,9 @@ use_when:
   - questions about professional Dota 2 matches, heroes, drafts, teams, leagues or patches
   - hero pick, ban, contest and win rates in pro play
   - team results and player performance stats such as GPM, XPM, KDA in pro matches
+  - gold and XP leads by minute, comebacks and throws in pro matches
+  - first blood, first tower, Roshan and Aegis in pro matches, and how often taking them wins
+  - a hero's pick, ban and win rate per patch and per position in pro matches
 sample_queries:
   - question: How many pro matches were played on the current patch?
     sql: |

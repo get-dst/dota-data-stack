@@ -1,6 +1,6 @@
 {
   "connection": "warehouse",
-  "recorded_at": "2026-09-25T10:41:04.796833Z",
+  "recorded_at": "2026-09-25T16:01:04.428163Z",
   "tables": [
     {
       "connection": "warehouse",
@@ -147,6 +147,72 @@
         {
           "name": "roles",
           "type": "VARCHAR",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "connection": "warehouse",
+      "table": "marts.dim_item",
+      "columns": [
+        {
+          "name": "item_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "item_key",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "item_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "item_cost",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "quality",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "neutral_tier",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "component_count",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "has_active_ability",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "is_recipe",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "is_consumable",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "is_neutral",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "is_major_item",
+          "type": "BOOLEAN",
           "nullable": true
         }
       ]
@@ -327,6 +393,147 @@
         {
           "name": "last_match_at",
           "type": "TIMESTAMP WITH TIME ZONE",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "connection": "warehouse",
+      "table": "marts.draft_phases",
+      "columns": [
+        {
+          "name": "match_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "draft_order",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "action",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "is_pick",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "is_ban",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "draft_phase",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "phase_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "match_pick_number",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "team_pick_number",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "match_ban_number",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "is_first_pick",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "is_last_pick",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "is_first_pick_side",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "hero_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "hero_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "is_radiant",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "side",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "team_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "team_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "opponent_team_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "side_won",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "started_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "nullable": true
+        },
+        {
+          "name": "match_date",
+          "type": "DATE",
+          "nullable": true
+        },
+        {
+          "name": "patch_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "patch_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "league_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "league_name",
+          "type": "VARCHAR",
           "nullable": true
         }
       ]
@@ -998,6 +1205,320 @@
     },
     {
       "connection": "warehouse",
+      "table": "marts.final_inventories",
+      "columns": [
+        {
+          "name": "patch_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "patch_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "hero_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "hero_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "slot_group",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "item_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "item_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "item_cost",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "neutral_tier",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "is_major_item",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "games_with_item",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "wins_with_item",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "hero_games",
+          "type": "BIGINT",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "connection": "warehouse",
+      "table": "marts.gold_advantage_timeline",
+      "columns": [
+        {
+          "name": "match_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "minute",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "radiant_gold_adv",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "radiant_xp_adv",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "winner_gold_adv",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "winner_xp_adv",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "radiant_win",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "started_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "nullable": true
+        },
+        {
+          "name": "match_date",
+          "type": "DATE",
+          "nullable": true
+        },
+        {
+          "name": "patch_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "patch_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "league_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "league_name",
+          "type": "VARCHAR",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "connection": "warehouse",
+      "table": "marts.hero_core_items",
+      "columns": [
+        {
+          "name": "patch_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "patch_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "hero_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "hero_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "item_slot",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "item_order",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "item_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "item_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "item_cost",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "games",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "wins",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "median_bought_min",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "avg_bought_min",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "hero_games",
+          "type": "BIGINT",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "connection": "warehouse",
+      "table": "marts.hero_draft_stats",
+      "columns": [
+        {
+          "name": "patch_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "patch_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "hero_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "hero_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "drafted_matches",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "picks",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "bans",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "contests",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "first_phase_bans",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "first_picks",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "last_picks",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "wins",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "picks_phase_1",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "wins_phase_1",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "picks_phase_2",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "wins_phase_2",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "picks_phase_3",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "wins_phase_3",
+          "type": "HUGEINT",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "connection": "warehouse",
       "table": "marts.hero_item_builds",
       "columns": [
         {
@@ -1048,6 +1569,11 @@
         {
           "name": "hero_games",
           "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "is_major_item",
+          "type": "BOOLEAN",
           "nullable": true
         }
       ]
@@ -1110,6 +1636,335 @@
           "name": "earliest_bought_min",
           "type": "DOUBLE",
           "nullable": true
+        },
+        {
+          "name": "is_major_item",
+          "type": "BOOLEAN",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "connection": "warehouse",
+      "table": "marts.hero_patch_trends",
+      "columns": [
+        {
+          "name": "patch_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "patch_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "patch_started_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "nullable": true
+        },
+        {
+          "name": "is_current_patch",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "hero_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "hero_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "matches_on_patch",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "picks",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "bans",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "wins",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "losses",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "win_rate",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "pick_rate",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "ban_rate",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "previous_patch_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "previous_patch_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "previous_matches",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "previous_picks",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "previous_bans",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "previous_win_rate",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "previous_pick_rate",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "previous_ban_rate",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "win_rate_change",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "pick_rate_change",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "ban_rate_change",
+          "type": "DOUBLE",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "connection": "warehouse",
+      "table": "marts.hero_position_meta",
+      "columns": [
+        {
+          "name": "patch_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "patch_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "hero_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "hero_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "position",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "games",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "wins",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "losses",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "win_rate",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "hero_games",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "position_share",
+          "type": "DOUBLE",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "connection": "warehouse",
+      "table": "marts.item_timing_buckets",
+      "columns": [
+        {
+          "name": "patch_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "patch_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "hero_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "hero_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "item_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "item_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "item_cost",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "bucket_order",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "timing_bucket",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "bucket_start_min",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "games",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "wins",
+          "type": "HUGEINT",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "connection": "warehouse",
+      "table": "marts.lane_pairings",
+      "columns": [
+        {
+          "name": "patch_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "patch_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "lane_role",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "lane_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "hero_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "hero_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "position",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "partner_hero_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "partner_hero_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "partner_position",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "games",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "wins",
+          "type": "HUGEINT",
+          "nullable": true
         }
       ]
     },
@@ -1160,6 +2015,425 @@
         {
           "name": "last_match_date",
           "type": "DATE",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "connection": "warehouse",
+      "table": "marts.match_leads",
+      "columns": [
+        {
+          "name": "match_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "started_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "nullable": true
+        },
+        {
+          "name": "match_date",
+          "type": "DATE",
+          "nullable": true
+        },
+        {
+          "name": "patch_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "patch_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "league_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "league_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "duration_min",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "radiant_win",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "winner_side",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "radiant_team_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "dire_team_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "winner_team_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "loser_team_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "radiant_gold_adv_10",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "radiant_gold_adv_15",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "radiant_gold_adv_20",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "radiant_gold_adv_25",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "radiant_xp_adv_10",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "radiant_xp_adv_15",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "radiant_xp_adv_20",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "radiant_xp_adv_25",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "winner_gold_adv_10",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "winner_gold_adv_15",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "winner_gold_adv_20",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "winner_gold_adv_25",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "max_radiant_gold_lead",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "max_dire_gold_lead",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "max_winner_deficit",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "max_winner_lead",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "is_comeback",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "comeback_team_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "throw_team_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "leader_at_10_won",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "leader_at_20_won",
+          "type": "BOOLEAN",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "connection": "warehouse",
+      "table": "marts.match_objectives",
+      "columns": [
+        {
+          "name": "match_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "started_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "nullable": true
+        },
+        {
+          "name": "match_date",
+          "type": "DATE",
+          "nullable": true
+        },
+        {
+          "name": "patch_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "patch_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "league_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "league_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "radiant_win",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "winner_side",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "radiant_team_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "dire_team_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "has_objective_log",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "first_blood_s",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "first_blood_min",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "first_blood_side",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "first_blood_side_won",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "first_tower_s",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "first_tower_min",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "first_tower_side",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "first_tower_side_won",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "first_roshan_s",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "first_roshan_min",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "first_roshan_side",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "first_roshan_side_won",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "roshan_kills",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "radiant_roshan_kills",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "dire_roshan_kills",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "radiant_aegis",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "dire_aegis",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "aegis_stolen",
+          "type": "BIGINT",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "connection": "warehouse",
+      "table": "marts.objective_win_rates",
+      "columns": [
+        {
+          "name": "patch_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "patch_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "objective",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "matches",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "taker_wins",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "taker_win_rate",
+          "type": "DOUBLE",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "connection": "warehouse",
+      "table": "marts.pro_draft_matchups",
+      "columns": [
+        {
+          "name": "patch_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "patch_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "hero_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "hero_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "opponent_hero_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "opponent_hero_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "games",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "wins",
+          "type": "HUGEINT",
           "nullable": true
         }
       ]
@@ -1385,6 +2659,113 @@
     },
     {
       "connection": "warehouse",
+      "table": "marts.starting_builds",
+      "columns": [
+        {
+          "name": "patch_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "patch_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "hero_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "hero_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "starting_build",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "build_items",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "games",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "wins",
+          "type": "HUGEINT",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "connection": "warehouse",
+      "table": "marts.starting_items",
+      "columns": [
+        {
+          "name": "patch_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "patch_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "hero_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "hero_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "item_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "item_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "item_cost",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "games_bought",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "units_bought",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "wins_when_bought",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "hero_games",
+          "type": "BIGINT",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "connection": "warehouse",
       "table": "marts.team_head_to_head",
       "columns": [
         {
@@ -1435,6 +2816,173 @@
         {
           "name": "last_match_date",
           "type": "DATE",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "connection": "warehouse",
+      "table": "marts.team_lineups",
+      "columns": [
+        {
+          "name": "match_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "is_radiant",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "side",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "team_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "team_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "opponent_team_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "lineup_key",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "carry_hero",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "mid_hero",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "offlane_hero",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "soft_support_hero",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "hard_support_hero",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "is_win",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "started_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "nullable": true
+        },
+        {
+          "name": "match_date",
+          "type": "DATE",
+          "nullable": true
+        },
+        {
+          "name": "patch_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "patch_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "league_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "league_name",
+          "type": "VARCHAR",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "connection": "warehouse",
+      "table": "marts.team_signature_heroes",
+      "columns": [
+        {
+          "name": "team_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "team_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "patch_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "patch_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "hero_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "hero_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "games",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "wins",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "team_matches",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "team_pick_rate",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "field_pick_rate",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "pick_rate_lift",
+          "type": "DOUBLE",
           "nullable": true
         }
       ]

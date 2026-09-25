@@ -1,0 +1,4 @@
+left: match_leads
+right: leagues
+on: match_leads.league_id = leagues.league_id
+relationship: many_to_one

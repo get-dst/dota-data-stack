@@ -1,0 +1,50 @@
+name: hero_position_meta
+description: Per hero, patch and position (1-5) over professional matches — games, win rate,
+  and the share of the hero's games played in that position.
+grain: one row per hero per patch per position
+use_cases:
+  - Use for which position a hero is played in and how it fares there.
+  - Avoid for a hero's overall numbers regardless of position; that is hero_patch_trends.
+common_questions:
+  - Which position is Pudge played in most?
+  - What is Mirana's win rate as a position 4?
+  - Which heroes are played as carry most often?
+source:
+  connection: warehouse
+  table: marts.hero_position_meta
+primary_key: [patch_id, hero_id, position]
+population: Professional player-games in the loaded window with a derived position (the
+  position definition); roaming and unparsed lanes are left out.
+fields:
+  - {name: patch_id, type: integer}
+  - {name: patch_name, type: string}
+  - {name: hero_id, type: integer}
+  - {name: hero_name, type: string}
+  - {name: position, type: integer, description: "1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support."}
+  - {name: games, type: integer}
+  - {name: wins, type: integer}
+  - {name: losses, type: integer}
+  - {name: win_rate, type: number, description: "wins / games, 0-1."}
+  - {name: hero_games, type: integer, description: The hero's positioned games on the patch; repeats on each of its position rows.}
+  - {name: position_share, type: number, description: "games / hero_games, 0-1; a hero's five positions on a patch sum to 1."}
+dimensions:
+  - {name: hero_name, type: string}
+  - {name: patch_name, type: string}
+  - {name: position, type: integer}
+metrics:
+  - {name: position_games, agg: sum, expr: hero_position_meta.games, description: Games in the position.}
+  - {name: position_wins, agg: sum, expr: hero_position_meta.wins}
+  - {name: hero_total_games, agg: sum, expr: hero_position_meta.hero_games, description: "The hero's positioned games; only meaningful grouped or filtered by position."}
+  - name: position_win_rate
+    better: higher
+    type: ratio
+    numerator: position_wins
+    denominator: position_games
+    format: percent
+    description: Win rate of the hero in the position.
+  - name: position_share
+    type: ratio
+    numerator: position_games
+    denominator: hero_total_games
+    format: percent
+    description: Share of the hero's games played in the position; group or filter by hero and position.
