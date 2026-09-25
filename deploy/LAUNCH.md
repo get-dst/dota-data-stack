@@ -20,7 +20,7 @@ one machine. It needs `DST_BASE_IMAGE` to be pullable (see step 0).
 | Per person, per lens, per rolling 24 h | 50 answers, so 150 across the three lenses | `rate_limit.per_caller_rpd`; counted from `request_log`, refused with 429 + `Retry-After` |
 | Whole demo, per rolling 24 h | 2000 answers | `DST_DAILY_REQUEST_CAP`. The code default is **0 = no cap**, so it must be set |
 | Key minted on `/demo` | 7 days, one live key per person (a re-mint revokes the last) | `DST_DEMO_KEY_DAYS` |
-| MCP OAuth token (what Claude holds) | **7 days** in demo mode (= `DST_DEMO_KEY_DAYS`), no refresh token: people reconnect weekly | dst ≥ 0.5.5 |
+| MCP OAuth token (what Claude holds) | **7 days** in demo mode (= `DST_DEMO_KEY_DAYS`), no refresh token: people reconnect weekly | dst ≥ 0.5.6 |
 | Key mints per source IP | 20/min | `_MINT_IP_RPM` |
 | OAuth client registrations per IP | 12/min | `_REGISTER_RPM` |
 | Warehouse statement timeout | 30 s | `statement_timeout_ms` in `serve/dst.yaml` |
@@ -35,9 +35,9 @@ records their tokens (`resolution.decisions[].usage`) but does not price them.
 
 ## 0. Before anything
 
-- [ ] dst 0.5.5 on the laptop (`pip install -U 'dst-core==0.5.5'`, or `~/dst-dev/.venv/bin/dst`).
+- [ ] dst 0.5.6 on the laptop (`pip install -U 'dst-core==0.5.6'`, or `~/dst-dev/.venv/bin/dst`).
 - [ ] `gcloud auth login` as the account that owns `kurator-core`.
-- [ ] Decide on the GHCR image. `ghcr.io/get-dst/dst:0.5.5` was pushed by the release,
+- [ ] Decide on the GHCR image. `ghcr.io/get-dst/dst:0.5.6` was pushed by the release,
       but an anonymous pull is refused (403), so the package is private. Cloud Run does
       not need it: `cloudbuild.yaml` builds from the public source tag. The VM variant and
       every stranger following dst's `deploy/` do need it. Either make it public
@@ -97,7 +97,7 @@ records their tokens (`resolution.decisions[].usage`) but does not price them.
 ## 4. Build, secret, migrate
 
 ```
-deploy/cloudrun.sh build              # Cloud Build: dst v0.5.5 source + local-embed + baked weights (~10 min)
+deploy/cloudrun.sh build              # Cloud Build: dst v0.5.6 source + local-embed + baked weights (~10 min)
 deploy/cloudrun.sh warehouse-secret   # paste the read-scaling token; stored as dst-api-key-warehouse
 deploy/cloudrun.sh migrate            # dst-migrate job on the new image
 ```
@@ -148,8 +148,9 @@ cd serve && dst apply --url $DEMO --token $DEMO_TOKEN --timeout 1500
 
 - [ ] Private window → `https://demo.dataservetool.com/demo` → sign in with Google. A
       `dst_` key appears, valid 7 days, with three snippets.
-- [ ] The page title and consent pages say **roshan** (`DST_INSTANCE_NAME`), with
-      "answers by dst (data serve tool)" beneath.
+- [ ] The page's heading and the consent pages say **roshan** (`DST_INSTANCE_NAME`),
+      with "answers by dst (data serve tool)" above, and "What you can ask" lists the
+      three Dota lenses with an example question each.
 - [ ] `curl` snippet → HTTP 200 with `status: ok` (the page's example question comes from
       the lens's own declared questions).
 - [ ] Claude (desktop or claude.ai) → Settings → Connectors → Add custom connector → name
