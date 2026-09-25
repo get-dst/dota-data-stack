@@ -13,7 +13,8 @@ source:
   connection: warehouse
   table: marts.pub_hero_by_duration
 primary_key: [patch_id, bracket_id, hero_id, duration_bucket_order]
-population: Counted over a sample of public matchmaking games, ranked All Pick only.
+population: Counted over a sample of public matchmaking games. Only ranked All Pick games
+  are in this table (filtered when it was built; it has no game_type column).
 fields:
   - {name: patch_id, type: integer}
   - {name: patch_name, type: string}

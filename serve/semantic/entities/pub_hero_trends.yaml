@@ -13,7 +13,8 @@ source:
   table: marts.daily_pub_hero_stats
 default_time_field: match_date
 primary_key: [match_date, hero_id]
-population: Counted over a sample of public matchmaking games, ranked All Pick only.
+population: Counted over a sample of public matchmaking games. Only ranked All Pick games
+  are in this table (filtered when it was built; it has no game_type column).
   Days with few sampled games swing wildly; read the game count.
 fields:
   - {name: match_date, type: date}
