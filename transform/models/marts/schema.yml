@@ -232,7 +232,7 @@ models:
 
   - name: daily_hero_stats
     description: Picks, bans and wins per hero per day per patch over professional matches;
-      a hero with bans but no picks that day has no row.
+      every hero picked or banned that day has a row (zero picks when only banned).
     columns:
       - name: match_date
         description: UTC match date (see fact_match.match_date); with patch_id and hero_id the primary key.

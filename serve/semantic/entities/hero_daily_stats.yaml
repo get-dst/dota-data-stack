@@ -13,8 +13,8 @@ source:
   table: marts.daily_hero_stats
 default_time_field: match_date
 primary_key: [match_date, patch_id, hero_id]
-population: Heroes that were picked at least once on a given day; a hero with bans but no
-  picks that day has no row.
+population: Every hero picked or banned on a given day in professional matches; a hero banned
+  but not picked that day has a row with zero picks.
 fields:
   - {name: match_date, type: date}
   - {name: patch_id, type: integer}
