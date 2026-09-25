@@ -130,7 +130,7 @@ class Unavailable(RuntimeError):
     message: requests puts the full URL in its errors, and the URL carries it."""
 
 
-_CALL_DEADLINE_S = 90
+_CALL_DEADLINE_S = 30
 
 
 def _fetch(url: str, params: dict[str, Any]) -> requests.Response:
@@ -166,8 +166,9 @@ def get(path: str, *, paid: bool = False, **params: Any) -> Any:
         try:
             r = _fetch(f"{API}/{path}", params)
         except (requests.RequestException, TimeoutError) as exc:
-            time.sleep(2 * (attempt + 1))
             last = f"{type(exc).__name__}"
+            print(f"get {path}: {last}, attempt {attempt + 1}", file=sys.stderr, flush=True)
+            time.sleep(2 * (attempt + 1))
             continue
         _last_call = time.monotonic()
         if r.status_code == 429:
