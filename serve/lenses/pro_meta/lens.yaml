@@ -12,15 +12,12 @@ select:
   entities:
     - pro_matches
     - player_performances
-    - drafts
     - hero_daily_stats
     - heroes
     - patches
     - teams
     - leagues
-    - hero_item_builds
     - team_head_to_head
-    - item_timings
     - league_standings
     - patch_notes
     - advantage_timeline
@@ -39,7 +36,6 @@ select:
     - pro_match
     - position
     - minimum_games
-    - item_timing
     - comeback
     - first_objective
 not_computable:

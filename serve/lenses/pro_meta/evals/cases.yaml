@@ -23,9 +23,6 @@
   expect: clarify
   term: win_rate
   status: retired
-- question: What do pros build on Juggernaut this patch?
-  expect: answer
-  status: approved
 - question: Which offlaners have the best win rate in pro matches this patch?
   expect: answer
   status: approved
@@ -34,9 +31,6 @@
   status: approved
 - question: What is my win rate on Pudge?
   expect: refuse
-  status: approved
-- question: When do pros buy Black King Bar on Juggernaut?
-  expect: answer
   status: approved
 - question: Which team has the best record in PGL Wallachia?
   expect: answer
@@ -81,3 +75,11 @@
 - question: Which team made the most comebacks?
   expect: answer
   status: approved
+# Item questions live in the items lens now (absence never deletes a stored case;
+# retiring it takes it out of this lens's gate).
+- question: What do pros build on Juggernaut this patch?
+  expect: answer
+  status: retired
+- question: When do pros buy Black King Bar on Juggernaut?
+  expect: answer
+  status: retired

@@ -42,3 +42,9 @@
 - question: At what minute do pros get their tier 3 neutral item?
   expect: refuse
   status: approved
+- question: What do pros build on Juggernaut this patch?
+  expect: answer
+  status: approved
+- question: When do pros buy Black King Bar on Juggernaut?
+  expect: answer
+  status: approved
