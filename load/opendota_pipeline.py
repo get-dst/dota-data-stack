@@ -361,6 +361,14 @@ def destination() -> Any:
     if target == "postgres":
         url = os.environ["DATABASE_URL"]
         return dlt.destinations.postgres(url)
+    if target == "motherduck":
+        # One MotherDuck database holds raw + marts; the token is a read-write one.
+        return dlt.destinations.motherduck(
+            credentials={
+                "database": os.environ.get("MOTHERDUCK_DATABASE", "dota"),
+                "password": os.environ["MOTHERDUCK_TOKEN"],
+            }
+        )
     path = Path(os.environ.get("DSTACK_DUCKDB_PATH", "data/dota.duckdb"))
     path.parent.mkdir(parents=True, exist_ok=True)
     return dlt.destinations.duckdb(str(path))

@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "dlt load → dbt transform → dst serve, over Dota 2 pro matches"
 requires-python = ">=3.12"
 dependencies = [
-    "dlt[duckdb,postgres]>=1.30",
+    "dlt[duckdb,motherduck,postgres]>=1.30",
     "dbt-core>=1.12",
     "dbt-duckdb>=1.9",
     "dbt-postgres>=1.9",

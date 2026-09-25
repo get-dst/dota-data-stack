@@ -1,11 +1,16 @@
-# Two targets, one project. `duckdb` is the local file dlt wrote; `postgres` is the
-# Aiven service. Pick with DSTACK_TARGET (the same switch the loader reads).
+# Three targets, one project. `duckdb` is the local file dlt wrote; `motherduck` is the
+# same file shape in the cloud; `postgres` is a Postgres service. Pick with DSTACK_TARGET
+# (the same switch the loader reads).
 dota:
   target: "{{ env_var('DSTACK_TARGET', 'duckdb') }}"
   outputs:
     duckdb:
       type: duckdb
       path: "{{ env_var('DSTACK_DUCKDB_ABS_PATH', '../data/dota.duckdb') }}"
+      threads: 4
+    motherduck:
+      type: duckdb
+      path: "md:{{ env_var('MOTHERDUCK_DATABASE', 'dota') }}?motherduck_token={{ env_var('MOTHERDUCK_TOKEN') }}"
       threads: 4
     postgres:
       type: postgres
