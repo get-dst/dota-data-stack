@@ -1,0 +1,47 @@
+name: lane_pairings
+description: Heroes that shared a lane on the same side in professional matches, per
+  patch, with each hero's derived position — e.g. a safe-lane carry (1) with its hard
+  support (5). Both orderings are present, so start from either hero.
+grain: one row per patch, lane, hero with its position, and partner hero with its position
+use_cases:
+  - Use for lane partners in pro play — which support a carry laned with, which pairs win their games.
+  - lane_name is relative to the side (safe lane, mid, off lane); a Radiant bottom pair and a Dire top pair are both safe-lane pairs.
+  - When ranking by a rate, keep rows with at least 20 games (the minimum_games term) and report the game count with every rate.
+  - Avoid for heroes on the same team regardless of lane; this counts only heroes that laned together.
+common_questions:
+  - Which supports lane most with Shadow Fiend in the safe lane?
+  - Which safe-lane pairs win the most in pro matches this patch?
+source:
+  connection: warehouse
+  table: marts.lane_pairings
+primary_key: [patch_id, lane_role, hero_id, position, partner_hero_id, partner_position]
+population: Professional matches whose lanes OpenDota parsed. Solo lanes (usually mid) and
+  players with no parsed lane have no pair, so a hero's games here are fewer than its picks.
+fields:
+  - {name: patch_id, type: integer}
+  - {name: patch_name, type: string}
+  - {name: lane_role, type: integer, description: "Lane relative to the side: 1 safe lane, 2 mid, 3 off lane, 4 jungle."}
+  - {name: lane_name, type: string, description: "safe lane, mid, off lane or jungle."}
+  - {name: hero_id, type: integer}
+  - {name: hero_name, type: string, description: The hero the counts are measured for.}
+  - {name: position, type: integer, description: "hero_name's derived position, 1 carry, 2 mid, 3 offlaner, 4 soft support, 5 hard support."}
+  - {name: partner_hero_id, type: integer}
+  - {name: partner_hero_name, type: string, description: The hero that shared the lane.}
+  - {name: partner_position, type: integer, description: "partner_hero_name's derived position, 1-5."}
+  - {name: games, type: integer, description: Pro matches the two shared this lane on the same side.}
+  - {name: wins, type: integer, description: "Of those, the ones their side won."}
+dimensions:
+  - {name: hero_name, type: string}
+  - {name: partner_hero_name, type: string}
+  - {name: lane_name, type: string}
+  - {name: patch_name, type: string}
+metrics:
+  - {name: lane_pair_games, agg: sum, expr: lane_pairings.games}
+  - {name: lane_pair_wins, agg: sum, expr: lane_pairings.wins}
+  - name: lane_pair_win_rate
+    better: higher
+    type: ratio
+    numerator: lane_pair_wins
+    denominator: lane_pair_games
+    format: percent
+    description: Share of the pair's lane games their side won.

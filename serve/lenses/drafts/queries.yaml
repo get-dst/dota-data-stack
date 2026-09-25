@@ -1,0 +1,31 @@
+use_when:
+  - questions about professional Dota 2 drafts — picks, bans, draft phases, first and last picks, contested heroes
+  - hero against hero and lane partners in pro matches
+  - what a pro team drafts — its lineups, most-played and signature heroes
+sample_queries:
+  - question: Which heroes were the most contested in pro drafts on the current patch?
+    sql: |
+      SELECT hero_name,
+             SUM(contests) AS hero_contests,
+             SUM(contests) * 1.0 / SUM(drafted_matches) AS contest_rate
+      FROM marts.hero_draft_stats AS hero_draft_stats
+      JOIN marts.dim_patch AS patches ON patches.patch_id = hero_draft_stats.patch_id
+      WHERE patches.is_current = TRUE
+      GROUP BY hero_name
+      ORDER BY contest_rate DESC
+      LIMIT 10
+  - question: How often does the side with the first pick win?
+    sql: |
+      SELECT SUM(CASE WHEN side_won THEN 1 ELSE 0 END) * 1.0 / COUNT(*) AS first_pick_side_win_rate,
+             COUNT(*) AS drafted_matches
+      FROM marts.draft_phases AS draft_phases
+      WHERE is_first_pick = TRUE
+  - question: What are Team Falcons' signature heroes on the current patch?
+    sql: |
+      SELECT hero_name, games, team_matches, pick_rate_lift
+      FROM marts.team_signature_heroes AS team_signature_heroes
+      JOIN marts.dim_patch AS patches ON patches.patch_id = team_signature_heroes.patch_id
+      WHERE patches.is_current = TRUE AND team_name = 'Team Falcons'
+        AND games >= 5 AND pick_rate_lift > 0
+      ORDER BY pick_rate_lift DESC
+      LIMIT 5

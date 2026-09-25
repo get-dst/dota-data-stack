@@ -1,0 +1,42 @@
+name: pro_draft_matchups
+description: Hero against hero in professional matches, per patch — games the two were
+  picked on opposite sides and how many the first one won. Both orderings are present, so
+  start from either hero.
+grain: one row per hero, opponent hero and patch
+use_cases:
+  - Use for pro matchups and counters — how a hero does against a specific opponent in pro play.
+  - When ranking by a rate, keep rows with at least 20 games (the minimum_games term) and report the game count with every rate.
+  - Avoid for public matchmaking matchups; this is pro play only.
+common_questions:
+  - How does Ember Spirit do against Dark Seer in pro matches?
+  - Which heroes does Shadow Fiend struggle against in pro matches this patch?
+source:
+  connection: warehouse
+  table: marts.pro_draft_matchups
+primary_key: [patch_id, hero_id, opponent_hero_id]
+population: Every professional match with its ten player rows, in any game mode. Pro
+  samples are small; a pair with few games says little, so state the game count with
+  the rate.
+fields:
+  - {name: patch_id, type: integer}
+  - {name: patch_name, type: string}
+  - {name: hero_id, type: integer}
+  - {name: hero_name, type: string, description: The hero the rate is measured for.}
+  - {name: opponent_hero_id, type: integer}
+  - {name: opponent_hero_name, type: string, description: The hero picked by the other side.}
+  - {name: games, type: integer, description: Pro matches the two were on opposite sides.}
+  - {name: wins, type: integer, description: "Of those, the ones hero_name's side won."}
+dimensions:
+  - {name: hero_name, type: string}
+  - {name: opponent_hero_name, type: string}
+  - {name: patch_name, type: string}
+metrics:
+  - {name: pro_matchup_games, agg: sum, expr: pro_draft_matchups.games}
+  - {name: pro_matchup_wins, agg: sum, expr: pro_draft_matchups.wins}
+  - name: pro_matchup_win_rate
+    better: higher
+    type: ratio
+    numerator: pro_matchup_wins
+    denominator: pro_matchup_games
+    format: percent
+    description: Share of pro matches hero_name's side won against opponent_hero_name.

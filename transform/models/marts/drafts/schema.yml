@@ -1,0 +1,263 @@
+version: 2
+
+# Drafts and lineups over professional matches. The draft marts read the Captains Mode
+# draft log (fact_draft); the lineup and pairing marts read the ten player rows of every
+# pro match (fact_player_match), which covers matches whose draft was not recorded too.
+# Singular tests in tests/drafts/ pin the draft shape and every grain below.
+
+models:
+  - name: draft_phases
+    description: Every pick and ban of a Captains Mode professional match with its draft
+      phase and its place among the picks, one row per pick or ban. The draft on these
+      patches runs 7 bans, 2 picks, 3 bans, 6 picks, 4 bans, 2 picks; the phase is read
+      from the runs of consecutive bans or picks, so a draft with a skipped ban (23
+      actions) keeps its phases. Matches in other game modes are not included.
+    columns:
+      - name: match_id
+        description: OpenDota match id; with draft_order the primary key; joins fact_match.match_id.
+        tests: [not_null]
+      - name: draft_order
+        description: Position in the draft sequence, 0-based (0-23, or 0-22 when a ban was skipped).
+        tests: [not_null]
+      - name: action
+        description: "'pick' or 'ban'."
+        tests:
+          - accepted_values:
+              values: [pick, ban]
+      - name: is_pick
+        description: True for a pick.
+      - name: is_ban
+        description: True for a ban (the negation of is_pick).
+      - name: draft_phase
+        description: "Draft phase 1-3. Each phase is a run of bans followed by a run of picks: phase 1 is 7 bans then 2 picks, phase 2 is 3 bans then 6 picks, phase 3 is 4 bans then 2 picks (one fewer ban when a ban was skipped)."
+        tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3]
+              quote: false
+      - name: phase_name
+        description: "The phase and action together: 'ban phase 1', 'pick phase 1', 'ban phase 2', 'pick phase 2', 'ban phase 3' or 'pick phase 3'."
+        tests:
+          - accepted_values:
+              values: [ban phase 1, pick phase 1, ban phase 2, pick phase 2, ban phase 3, pick phase 3]
+      - name: match_pick_number
+        description: For a pick, its place among the match's ten picks (1 = the first pick of the match, 10 = the last); null for a ban.
+      - name: team_pick_number
+        description: For a pick, its place among its own side's five picks (1-5); null for a ban.
+      - name: match_ban_number
+        description: For a ban, its place among the match's bans (1-14, or 1-13 when a ban was skipped); null for a pick.
+      - name: is_first_pick
+        description: True for the first pick of the match (the first hero either side locked in).
+      - name: is_last_pick
+        description: True for the last pick of the match (the tenth hero, picked knowing the other nine).
+      - name: is_first_pick_side
+        description: True when the side that made this pick or ban also made the match's first pick.
+      - name: hero_id
+        description: Hero picked or banned; joins dim_hero.hero_id.
+      - name: hero_name
+        description: Display name of the hero picked or banned.
+      - name: is_radiant
+        description: True when the Radiant side made this pick or ban.
+      - name: side
+        description: "'radiant' or 'dire', the side that made this pick or ban."
+      - name: team_id
+        description: Team id of the side that made the pick or ban; null when not identified.
+      - name: team_name
+        description: Team name of the side that made the pick or ban; null when not identified.
+      - name: opponent_team_name
+        description: Team name of the other side; null when not identified.
+      - name: side_won
+        description: True when the side that made this pick or ban won the match.
+      - name: started_at
+        description: Match start time (timestamp with time zone).
+      - name: match_date
+        description: UTC calendar date of started_at.
+      - name: patch_id
+        description: Game version id the match was played on; joins dim_patch.patch_id.
+      - name: patch_name
+        description: Game version the match was played on, e.g. 7.41.
+      - name: league_id
+        description: League or tournament id; joins dim_league.league_id.
+      - name: league_name
+        description: League or tournament name as the match record carries it.
+
+  - name: hero_draft_stats
+    description: How each hero fared in Captains Mode drafts, one row per hero per patch.
+      Every hero has a row on every patch with drafts, zero-filled, so a hero's rows can be
+      summed across patches for an overall figure. Counts only; each rate divides a count
+      by drafted_matches (presence) or by picks (win rates).
+    columns:
+      - name: patch_id
+        description: Game version id; with hero_id the primary key; joins dim_patch.patch_id.
+        tests: [not_null]
+      - name: patch_name
+        description: Game version, e.g. 7.41.
+      - name: hero_id
+        description: Hero; joins dim_hero.hero_id.
+        tests: [not_null]
+      - name: hero_name
+        description: Display name of the hero.
+      - name: drafted_matches
+        description: Captains Mode pro matches with a recorded draft on this patch; the same on every hero row of the patch, the denominator of the presence rates.
+      - name: picks
+        description: Times the hero was picked.
+      - name: bans
+        description: Times the hero was banned.
+      - name: contests
+        description: Picks plus bans. A hero appears at most once per draft, so this is the number of drafted matches in which the hero was picked or banned.
+      - name: first_phase_bans
+        description: Bans of the hero in the first ban phase (the opening seven bans).
+      - name: first_picks
+        description: Times the hero was the first pick of the match.
+      - name: last_picks
+        description: Times the hero was the last pick of the match.
+      - name: wins
+        description: Picks of the hero whose side won.
+      - name: picks_phase_1
+        description: Picks of the hero in pick phase 1 (the first two picks of the match).
+      - name: wins_phase_1
+        description: Of picks_phase_1, the ones whose side won.
+      - name: picks_phase_2
+        description: Picks of the hero in pick phase 2 (picks three to eight).
+      - name: wins_phase_2
+        description: Of picks_phase_2, the ones whose side won.
+      - name: picks_phase_3
+        description: Picks of the hero in pick phase 3 (the last two picks).
+      - name: wins_phase_3
+        description: Of picks_phase_3, the ones whose side won.
+
+  - name: pro_draft_matchups
+    description: Hero against hero in professional matches, one row per patch, hero and
+      opponent hero; both orderings are present. Counted from the player rows of every pro
+      match, so it covers matches whose draft was not recorded.
+    columns:
+      - name: patch_id
+        description: Game version id; with hero_id and opponent_hero_id the primary key; joins dim_patch.patch_id.
+        tests: [not_null]
+      - name: patch_name
+        description: Game version, e.g. 7.41.
+      - name: hero_id
+        description: The hero the counts are measured for; joins dim_hero.hero_id.
+        tests: [not_null]
+      - name: hero_name
+        description: Display name of the hero the counts are measured for.
+      - name: opponent_hero_id
+        description: The hero picked by the other side; joins dim_hero.hero_id.
+        tests: [not_null]
+      - name: opponent_hero_name
+        description: Display name of the hero picked by the other side.
+      - name: games
+        description: Pro matches in which the two heroes were on opposite sides.
+      - name: wins
+        description: Of those matches, the ones hero_id's side won.
+
+  - name: lane_pairings
+    description: Heroes that shared a lane on the same side in professional matches, one
+      row per patch, lane, hero with its position and partner hero with its position; both
+      orderings are present. Solo lanes and players with no parsed lane have no row.
+    columns:
+      - name: patch_id
+        description: Game version id; with lane_role, hero_id, position, partner_hero_id and partner_position the primary key; joins dim_patch.patch_id.
+        tests: [not_null]
+      - name: patch_name
+        description: Game version, e.g. 7.41.
+      - name: lane_role
+        description: "Lane relative to the side, shared by both heroes: 1 safe lane, 2 mid, 3 off lane, 4 jungle (the map lane is fact_player_match.lane; bottom is Radiant's safe lane, Dire's off lane)."
+        tests: [not_null]
+      - name: lane_name
+        description: "lane_role spelled out: safe lane, mid, off lane or jungle."
+      - name: hero_id
+        description: The hero the counts are measured for; joins dim_hero.hero_id.
+      - name: hero_name
+        description: Display name of the hero the counts are measured for.
+      - name: position
+        description: Derived position of hero_id in those games, 1-5 (see fact_player_match.position); in a safe lane 1 is the carry and 5 the hard support, in the off lane 3 is the offlaner and 4 the soft support.
+      - name: partner_hero_id
+        description: The hero that shared the lane; joins dim_hero.hero_id.
+      - name: partner_hero_name
+        description: Display name of the hero that shared the lane.
+      - name: partner_position
+        description: Derived position of partner_hero_id in those games, 1-5.
+      - name: games
+        description: Pro matches in which the two heroes shared this lane on the same side.
+      - name: wins
+        description: Of those matches, the ones their side won.
+
+  - name: team_lineups
+    description: The five heroes an identified team played in a professional match, one row
+      per team per match. Sides OpenDota did not tie to a team are not included.
+    columns:
+      - name: match_id
+        description: OpenDota match id; with is_radiant the primary key; joins fact_match.match_id.
+        tests: [not_null]
+      - name: is_radiant
+        description: True when the team played the Radiant side.
+      - name: side
+        description: "'radiant' or 'dire'."
+      - name: team_id
+        description: The team; joins dim_team.team_id.
+        tests: [not_null]
+      - name: team_name
+        description: The team's name.
+      - name: opponent_team_name
+        description: The other side's team name; null when not identified.
+      - name: lineup_key
+        description: "The five hero names sorted alphabetically and joined with ' / ', e.g. 'Axe / Lion / Luna / Pugna / Zeus'; the same five heroes always give the same key, whatever the pick order."
+        tests: [not_null]
+      - name: carry_hero
+        description: Hero at derived position 1 (carry); null when no player on the side got that position.
+      - name: mid_hero
+        description: Hero at derived position 2 (mid); null when no player got it.
+      - name: offlane_hero
+        description: Hero at derived position 3 (offlaner); null when no player got it.
+      - name: soft_support_hero
+        description: Hero at derived position 4 (soft support); null when no player got it.
+      - name: hard_support_hero
+        description: Hero at derived position 5 (hard support); null when no player got it.
+      - name: is_win
+        description: True when the team won the match.
+      - name: started_at
+        description: Match start time (timestamp with time zone).
+      - name: match_date
+        description: UTC calendar date of started_at.
+      - name: patch_id
+        description: Game version id; joins dim_patch.patch_id.
+      - name: patch_name
+        description: Game version, e.g. 7.41.
+      - name: league_id
+        description: League or tournament id; joins dim_league.league_id.
+      - name: league_name
+        description: League or tournament name as the match record carries it.
+
+  - name: team_signature_heroes
+    description: Per identified team, hero and patch, how often the team played the hero and
+      won with it, beside how often all pro teams played it. Only heroes the team played at
+      least once have a row.
+    columns:
+      - name: team_id
+        description: The team; with patch_id and hero_id the primary key; joins dim_team.team_id.
+        tests: [not_null]
+      - name: team_name
+        description: The team's name.
+      - name: patch_id
+        description: Game version id; joins dim_patch.patch_id.
+        tests: [not_null]
+      - name: patch_name
+        description: Game version, e.g. 7.41.
+      - name: hero_id
+        description: The hero; joins dim_hero.hero_id.
+        tests: [not_null]
+      - name: hero_name
+        description: Display name of the hero.
+      - name: games
+        description: The team's pro matches on this patch in which it played the hero.
+      - name: wins
+        description: Of those matches, the ones the team won.
+      - name: team_matches
+        description: All of the team's pro matches on this patch; the same on every row of the team and patch.
+      - name: team_pick_rate
+        description: games / team_matches, the share of the team's matches on this patch in which it played the hero. A per-row value; do not sum or average it across rows.
+      - name: field_pick_rate
+        description: Share of all pro matches on this patch in which either side played the hero, the baseline to compare team_pick_rate against. A per-row value.
+      - name: pick_rate_lift
+        description: team_pick_rate minus field_pick_rate, in shares (0.25 = 25 percentage points). High means the team plays the hero far more than the field does, which is what makes it a signature hero. A per-row value.

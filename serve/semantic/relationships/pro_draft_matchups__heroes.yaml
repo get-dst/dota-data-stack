@@ -1,0 +1,4 @@
+left: pro_draft_matchups
+right: heroes
+on: pro_draft_matchups.hero_id = heroes.hero_id
+relationship: many_to_one

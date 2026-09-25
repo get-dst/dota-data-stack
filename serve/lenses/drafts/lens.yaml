@@ -1,0 +1,57 @@
+name: drafts
+display_name: Dota 2 pro drafts
+description: Picks, bans, draft phases, matchups, lane pairs and team lineups in
+  professional Dota 2 matches from OpenDota.
+owner: dota-data-stack
+# Match times are UTC epochs; the business day is UTC.
+timezone: UTC
+# The loader runs hourly; two days without new matches is stale.
+stale_after_days: 2
+connections: [warehouse]
+select:
+  entities:
+    - hero_draft_stats
+    - draft_phases
+    - pro_draft_matchups
+    - lane_pairings
+    - team_lineups
+    - team_signature_heroes
+    - heroes
+    - patches
+    - teams
+  definitions:
+    - first_phase
+    - first_pick
+    - last_pick
+    - contest_rate
+    - signature_hero
+    - lane_pair
+    - pro_counter
+    - current_patch
+    - pro_match
+    - minimum_games
+not_computable:
+  - measure: MMR
+    aliases: [rank, skill bracket, rating of players, medal]
+    reason: professional matches carry no matchmaking rating; only teams have an OpenDota rating
+  - measure: draft timing
+    aliases: [time per pick, reserve time, how long the draft took, pick timer, seconds per ban]
+    reason: OpenDota's draft log records the order of picks and bans, not when each was made or how much reserve time was used
+  - measure: public matchmaking
+    aliases: [pubs, pub games, public matches, ranked matchmaking, pub bans, pub drafts, bans in public matchmaking, turbo]
+    reason: this lens holds professional matches only; public games carry no draft or bans, and pub hero stats live on the pub_meta lens
+  - measure: personal match history
+    aliases: [my matches, my win rate, my account, my games, my drafts, steam id, dotabuff profile]
+    reason: this lens holds professional matches, not any individual player's public history
+access:
+  allow:
+    - {group: demo}
+    - {group: everyone}
+rate_limit:
+  per_caller_rpm: 60
+  per_caller_rpd: 50
+
+eval_gate: block
+
+# Typed first; a question that does not type falls to raw SQL, disclosed UNTYPED.
+untyped_fallback: true

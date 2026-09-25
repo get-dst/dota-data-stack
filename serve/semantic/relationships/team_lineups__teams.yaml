@@ -1,0 +1,4 @@
+left: team_lineups
+right: teams
+on: team_lineups.team_id = teams.team_id
+relationship: many_to_one

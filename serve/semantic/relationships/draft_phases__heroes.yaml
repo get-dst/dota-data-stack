@@ -1,0 +1,4 @@
+left: draft_phases
+right: heroes
+on: draft_phases.hero_id = heroes.hero_id
+relationship: many_to_one

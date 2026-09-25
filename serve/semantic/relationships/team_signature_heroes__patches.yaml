@@ -1,0 +1,4 @@
+left: team_signature_heroes
+right: patches
+on: team_signature_heroes.patch_id = patches.patch_id
+relationship: many_to_one

@@ -1,0 +1,46 @@
+name: team_signature_heroes
+description: Per team, hero and patch — how often the team played the hero and won with
+  it, beside how often all pro teams played it. The table for a team's most-played and
+  signature heroes.
+grain: one row per identified team, hero and patch
+use_cases:
+  - Use for a team's most-played heroes (rank by team_hero_games) and its signature heroes (the signature_hero term).
+  - team_pick_rate, field_pick_rate and pick_rate_lift are per-row values for one patch; never sum them.
+  - Avoid for heroes across all teams; that is hero_draft_stats.
+common_questions:
+  - What are Team Spirit's most played heroes on the current patch?
+  - What are Team Falcons' signature heroes?
+source:
+  connection: warehouse
+  table: marts.team_signature_heroes
+primary_key: [team_id, patch_id, hero_id]
+population: Professional matches in which OpenDota tied the side to a team; only heroes
+  the team played at least once on the patch have a row.
+fields:
+  - {name: team_id, type: integer}
+  - {name: team_name, type: string}
+  - {name: patch_id, type: integer}
+  - {name: patch_name, type: string}
+  - {name: hero_id, type: integer}
+  - {name: hero_name, type: string}
+  - {name: games, type: integer, description: The team's matches on the patch with the hero.}
+  - {name: wins, type: integer}
+  - {name: team_matches, type: integer, description: All of the team's matches on the patch; repeats on every row of the team and patch.}
+  - {name: team_pick_rate, type: number, description: games / team_matches for this row.}
+  - {name: field_pick_rate, type: number, description: Share of all pro matches on the patch with the hero on either side.}
+  - {name: pick_rate_lift, type: number, description: team_pick_rate minus field_pick_rate; how much more the team plays the hero than the field does.}
+dimensions:
+  - {name: team_name, type: string}
+  - {name: hero_name, type: string}
+  - {name: patch_name, type: string}
+metrics:
+  - {name: team_hero_games, agg: sum, expr: team_signature_heroes.games}
+  - {name: team_hero_wins, agg: sum, expr: team_signature_heroes.wins}
+  - name: team_hero_win_rate
+    better: higher
+    type: ratio
+    numerator: team_hero_wins
+    denominator: team_hero_games
+    format: percent
+    description: Share of the team's matches with the hero that it won.
+  - {name: signature_lift, agg: max, expr: team_signature_heroes.pick_rate_lift, description: "pick_rate_lift of the row; read within one patch."}

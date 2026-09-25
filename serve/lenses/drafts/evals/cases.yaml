@@ -1,0 +1,47 @@
+# Behavioral expectations. What an enthusiast asks about pro drafts must answer; what the
+# data cannot carry (MMR, draft timing, pub drafts) must refuse by name.
+- question: Which heroes were the most contested in pro drafts on the current patch?
+  expect: answer
+  status: approved
+- question: Which heroes are banned most in the first ban phase?
+  expect: answer
+  status: approved
+- question: Which hero is last-picked most often?
+  expect: answer
+  status: approved
+- question: How often does the side with the first pick win?
+  expect: answer
+  status: approved
+- question: What is Shadow Fiend's win rate when picked in the first pick phase?
+  expect: answer
+  status: approved
+- question: What is Treant Protector's contest rate this patch?
+  expect: answer
+  status: approved
+- question: How does Ember Spirit do against Dark Seer in pro matches?
+  expect: answer
+  status: approved
+- question: Which supports lane most with Shadow Fiend in the safe lane?
+  expect: answer
+  status: approved
+- question: What are Team Spirit's most played heroes?
+  expect: answer
+  status: approved
+- question: What are Team Falcons' signature heroes?
+  expect: answer
+  status: approved
+- question: Which carry heroes does BETBOOM TEAM play most?
+  expect: answer
+  status: approved
+- question: Which heroes does Team Spirit ban most?
+  expect: answer
+  status: approved
+- question: What is the average MMR of the players in these drafts?
+  expect: refuse
+  status: approved
+- question: How much reserve time did Team Liquid use during their drafts?
+  expect: refuse
+  status: approved
+- question: Which hero is banned most in public matchmaking?
+  expect: refuse
+  status: approved

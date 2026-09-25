@@ -1,0 +1,4 @@
+left: lane_pairings
+right: patches
+on: lane_pairings.patch_id = patches.patch_id
+relationship: many_to_one

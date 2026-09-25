@@ -1,0 +1,78 @@
+name: draft_phases
+description: Every pick and ban of every Captains Mode professional match, with its draft
+  phase (1-3), its place among the picks (first pick, last pick) and whether the side won.
+grain: one row per pick or ban, so a match contributes 24 rows (23 when a ban was skipped)
+use_cases:
+  - Use for draft-order questions — what gets banned in the first phase, which heroes are first or last picked, how the first-pick side does, what a team bans.
+  - Avoid for per-hero rates over a patch; hero_draft_stats already holds those counts per hero.
+  - Avoid for win rates of heroes overall; pro matches outside Captains Mode are not here, hero_draft_stats and player rows cover those.
+common_questions:
+  - Which heroes are banned most in the first ban phase on the current patch?
+  - How often does the side with the first pick win?
+  - Which heroes does Team Spirit ban most?
+source:
+  connection: warehouse
+  table: marts.draft_phases
+default_time_field: started_at
+primary_key: [match_id, draft_order]
+population: Picks and bans of professional matches played in Captains Mode whose draft
+  OpenDota recorded. Pro matches in other game modes (All Pick) and matches with no
+  recorded draft have no rows.
+fields:
+  - {name: match_id, type: integer}
+  - {name: draft_order, type: integer, description: "Position in the draft sequence, 0-based."}
+  - {name: action, type: string, description: "'pick' or 'ban'."}
+  - {name: is_pick, type: boolean}
+  - {name: is_ban, type: boolean}
+  - {name: draft_phase, type: integer, description: "1, 2 or 3. Phase 1 is 7 bans then 2 picks, phase 2 is 3 bans then 6 picks, phase 3 is 4 bans then 2 picks."}
+  - {name: phase_name, type: string, description: "'ban phase 1', 'pick phase 1', 'ban phase 2', 'pick phase 2', 'ban phase 3' or 'pick phase 3'."}
+  - {name: match_pick_number, type: integer, description: "For a pick, 1-10 among the match's picks; null for a ban."}
+  - {name: team_pick_number, type: integer, description: "For a pick, 1-5 among the side's own picks; null for a ban."}
+  - {name: match_ban_number, type: integer, description: "For a ban, its place among the match's bans; null for a pick."}
+  - {name: is_first_pick, type: boolean, description: The first hero picked in the match.}
+  - {name: is_last_pick, type: boolean, description: The tenth and last hero picked in the match.}
+  - {name: is_first_pick_side, type: boolean, description: True when this row's side made the match's first pick.}
+  - {name: hero_id, type: integer}
+  - {name: hero_name, type: string}
+  - {name: is_radiant, type: boolean}
+  - {name: side, type: string, description: "'radiant' or 'dire'."}
+  - {name: team_id, type: integer}
+  - {name: team_name, type: string, description: Team that made the pick or ban; null when not identified.}
+  - {name: opponent_team_name, type: string}
+  - {name: side_won, type: boolean, description: True when the side that made this pick or ban won the match.}
+  - {name: started_at, type: timestamp}
+  - {name: match_date, type: date}
+  - {name: patch_id, type: integer}
+  - {name: patch_name, type: string}
+  - {name: league_id, type: integer}
+  - {name: league_name, type: string}
+dimensions:
+  - {name: hero_name, type: string}
+  - {name: team_name, type: string}
+  - {name: opponent_team_name, type: string}
+  - {name: phase_name, type: string}
+  - {name: action, type: string}
+  - {name: patch_name, type: string}
+  - {name: league_name, type: string}
+  - {name: match_date, type: date}
+metrics:
+  - {name: phase_picks, agg: sum, expr: "CASE WHEN draft_phases.is_pick THEN 1 ELSE 0 END", description: Picks among the rows in scope.}
+  - {name: phase_bans, agg: sum, expr: "CASE WHEN draft_phases.is_ban THEN 1 ELSE 0 END", description: Bans among the rows in scope.}
+  - {name: drafted_match_count, agg: count_distinct, expr: draft_phases.match_id, description: Distinct Captains Mode matches among the rows in scope.}
+  - {name: pick_wins, agg: sum, expr: "CASE WHEN draft_phases.is_pick AND draft_phases.side_won THEN 1 ELSE 0 END", description: Picks whose side won.}
+  - name: pick_win_rate
+    better: higher
+    type: ratio
+    numerator: pick_wins
+    denominator: phase_picks
+    format: percent
+    description: Share of the picks in scope whose side won, e.g. a hero's win rate when picked in pick phase 3.
+  - {name: first_pick_matches, agg: sum, expr: "CASE WHEN draft_phases.is_first_pick THEN 1 ELSE 0 END", description: "Drafted matches counted once each by their first pick; the denominator of first_pick_side_win_rate. A hero's first-pick count is hero_draft_stats.hero_first_picks."}
+  - {name: first_pick_side_wins, agg: sum, expr: "CASE WHEN draft_phases.is_first_pick AND draft_phases.side_won THEN 1 ELSE 0 END", description: Matches the side with the first pick won.}
+  - name: first_pick_side_win_rate
+    better: higher
+    type: ratio
+    numerator: first_pick_side_wins
+    denominator: first_pick_matches
+    format: percent
+    description: Share of drafted matches won by the side that made the first pick.

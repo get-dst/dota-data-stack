@@ -1,0 +1,4 @@
+left: team_signature_heroes
+right: teams
+on: team_signature_heroes.team_id = teams.team_id
+relationship: many_to_one

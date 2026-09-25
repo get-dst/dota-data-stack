@@ -1,0 +1,4 @@
+left: draft_phases
+right: teams
+on: draft_phases.team_id = teams.team_id
+relationship: many_to_one

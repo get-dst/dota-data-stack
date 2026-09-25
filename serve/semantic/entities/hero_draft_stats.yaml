@@ -1,0 +1,122 @@
+name: hero_draft_stats
+description: How each hero fared in professional Captains Mode drafts, per patch — picks,
+  bans, first-phase bans, first and last picks, and wins by pick phase. The table for
+  contest, first-pick and phase win-rate questions.
+grain: one row per hero per patch; every hero has a row on every patch with drafts, zero-filled
+use_cases:
+  - Use for per-hero draft rates — contest rate, ban rate in the first phase, first-pick rate, last-pick rate, win rate by pick phase.
+  - Rates here divide by drafted_matches or picks of the same hero; group by hero_name, since a rate summed over all heroes means nothing.
+  - When ranking by a win rate, keep heroes with at least 20 picks (the minimum_games term) and report the pick count with the rate.
+  - Avoid for anything about a team; that is draft_phases or team_signature_heroes.
+common_questions:
+  - Which heroes were the most contested in pro drafts on the current patch?
+  - Which heroes are first-picked most often?
+  - What is Shadow Fiend's win rate when picked in the first pick phase?
+source:
+  connection: warehouse
+  table: marts.hero_draft_stats
+primary_key: [patch_id, hero_id]
+population: Captains Mode professional matches whose draft OpenDota recorded. A pro match
+  in another game mode, or without a recorded draft, counts in neither a hero's picks nor
+  drafted_matches.
+fields:
+  - {name: patch_id, type: integer}
+  - {name: patch_name, type: string}
+  - {name: hero_id, type: integer}
+  - {name: hero_name, type: string}
+  - {name: drafted_matches, type: integer, description: Drafted matches on the patch; repeats on every hero row of the patch.}
+  - {name: picks, type: integer}
+  - {name: bans, type: integer}
+  - {name: contests, type: integer, description: Picks plus bans — drafted matches in which the hero was picked or banned.}
+  - {name: first_phase_bans, type: integer, description: Bans in the first ban phase (the opening seven bans).}
+  - {name: first_picks, type: integer, description: Times the hero was the first pick of the match.}
+  - {name: last_picks, type: integer, description: Times the hero was the last pick of the match.}
+  - {name: wins, type: integer, description: Picks whose side won.}
+  - {name: picks_phase_1, type: integer, description: Picks in pick phase 1 (picks 1-2 of the match).}
+  - {name: wins_phase_1, type: integer}
+  - {name: picks_phase_2, type: integer, description: Picks in pick phase 2 (picks 3-8).}
+  - {name: wins_phase_2, type: integer}
+  - {name: picks_phase_3, type: integer, description: Picks in pick phase 3 (picks 9-10).}
+  - {name: wins_phase_3, type: integer}
+dimensions:
+  - {name: hero_name, type: string}
+  - {name: patch_name, type: string}
+metrics:
+  - {name: hero_draft_picks, agg: sum, expr: hero_draft_stats.picks}
+  - {name: hero_draft_bans, agg: sum, expr: hero_draft_stats.bans}
+  - {name: hero_contests, agg: sum, expr: hero_draft_stats.contests, description: Picks plus bans.}
+  - {name: hero_first_phase_bans, agg: sum, expr: hero_draft_stats.first_phase_bans}
+  - {name: hero_first_picks, agg: sum, expr: hero_draft_stats.first_picks}
+  - {name: hero_last_picks, agg: sum, expr: hero_draft_stats.last_picks}
+  - {name: hero_draft_wins, agg: sum, expr: hero_draft_stats.wins}
+  - {name: drafted_matches_total, agg: sum, expr: hero_draft_stats.drafted_matches, description: "Drafted matches in scope, per hero: summed over one hero's patch rows it is the match count; summed over several heroes it is not."}
+  - {name: phase_1_picks, agg: sum, expr: hero_draft_stats.picks_phase_1}
+  - {name: phase_1_wins, agg: sum, expr: hero_draft_stats.wins_phase_1}
+  - {name: phase_2_picks, agg: sum, expr: hero_draft_stats.picks_phase_2}
+  - {name: phase_2_wins, agg: sum, expr: hero_draft_stats.wins_phase_2}
+  - {name: phase_3_picks, agg: sum, expr: hero_draft_stats.picks_phase_3}
+  - {name: phase_3_wins, agg: sum, expr: hero_draft_stats.wins_phase_3}
+  - name: contest_rate
+    type: ratio
+    numerator: hero_contests
+    denominator: drafted_matches_total
+    format: percent
+    description: Share of drafted matches in which the hero was picked or banned.
+  - name: draft_pick_rate
+    type: ratio
+    numerator: hero_draft_picks
+    denominator: drafted_matches_total
+    format: percent
+    description: Share of drafted matches in which the hero was picked.
+  - name: draft_ban_rate
+    type: ratio
+    numerator: hero_draft_bans
+    denominator: drafted_matches_total
+    format: percent
+    description: Share of drafted matches in which the hero was banned.
+  - name: first_phase_ban_rate
+    type: ratio
+    numerator: hero_first_phase_bans
+    denominator: drafted_matches_total
+    format: percent
+    description: Share of drafted matches in which the hero was banned in the first ban phase.
+  - name: first_pick_rate
+    type: ratio
+    numerator: hero_first_picks
+    denominator: drafted_matches_total
+    format: percent
+    description: Share of drafted matches in which the hero was the first pick.
+  - name: last_pick_rate
+    type: ratio
+    numerator: hero_last_picks
+    denominator: drafted_matches_total
+    format: percent
+    description: Share of drafted matches in which the hero was the last pick.
+  - name: draft_win_rate
+    better: higher
+    type: ratio
+    numerator: hero_draft_wins
+    denominator: hero_draft_picks
+    format: percent
+    description: Share of the hero's drafted picks whose side won.
+  - name: phase_1_win_rate
+    better: higher
+    type: ratio
+    numerator: phase_1_wins
+    denominator: phase_1_picks
+    format: percent
+    description: Win rate of the hero when picked in pick phase 1.
+  - name: phase_2_win_rate
+    better: higher
+    type: ratio
+    numerator: phase_2_wins
+    denominator: phase_2_picks
+    format: percent
+    description: Win rate of the hero when picked in pick phase 2.
+  - name: phase_3_win_rate
+    better: higher
+    type: ratio
+    numerator: phase_3_wins
+    denominator: phase_3_picks
+    format: percent
+    description: Win rate of the hero when picked in pick phase 3.

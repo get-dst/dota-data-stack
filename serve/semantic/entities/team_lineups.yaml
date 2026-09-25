@@ -1,0 +1,60 @@
+name: team_lineups
+description: The five heroes an identified team played in each professional match — as a
+  lineup key (names sorted, so the same five heroes always match) and by derived position
+  (carry, mid, offlane, soft support, hard support) — with the result.
+grain: one row per identified team per pro match
+use_cases:
+  - Use for what a team drafted — its lineups, which carry or mid it plays most, how a lineup did.
+  - Avoid for hero counts across all teams; that is hero_draft_stats.
+common_questions:
+  - Which carry heroes does BETBOOM TEAM play most?
+  - What lineups has Team Spirit played on the current patch?
+source:
+  connection: warehouse
+  table: marts.team_lineups
+default_time_field: started_at
+primary_key: [match_id, is_radiant]
+population: Sides of professional matches that OpenDota tied to a team; a side with no
+  identified team has no row.
+fields:
+  - {name: match_id, type: integer}
+  - {name: is_radiant, type: boolean}
+  - {name: side, type: string}
+  - {name: team_id, type: integer}
+  - {name: team_name, type: string}
+  - {name: opponent_team_name, type: string}
+  - {name: lineup_key, type: string, description: "The five hero names sorted and joined with ' / '."}
+  - {name: carry_hero, type: string, description: Hero at position 1; null when no player got that position.}
+  - {name: mid_hero, type: string, description: Hero at position 2.}
+  - {name: offlane_hero, type: string, description: Hero at position 3.}
+  - {name: soft_support_hero, type: string, description: Hero at position 4.}
+  - {name: hard_support_hero, type: string, description: Hero at position 5.}
+  - {name: is_win, type: boolean}
+  - {name: started_at, type: timestamp}
+  - {name: match_date, type: date}
+  - {name: patch_id, type: integer}
+  - {name: patch_name, type: string}
+  - {name: league_id, type: integer}
+  - {name: league_name, type: string}
+dimensions:
+  - {name: team_name, type: string}
+  - {name: opponent_team_name, type: string}
+  - {name: carry_hero, type: string}
+  - {name: mid_hero, type: string}
+  - {name: offlane_hero, type: string}
+  - {name: soft_support_hero, type: string}
+  - {name: hard_support_hero, type: string}
+  - {name: patch_name, type: string}
+  - {name: league_name, type: string}
+  - {name: side, type: string}
+  - {name: match_date, type: date}
+metrics:
+  - {name: lineup_games, agg: count, expr: team_lineups.match_id, description: Team matches in scope.}
+  - {name: lineup_wins, agg: sum, expr: "CASE WHEN team_lineups.is_win THEN 1 ELSE 0 END"}
+  - name: lineup_win_rate
+    better: higher
+    type: ratio
+    numerator: lineup_wins
+    denominator: lineup_games
+    format: percent
+    description: Share of the team matches in scope that the team won.
