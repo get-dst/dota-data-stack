@@ -1,0 +1,19 @@
+# The demo image, built from the public dst source at a release tag, so the build
+# needs no registry credentials:
+#
+#   gcloud builds submit deploy --config deploy/cloudbuild.yaml \
+#     --substitutions=_DST_VERSION=0.5.0,_IMAGE=europe-west1-docker.pkg.dev/<project>/dst/dota-demo:0.5.0
+#
+# Step 2 is dst's own Dockerfile with the local-embed extra; step 3 is deploy/Dockerfile,
+# which bakes the embedding weights in.
+steps:
+  - name: gcr.io/cloud-builders/git
+    args: [clone, --depth=1, --branch=v${_DST_VERSION}, https://github.com/get-dst/dst, dst]
+  - name: gcr.io/cloud-builders/docker
+    args: [build, -t, dst-base, --build-arg, UV_EXTRA=local-embed, dst]
+  - name: gcr.io/cloud-builders/docker
+    args: [build, -f, Dockerfile, --build-arg, BASE=dst-base, -t, "${_IMAGE}", .]
+images: ["${_IMAGE}"]
+substitutions:
+  _DST_VERSION: "0.5.0"
+timeout: 1800s

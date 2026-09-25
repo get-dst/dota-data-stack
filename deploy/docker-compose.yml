@@ -1,0 +1,80 @@
+# The VM variant: Postgres, the demo image, Caddy with TLS. dst's deploy/demo/ compose
+# with this project's env: the warehouse token is DST_API_KEY_WAREHOUSE (serve/dst.yaml),
+# the providers are declared here by reference, and the image carries local embeddings.
+#
+#   cp deploy/.env.example deploy/.env    # fill it
+#   docker compose -f deploy/docker-compose.yml up -d --build
+#   LAUNCH.md has the rest
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: dst
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: dst
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dst"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  app:
+    build:
+      context: .
+      args:
+        BASE: ${DST_BASE_IMAGE:?set DST_BASE_IMAGE}
+    image: dota-demo:local
+    restart: unless-stopped
+    # No ports: Caddy is the only way in.
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    environment:
+      DATABASE_URL: postgresql+psycopg://dst_app:${DST_APP_DB_PASSWORD:?set DST_APP_DB_PASSWORD}@db:5432/dst?sslmode=disable
+      DATABASE_ADMIN_URL: postgresql+psycopg://dst:${POSTGRES_PASSWORD}@db:5432/dst?sslmode=disable
+      DST_SECRET_KEY: ${DST_SECRET_KEY:?set DST_SECRET_KEY}
+      DST_ENVIRONMENT: production
+      DST_PUBLIC_BASE_URL: https://${DEMO_DOMAIN:?set DEMO_DOMAIN}
+      DST_PROVIDERS: >-
+        {"deepseek": {"type": "openai-compatible", "base_url": "https://api.deepseek.com",
+        "api_key_env": "DST_API_KEY_DEEPSEEK", "fast_model": "deepseek-v4-flash"},
+        "jev": {"type": "typesafe", "api_key_env": "DST_API_KEY_JEV"},
+        "embed": {"type": "local"}}
+      DST_API_KEY_DEEPSEEK: ${DST_API_KEY_DEEPSEEK:?set DST_API_KEY_DEEPSEEK}
+      DST_API_KEY_JEV: ${DST_API_KEY_JEV:?set DST_API_KEY_JEV}
+      DST_API_KEY_WAREHOUSE: ${DST_API_KEY_WAREHOUSE:?set DST_API_KEY_WAREHOUSE}
+      DST_TYPED_SERVING: auto
+      DST_LLM_DESCRIPTIONS: "false"
+      DST_CLERK_PUBLISHABLE_KEY: ${DST_CLERK_PUBLISHABLE_KEY:?set DST_CLERK_PUBLISHABLE_KEY}
+      DST_DEMO_ORG_ID: ${DST_DEMO_ORG_ID:-}
+      DST_DEMO_KEY_DAYS: ${DST_DEMO_KEY_DAYS:-7}
+      DST_DAILY_REQUEST_CAP: ${DST_DAILY_REQUEST_CAP:-2000}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DEMO_DOMAIN: ${DEMO_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:
