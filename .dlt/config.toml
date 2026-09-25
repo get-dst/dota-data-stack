@@ -1,0 +1,7 @@
+# One pro match normalizes into ~4,000 child rows. dlt normalizes one extract file per
+# worker, so a run's matches are split into files of 20 to keep every core busy.
+[extract.data_writer]
+file_max_items = 20
+
+[normalize]
+workers = 8

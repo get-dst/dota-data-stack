@@ -100,6 +100,8 @@ _DROP_PLAYER = {
     "item_win",
     "kill_streaks",
     "killed",
+    "lane_pos",  # laning heatmap: half of a match's rows, and no model reads it
+    "times",  # the minute axis of gold_t/xp_t/lh_t: the array index says the same
     "life_state",
     "max_hero_hit",
     "multi_kills",
@@ -241,24 +243,11 @@ def _pairs(d: Any, key: str, value: str) -> list[dict[str, Any]]:
     return [{key: k, value: v} for k, v in (d or {}).items()] if isinstance(d, dict) else []
 
 
-def _heatmap(d: Any) -> list[dict[str, int]]:
-    """lane_pos {x: {y: count}} as (x, y, count) rows."""
-    if not isinstance(d, dict):
-        return []
-    return [
-        {"x": int(x), "y": int(y), "count": int(n)}
-        for x, col in d.items()
-        if isinstance(col, dict)
-        for y, n in col.items()
-    ]
-
-
 def _player(p: dict[str, Any]) -> dict[str, Any]:
     out = {k: v for k, v in p.items() if k not in _DROP_PLAYER}
     out["killed_by"] = _pairs(p.get("killed_by"), "hero_key", "count")
     out["damage_taken"] = _pairs(p.get("damage_taken"), "source_key", "amount")
     out["damage"] = _pairs(p.get("damage"), "target_key", "amount")
-    out["lane_pos"] = _heatmap(p.get("lane_pos"))
     return out
 
 
