@@ -4,8 +4,8 @@
 service already live in `kurator-core` (europe-west1, Cloud SQL `dst-pg`, demo mode on,
 org `demo`). Launching means swapping its jaffle lens for this project, moving it onto
 MotherDuck and a domain, and switching Clerk to production. Every step below is a click
-or a command for the maintainer. Nothing in this directory has been run against a cloud
-account.
+or a command for the maintainer. Only step 5's domain mapping has been run against the
+cloud account (2026-09-25); everything else is still to do.
 
 `deploy/cloudrun.sh <step>` holds the gcloud side. Its defaults are the existing names;
 override any with env (`PROJECT`, `REGION`, `SERVICE`, `DEMO_DOMAIN`, `IMAGE`, …). The
@@ -17,7 +17,7 @@ one machine. It needs `DST_BASE_IMAGE` to be pullable (see step 0).
 | Bound | Value | Where |
 |---|---|---|
 | Per person, per lens, per minute | 60 | `rate_limit.per_caller_rpm` in each `serve/lenses/*/lens.yaml` (in-process limiter) |
-| Per person, per lens, per rolling 24 h | 50 answers, so 150 across the three lenses | `rate_limit.per_caller_rpd`; counted from `request_log`, refused with 429 + `Retry-After` |
+| Per person, per lens, per rolling 24 h | 50 answers, so 250 across the five lenses | `rate_limit.per_caller_rpd`; counted from `request_log`, refused with 429 + `Retry-After` |
 | Whole demo, per rolling 24 h | 2000 answers | `DST_DAILY_REQUEST_CAP`. The code default is **0 = no cap**, so it must be set |
 | Key minted on `/demo` | 7 days, one live key per person (a re-mint revokes the last) | `DST_DEMO_KEY_DAYS` |
 | MCP OAuth token (what Claude holds) | **7 days** in demo mode (= `DST_DEMO_KEY_DAYS`), no refresh token: people reconnect weekly | dst ≥ 0.5.7 |
@@ -104,8 +104,10 @@ deploy/cloudrun.sh migrate            # dst-migrate job on the new image
 
 ## 5. Domain
 
-- [ ] `deploy/cloudrun.sh domain` (maps `demo.dataservetool.com` onto the service).
-- [ ] Cloudflare: `CNAME demo → ghs.googlehosted.com`, **DNS only**. A proxied (orange)
+- [x] `deploy/cloudrun.sh domain` (maps `demo.dataservetool.com` onto the service). Done
+      2026-09-25 20:49 UTC.
+- [x] Cloudflare: `CNAME demo → ghs.googlehosted.com`, **DNS only** (resolves to a Google
+      IP, so not proxied). A proxied (orange)
       record blocks Google's certificate, the same as on the docs site.
 - [ ] `deploy/cloudrun.sh status` until the mapping reports its certificate ready.
       Do not deploy before that. Step 6 sets `DST_PUBLIC_BASE_URL` to the domain, and MCP
@@ -137,7 +139,7 @@ cd serve && dst apply --url $DEMO --token $DEMO_TOKEN --timeout 1500
 - Do **not** run `dst demo`. It publishes the bundled jaffle lens, not this project.
 - Pass `--url`/`--token` explicitly. `serve/.env` points at the local server on 8765.
 - The server resolves `DST_API_KEY_WAREHOUSE` from its own env, probes MotherDuck, and
-  stores the token encrypted. The rehearsal apply took 85 s with all three eval gates
+  stores the token encrypted. The rehearsal apply took 85 s with all five eval gates
   passing.
 - One case is flaky: pro_meta's "Which offlaners have the best win rate in pro matches
   this patch?" (the first apply flagged it, and a re-apply blocked on it). A block
@@ -150,14 +152,16 @@ cd serve && dst apply --url $DEMO --token $DEMO_TOKEN --timeout 1500
       `dst_` key appears, valid 7 days, with three snippets.
 - [ ] The page's heading and the consent pages say **roshan** (`DST_INSTANCE_NAME`),
       with "answers by dst (data serve tool)" above, and "What you can ask" lists the
-      three Dota lenses with an example question each.
+      five Dota lenses with an example question each.
 - [ ] `curl` snippet → HTTP 200 with `status: ok` (the page's example question comes from
       the lens's own declared questions).
 - [ ] Claude (desktop or claude.ai) → Settings → Connectors → Add custom connector → name
       it **roshan**, URL `https://demo.dataservetool.com/mcp` → Connect → consent page
       ("Sign in to roshan") → sign in with the same account. Then ask:
 
-  1. *"Ask roshan: what is the current patch in pro Dota?"* → **7.41**, a certified answer.
+  1. *"Ask roshan: what is the current patch in pro Dota?"* → **7.41**. It comes back typed
+     (`resolution.method: construction`); this wording does not match the certified
+     "What is the current patch?", so it is not a certified answer.
   2. *"How many pro matches were played on the current patch?"* → certified; **1,587** at
      rehearsal time (2026-09-25 11:30 UTC). It grows with the hourly load, so check the
      count matches its SQL rather than the number.
@@ -166,8 +170,8 @@ cd serve && dst apply --url $DEMO --token $DEMO_TOKEN --timeout 1500
 
   Optional, to show both serving paths: *"Which hero was banned most on the current
   patch?"* comes back typed (`resolution.method: construction`); Lone Druid had 880 bans
-  at rehearsal time. *"Which pro match this patch lasted the longest, and who won it?"*
-  comes back with an `UNTYPED: served by raw-SQL generation …` line in `degraded`.
+  at rehearsal time (by ban rate, Treant Protector led at the 2026-09-25 evening
+  preflight). *"Which pro match this patch lasted the longest, and who won it?"* comes back with an `UNTYPED: served by raw-SQL generation …` line in `degraded`.
 - [ ] `dst observe --url $DEMO --token $DEMO_TOKEN` shows your email as a caller, with cost.
 
 ## 9. Retention
@@ -183,7 +187,7 @@ cd serve && dst apply --url $DEMO --token $DEMO_TOKEN --timeout 1500
   people asked that the lenses refused, which is the authoring backlog.
 - **Abuse**: the 429 denials land in `audit_log` (`reason` is "daily quota exceeded",
   "daily request cap exceeded" or "rate limit exceeded"), not in `observe`. A caller near
-  150/day or the org near 2000/day is the signal.
+  250/day or the org near 2000/day is the signal.
 - **Spend**: the DeepSeek balance page, and Jev's. Cloud Run and Cloud SQL on the GCP
   billing report.
 - **Data**: the `load` workflow on GitHub Actions. Two days red means stale answers,

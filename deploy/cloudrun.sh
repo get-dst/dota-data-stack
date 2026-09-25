@@ -52,9 +52,11 @@ deploy)
   # --update-* keeps what the service already has (DB URLs, DST_SECRET_KEY, DST_PROVIDERS,
   # DST_ENVIRONMENT, DST_MIGRATE_ON_START=false). Providers stay as they are: deepseek +
   # jev from the dst-providers secret; the image's local embedder is picked up implicitly.
+  # 2Gi: the local embedder lifts the process to ~780 MiB resident after an apply, with
+  # a 945 MiB peak; 1Gi leaves no headroom.
   g run deploy "$SERVICE" --region "$REGION" --image "$IMAGE" \
     --service-account "$SA" --set-cloudsql-instances "$SQL" \
-    --min-instances 1 --max-instances 1 --no-cpu-throttling --memory 1Gi --cpu 1 \
+    --min-instances 1 --max-instances 1 --no-cpu-throttling --memory 2Gi --cpu 1 \
     --update-env-vars "DST_PUBLIC_BASE_URL=https://${DEMO_DOMAIN},DST_CLERK_PUBLISHABLE_KEY=${DST_CLERK_PUBLISHABLE_KEY},DST_DEMO_ORG_ID=${DST_DEMO_ORG_ID},DST_DEMO_KEY_DAYS=7,DST_DAILY_REQUEST_CAP=2000,DST_TYPED_SERVING=auto,DST_INSTANCE_NAME=roshan,DST_LLM_DESCRIPTIONS=false" \
     --update-secrets "DST_API_KEY_WAREHOUSE=dst-api-key-warehouse:latest"
   ;;
