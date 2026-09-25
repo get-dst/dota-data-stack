@@ -35,9 +35,9 @@ records their tokens (`resolution.decisions[].usage`) but does not price them.
 
 ## 0. Before anything
 
-- [ ] dst 0.5.3 on the laptop (`pip install -U 'dst-core==0.5.3'`, or `~/dst-dev/.venv/bin/dst`).
+- [ ] dst 0.5.4 on the laptop (`pip install -U 'dst-core==0.5.4'`, or `~/dst-dev/.venv/bin/dst`).
 - [ ] `gcloud auth login` as the account that owns `kurator-core`.
-- [ ] Decide on the GHCR image. `ghcr.io/get-dst/dst:0.5.3` was pushed by the release,
+- [ ] Decide on the GHCR image. `ghcr.io/get-dst/dst:0.5.4` was pushed by the release,
       but an anonymous pull is refused (403), so the package is private. Cloud Run does
       not need it: `cloudbuild.yaml` builds from the public source tag. The VM variant and
       every stranger following dst's `deploy/` do need it. Either make it public
@@ -97,7 +97,7 @@ records their tokens (`resolution.decisions[].usage`) but does not price them.
 ## 4. Build, secret, migrate
 
 ```
-deploy/cloudrun.sh build              # Cloud Build: dst v0.5.3 source + local-embed + baked weights (~10 min)
+deploy/cloudrun.sh build              # Cloud Build: dst v0.5.4 source + local-embed + baked weights (~10 min)
 deploy/cloudrun.sh warehouse-secret   # paste the read-scaling token; stored as dst-api-key-warehouse
 deploy/cloudrun.sh migrate            # dst-migrate job on the new image
 ```
@@ -148,14 +148,15 @@ cd serve && dst apply --url $DEMO --token $DEMO_TOKEN --timeout 1500
 
 - [ ] Private window → `https://demo.dataservetool.com/demo` → sign in with Google. A
       `dst_` key appears, valid 7 days, with three snippets.
-- [ ] `curl` snippet → HTTP 200 with `status: ok`. **Edit the question first**: the page
-      still bakes in jaffle's "How many customers are repeat customers?" (a dst fix is
-      pending; see the report).
-- [ ] Claude (desktop or claude.ai) → Settings → Connectors → Add custom connector → URL
-      `https://demo.dataservetool.com/mcp` → Connect → consent page → sign in with the same
-      account. Then ask:
+- [ ] The page title and consent pages say **roshan** (`DST_INSTANCE_NAME`), with
+      "answers by dst (data serve tool)" beneath.
+- [ ] `curl` snippet → HTTP 200 with `status: ok` (the page's example question comes from
+      the lens's own declared questions).
+- [ ] Claude (desktop or claude.ai) → Settings → Connectors → Add custom connector → name
+      it **roshan**, URL `https://demo.dataservetool.com/mcp` → Connect → consent page
+      ("Sign in to roshan") → sign in with the same account. Then ask:
 
-  1. *"Using dst, what is the current patch in pro Dota?"* → **7.41**, a certified answer.
+  1. *"Ask roshan: what is the current patch in pro Dota?"* → **7.41**, a certified answer.
   2. *"How many pro matches were played on the current patch?"* → certified; **1,587** at
      rehearsal time (2026-09-25 11:30 UTC). It grows with the hourly load, so check the
      count matches its SQL rather than the number.

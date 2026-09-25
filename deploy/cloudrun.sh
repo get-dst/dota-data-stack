@@ -11,7 +11,7 @@ REGION=${REGION:-europe-west1}
 SERVICE=${SERVICE:-dst}
 SA=${SA:-dst-run@${PROJECT}.iam.gserviceaccount.com}
 SQL=${SQL:-${PROJECT}:${REGION}:dst-pg}
-DST_VERSION=${DST_VERSION:-0.5.3}
+DST_VERSION=${DST_VERSION:-0.5.4}
 IMAGE=${IMAGE:-${REGION}-docker.pkg.dev/${PROJECT}/dst/dota-demo:${DST_VERSION}}
 DEMO_DOMAIN=${DEMO_DOMAIN:-demo.dataservetool.com}
 DST_DEMO_ORG_ID=${DST_DEMO_ORG_ID:-8281cd7f-ba1d-44df-a13d-a6e36bff51bf}
@@ -55,7 +55,7 @@ deploy)
   g run deploy "$SERVICE" --region "$REGION" --image "$IMAGE" \
     --service-account "$SA" --set-cloudsql-instances "$SQL" \
     --min-instances 1 --max-instances 1 --no-cpu-throttling --memory 1Gi --cpu 1 \
-    --update-env-vars "DST_PUBLIC_BASE_URL=https://${DEMO_DOMAIN},DST_CLERK_PUBLISHABLE_KEY=${DST_CLERK_PUBLISHABLE_KEY},DST_DEMO_ORG_ID=${DST_DEMO_ORG_ID},DST_DEMO_KEY_DAYS=7,DST_DAILY_REQUEST_CAP=2000,DST_TYPED_SERVING=auto,DST_LLM_DESCRIPTIONS=false" \
+    --update-env-vars "DST_PUBLIC_BASE_URL=https://${DEMO_DOMAIN},DST_CLERK_PUBLISHABLE_KEY=${DST_CLERK_PUBLISHABLE_KEY},DST_DEMO_ORG_ID=${DST_DEMO_ORG_ID},DST_DEMO_KEY_DAYS=7,DST_DAILY_REQUEST_CAP=2000,DST_TYPED_SERVING=auto,DST_INSTANCE_NAME=roshan,DST_LLM_DESCRIPTIONS=false" \
     --update-secrets "DST_API_KEY_WAREHOUSE=dst-api-key-warehouse:latest"
   ;;
 prune-job)
