@@ -1,0 +1,4 @@
+left: item_timing_buckets
+right: items
+on: item_timing_buckets.item_id = items.item_id
+relationship: many_to_one

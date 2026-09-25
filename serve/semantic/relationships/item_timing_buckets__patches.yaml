@@ -1,0 +1,4 @@
+left: item_timing_buckets
+right: patches
+on: item_timing_buckets.patch_id = patches.patch_id
+relationship: many_to_one

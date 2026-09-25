@@ -1,0 +1,4 @@
+left: final_inventories
+right: items
+on: final_inventories.item_id = items.item_id
+relationship: many_to_one

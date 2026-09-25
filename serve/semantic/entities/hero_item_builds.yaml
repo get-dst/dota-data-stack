@@ -25,10 +25,12 @@ fields:
   - {name: games_with_item, type: integer, description: Pro games the hero ended holding the item.}
   - {name: wins_with_item, type: integer}
   - {name: hero_games, type: integer, description: "Pro games the hero played on the patch; repeats on every item row, so never sum it across items."}
+  - {name: is_major_item, type: boolean, description: "True for a major item: at least 2000 gold, assembled or with its own active ability, not a recipe, consumable or neutral item."}
 dimensions:
   - {name: hero_name, type: string}
   - {name: item_name, type: string}
   - {name: patch_name, type: string}
+  - {name: is_major_item, type: boolean}
 metrics:
   - {name: total_games_with_item, agg: sum, expr: hero_item_builds.games_with_item}
   - {name: total_wins_with_item, agg: sum, expr: hero_item_builds.wins_with_item}

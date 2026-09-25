@@ -1,0 +1,39 @@
+name: starting_builds
+description: Whole starting builds — every pre-game purchase of one player in one game written
+  as one line (e.g. "Iron Branch x3, Magic Stick, Ring of Protection"), counted per hero and
+  patch.
+grain: one row per hero, patch and starting build
+use_cases:
+  - Use for the most common or best-winning complete starting build on a hero.
+  - Avoid for single starting items; that is starting_items.
+common_questions:
+  - What is the most common starting build on Pudge?
+  - Which starting build wins most on Juggernaut?
+source:
+  connection: warehouse
+  table: marts.starting_builds
+primary_key: [patch_id, hero_id, starting_build]
+population: Professional matches in the loaded window that have a purchase log, player-games
+  with at least one purchase at or before 0:00.
+fields:
+  - {name: patch_id, type: integer}
+  - {name: patch_name, type: string}
+  - {name: hero_id, type: integer}
+  - {name: hero_name, type: string}
+  - {name: starting_build, type: string, description: "Every item bought before the horn in item-name order, counts after an x."}
+  - {name: build_items, type: integer, description: Item units in the build.}
+  - {name: games, type: integer}
+  - {name: wins, type: integer}
+dimensions:
+  - {name: hero_name, type: string}
+  - {name: patch_name, type: string}
+  - {name: starting_build, type: string}
+metrics:
+  - {name: build_games, agg: sum, expr: starting_builds.games}
+  - {name: build_wins, agg: sum, expr: starting_builds.wins}
+  - name: build_win_rate
+    better: higher
+    type: ratio
+    numerator: build_wins
+    denominator: build_games
+    format: percent

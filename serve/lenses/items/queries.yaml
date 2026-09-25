@@ -1,0 +1,28 @@
+use_when:
+  - item builds, core build order and item timings of heroes in professional Dota 2 matches
+  - win rate by item timing, starting items and starting builds
+  - end-of-game inventories, neutral items by tier, enchantments, consumed Aghanim's Shard and Blessing
+sample_queries:
+  - question: What do pros finish first on Juggernaut?
+    sql: |
+      SELECT item_name, SUM(games) AS games, SUM(wins) * 1.0 / SUM(games) AS win_rate
+      FROM marts.hero_core_items AS hero_core_items
+      WHERE hero_name = 'Juggernaut' AND item_order = 'first'
+      GROUP BY item_name
+      ORDER BY games DESC
+      LIMIT 5
+  - question: Which neutral item do pros end the game with most often?
+    sql: |
+      SELECT item_name, neutral_tier, SUM(games_with_item) AS games
+      FROM marts.final_inventories AS final_inventories
+      WHERE slot_group = 'neutral'
+      GROUP BY item_name, neutral_tier
+      ORDER BY games DESC
+      LIMIT 5
+  - question: Does an early Black King Bar win more on Earth Spirit?
+    sql: |
+      SELECT timing_bucket, SUM(games) AS games, SUM(wins) * 1.0 / SUM(games) AS win_rate
+      FROM marts.item_timing_buckets AS item_timing_buckets
+      WHERE hero_name = 'Earth Spirit' AND item_name = 'Black King Bar'
+      GROUP BY timing_bucket, bucket_order
+      ORDER BY bucket_order

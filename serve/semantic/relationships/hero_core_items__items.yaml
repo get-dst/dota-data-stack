@@ -1,0 +1,4 @@
+left: hero_core_items
+right: items
+on: hero_core_items.item_id = items.item_id
+relationship: many_to_one

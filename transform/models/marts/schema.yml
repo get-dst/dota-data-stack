@@ -485,6 +485,8 @@ models:
         description: Of those games, the ones the hero's side won.
       - name: hero_games
         description: Pro games the hero played on the patch; repeats on every item row, so never sum it across items.
+      - name: is_major_item
+        description: True when the item is a major item (dim_item.is_major_item - at least 2000 gold, assembled or with an active ability, not a recipe, consumable or neutral item).
 
   - name: team_head_to_head
     description: Pro matches between two identified teams, one row per team, opponent and patch;
@@ -569,6 +571,8 @@ models:
         description: Average game minute of the first purchase across those games.
       - name: earliest_bought_min
         description: Earliest game minute of a first purchase across those games.
+      - name: is_major_item
+        description: True when the item is a major item (dim_item.is_major_item); items of 1000 gold or more that are not major are components and cheaper builds such as Ogre Axe or Power Treads.
 
   - name: league_standings
     description: Each identified team's record inside each league, one row per league and

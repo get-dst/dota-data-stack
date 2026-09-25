@@ -1,0 +1,45 @@
+name: starting_items
+description: What pros buy before the horn — per hero, item and patch, how many games bought the
+  item at or before 0:00, how many units, and how those games ended.
+grain: one row per hero, item and patch
+use_cases:
+  - Use for starting items, laning purchases before the horn, and which heroes start with a given item.
+  - For "what do pros start with on X", rank the hero's items by starting_games and give the count beside each.
+  - Avoid for the whole starting build as one line; that is starting_builds.
+common_questions:
+  - What do pros start with on Pudge?
+  - Which heroes start with a Quelling Blade most often?
+  - How many Iron Branches do pros start with on Pudge?
+source:
+  connection: warehouse
+  table: marts.starting_items
+primary_key: [patch_id, hero_id, item_id]
+population: Pre-game purchases (at or before 0:00) in professional matches in the loaded
+  window that have a purchase log. The free starting Town Portal Scroll is not a purchase and
+  is not here.
+fields:
+  - {name: patch_id, type: integer}
+  - {name: patch_name, type: string}
+  - {name: hero_id, type: integer}
+  - {name: hero_name, type: string}
+  - {name: item_id, type: integer}
+  - {name: item_name, type: string, description: "Display name, e.g. Iron Branch."}
+  - {name: item_cost, type: integer}
+  - {name: games_bought, type: integer, description: Pro games in which the hero bought at least one before the horn.}
+  - {name: units_bought, type: integer, description: Units bought before the horn over those games.}
+  - {name: wins_when_bought, type: integer}
+  - {name: hero_games, type: integer, description: "Pro games the hero played on the patch with a purchase log; repeats on every item row, so never sum it across items."}
+dimensions:
+  - {name: hero_name, type: string}
+  - {name: item_name, type: string}
+  - {name: patch_name, type: string}
+metrics:
+  - {name: starting_games, agg: sum, expr: starting_items.games_bought, description: Games in which the item was bought before the horn.}
+  - {name: starting_units, agg: sum, expr: starting_items.units_bought}
+  - {name: starting_wins, agg: sum, expr: starting_items.wins_when_bought}
+  - name: starting_item_win_rate
+    better: higher
+    type: ratio
+    numerator: starting_wins
+    denominator: starting_games
+    format: percent

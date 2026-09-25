@@ -24,11 +24,13 @@ joined as (
         i.item_id,
         i.item_name,
         i.cost as item_cost,
+        d.is_major_item,
         f.first_bought_min
     from first_buy as f
     inner join {{ ref('fact_player_match') }} as pm
         on pm.match_id = f.match_id and pm.player_slot = f.player_slot
     inner join {{ ref('stg_items') }} as i on i.item_key = f.item_key
+    inner join {{ ref('dim_item') }} as d on d.item_id = i.item_id
     where i.cost >= 1000
 )
 
@@ -43,6 +45,7 @@ select
     count(*) as games_bought,
     sum(case when is_win then 1 else 0 end) as wins_when_bought,
     avg(first_bought_min) as avg_first_bought_min,
-    min(first_bought_min) as earliest_bought_min
+    min(first_bought_min) as earliest_bought_min,
+    is_major_item
 from joined
-group by 1, 2, 3, 4, 5, 6, 7
+group by 1, 2, 3, 4, 5, 6, 7, 12

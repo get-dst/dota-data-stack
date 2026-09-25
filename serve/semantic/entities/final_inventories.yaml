@@ -1,0 +1,51 @@
+name: final_inventories
+description: Everything a pro hero ended the game with, per hero, patch, slot group and item —
+  the six main slots, the backpack, the neutral item, the enchantment, and the buffs consumed
+  into the hero (Aghanim's Blessing, Aghanim's Shard, Moon Shard).
+grain: one row per hero, patch, slot group and item
+use_cases:
+  - Use for neutral item and enchantment popularity (slot_group neutral or enchantment; neutral_tier for the tier), consumed Aghanim's Shard or Blessing, and backpack contents.
+  - A consumed Aghanim's Scepter shows as Aghanim's Blessing in slot_group consumed; a held Scepter is in main or backpack.
+  - When ranking by a rate, keep rows with at least 20 games (the minimum_games term).
+  - Avoid for when an item was bought; that is item_timings or hero_core_items.
+common_questions:
+  - Which neutral item do pros end the game with most often?
+  - Which tier 5 neutral item has the best win rate?
+  - Which enchantment is most popular in pro games?
+  - Which heroes consume an Aghanim's Shard most often?
+source:
+  connection: warehouse
+  table: marts.final_inventories
+primary_key: [patch_id, hero_id, slot_group, item_id]
+population: End-of-game inventories of every professional match in the loaded window.
+fields:
+  - {name: patch_id, type: integer}
+  - {name: patch_name, type: string}
+  - {name: hero_id, type: integer}
+  - {name: hero_name, type: string}
+  - {name: slot_group, type: string, description: "main, backpack, neutral, enchantment or consumed."}
+  - {name: item_id, type: integer}
+  - {name: item_name, type: string}
+  - {name: item_cost, type: integer}
+  - {name: neutral_tier, type: integer, description: "Neutral item tier 1 to 5; null for shop items and enchantments."}
+  - {name: is_major_item, type: boolean}
+  - {name: games_with_item, type: integer, description: Pro games the hero ended with the item in the slot group; a game counts once.}
+  - {name: wins_with_item, type: integer}
+  - {name: hero_games, type: integer, description: "Pro games the hero played on the patch; repeats on every row of the hero, so never sum it across rows."}
+dimensions:
+  - {name: hero_name, type: string}
+  - {name: item_name, type: string}
+  - {name: patch_name, type: string}
+  - {name: slot_group, type: string}
+  - {name: neutral_tier, type: integer}
+  - {name: is_major_item, type: boolean}
+metrics:
+  - {name: games_ended_with, agg: sum, expr: final_inventories.games_with_item, description: Games ending with the item in the slot group.}
+  - {name: wins_ended_with, agg: sum, expr: final_inventories.wins_with_item}
+  - name: ended_with_win_rate
+    better: higher
+    type: ratio
+    numerator: wins_ended_with
+    denominator: games_ended_with
+    format: percent
+    description: Share of the games ending with the item that were won.

@@ -49,6 +49,10 @@ sources:
         columns:
           - {name: id, description: OpenDota item id.}
           - {name: name, description: Item key, e.g. black_king_bar.}
+      - name: items__components
+        description: The components of each assembled item in OpenDota's item constants (value = component item key); _dlt_parent_id points at items._dlt_id.
+      - name: items__abilities
+        description: The abilities of each item in OpenDota's item constants (type = active, passive, use, toggle or upgrade); _dlt_parent_id points at items._dlt_id.
       - name: patches
         description: OpenDota's patch constants, one row per game version with its release date; replaced on every load.
       - name: teams
