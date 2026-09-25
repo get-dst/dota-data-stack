@@ -1,0 +1,4 @@
+left: advantage_timeline
+right: pro_matches
+on: advantage_timeline.match_id = pro_matches.match_id
+relationship: many_to_one

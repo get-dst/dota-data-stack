@@ -44,3 +44,40 @@
 - question: What changed for Pudge in the latest patch?
   expect: answer
   status: approved
+# Timings, objectives and meta.
+- question: How often does the team ahead in gold at 20 minutes win?
+  expect: answer
+  status: approved
+- question: How many comebacks were there on the current patch?
+  expect: answer
+  status: approved
+- question: Which team threw the most games?
+  expect: answer
+  status: approved
+- question: When is Roshan first killed on average in pro matches?
+  expect: answer
+  status: approved
+- question: How often does the team that draws first blood win?
+  expect: answer
+  status: approved
+- question: Which first objective has the highest win rate on the current patch?
+  expect: answer
+  status: approved
+- question: What is Pudge's pick rate on the current patch?
+  expect: answer
+  status: approved
+- question: Which position is Pudge played in most?
+  expect: answer
+  status: approved
+- question: What was the average gold lead of the eventual winner at 15 minutes?
+  expect: answer
+  status: approved
+- question: What was the gold lead at 20 minutes in my last ranked game?
+  expect: refuse
+  status: approved
+- question: What is the average MMR of the teams that make the most comebacks?
+  expect: refuse
+  status: approved
+- question: Which team made the most comebacks?
+  expect: answer
+  status: approved

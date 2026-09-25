@@ -1,0 +1,4 @@
+left: advantage_timeline
+right: patches
+on: advantage_timeline.patch_id = patches.patch_id
+relationship: many_to_one

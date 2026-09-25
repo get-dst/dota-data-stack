@@ -1,0 +1,45 @@
+name: advantage_timeline
+description: The gold and experience advantage of a professional match minute by minute,
+  from the Radiant side and from the eventual winner's side.
+grain: one row per match per game minute, so counting rows counts match-minutes, not matches
+use_cases:
+  - Use for the average lead at a given minute (filter minute) across many matches, or how a single match swung.
+  - Avoid for one number per match (the lead at 10/15/20/25, comebacks); that is match_leads.
+common_questions:
+  - What was the average gold lead of the eventual winner at minute 15?
+  - How did the gold advantage swing in match 9015048075?
+source:
+  connection: warehouse
+  table: marts.gold_advantage_timeline
+default_time_field: started_at
+primary_key: [match_id, minute]
+population: Professional matches in the loaded window whose per-minute advantage OpenDota
+  supplies; a match without it has no rows.
+fields:
+  - {name: match_id, type: integer}
+  - {name: minute, type: integer, description: "Game minute, 0 = the horn."}
+  - {name: radiant_gold_adv, type: integer, description: "Radiant net worth minus Dire net worth at that minute; negative = Dire ahead."}
+  - {name: radiant_xp_adv, type: integer, description: "Radiant experience minus Dire experience at that minute; negative = Dire ahead."}
+  - {name: winner_gold_adv, type: integer, description: "Gold advantage of the side that went on to win; negative = the winner was behind."}
+  - {name: winner_xp_adv, type: integer, description: "Experience advantage of the side that went on to win; negative = the winner was behind."}
+  - {name: radiant_win, type: boolean}
+  - {name: started_at, type: timestamp, description: "Match start, UTC."}
+  - {name: match_date, type: date, description: "Match start date, UTC."}
+  - {name: patch_id, type: integer}
+  - {name: patch_name, type: string}
+  - {name: league_id, type: integer}
+  - {name: league_name, type: string}
+dimensions:
+  - {name: minute, type: integer}
+  - {name: match_id, type: integer}
+  - {name: patch_name, type: string}
+  - {name: league_name, type: string}
+  - {name: match_date, type: date}
+metrics:
+  - {name: match_minutes, agg: count, expr: advantage_timeline.minute, description: "Match-minutes, i.e. rows."}
+  - {name: matches, agg: count_distinct, expr: advantage_timeline.match_id, description: Distinct matches.}
+  - {name: avg_radiant_gold_adv, agg: avg, expr: advantage_timeline.radiant_gold_adv, description: Average Radiant gold advantage.}
+  - {name: avg_winner_gold_adv, agg: avg, expr: advantage_timeline.winner_gold_adv, description: Average gold advantage of the eventual winner.}
+  - {name: avg_winner_xp_adv, agg: avg, expr: advantage_timeline.winner_xp_adv, description: Average experience advantage of the eventual winner.}
+  - {name: max_radiant_gold_adv, agg: max, expr: advantage_timeline.radiant_gold_adv, description: Largest Radiant gold advantage.}
+  - {name: min_radiant_gold_adv, agg: min, expr: advantage_timeline.radiant_gold_adv, description: "Most negative Radiant gold advantage, i.e. the largest Dire lead as a negative number."}

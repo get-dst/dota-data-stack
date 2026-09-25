@@ -1,0 +1,4 @@
+left: hero_position_meta
+right: heroes
+on: hero_position_meta.hero_id = heroes.hero_id
+relationship: many_to_one

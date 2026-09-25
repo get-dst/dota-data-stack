@@ -1,0 +1,63 @@
+name: hero_patch_trends
+description: Per hero and patch over professional matches — picks, bans, wins, pick, ban and
+  win rate — beside the same numbers on the previous patch and the change between them.
+grain: one row per hero per patch
+use_cases:
+  - Use for a hero's pro pick, ban and win rate on a patch, and how they moved from the previous patch.
+  - Avoid for day-by-day numbers; that is hero_daily_stats.
+common_questions:
+  - What is Pudge's pick rate on the current patch?
+  - Which heroes gained the most pick rate since the previous patch?
+  - Which hero has the highest ban rate on the current patch?
+source:
+  connection: warehouse
+  table: marts.hero_patch_trends
+primary_key: [patch_id, hero_id]
+population: Heroes picked or banned at least once in the professional matches of the loaded
+  window, per patch. The previous-patch columns and the changes are null when the window
+  holds no match of the previous patch.
+fields:
+  - {name: patch_id, type: integer}
+  - {name: patch_name, type: string}
+  - {name: patch_started_at, type: timestamp}
+  - {name: is_current_patch, type: boolean, description: True for the patch in play now.}
+  - {name: hero_id, type: integer}
+  - {name: hero_name, type: string}
+  - {name: matches_on_patch, type: integer, description: "Pro matches on the patch; repeats on every hero row, never sum it across heroes."}
+  - {name: picks, type: integer, description: Matches the hero was picked in.}
+  - {name: bans, type: integer}
+  - {name: wins, type: integer}
+  - {name: losses, type: integer}
+  - {name: win_rate, type: number, description: "wins / picks, 0-1."}
+  - {name: pick_rate, type: number, description: "picks / matches_on_patch, 0-1."}
+  - {name: ban_rate, type: number, description: "bans / matches_on_patch, 0-1."}
+  - {name: previous_patch_id, type: integer}
+  - {name: previous_patch_name, type: string}
+  - {name: previous_matches, type: integer}
+  - {name: previous_picks, type: integer}
+  - {name: previous_bans, type: integer}
+  - {name: previous_win_rate, type: number}
+  - {name: previous_pick_rate, type: number}
+  - {name: previous_ban_rate, type: number}
+  - {name: win_rate_change, type: number, description: "win_rate minus previous_win_rate, in rate points (0.05 = five points)."}
+  - {name: pick_rate_change, type: number, description: pick_rate minus previous_pick_rate.}
+  - {name: ban_rate_change, type: number, description: ban_rate minus previous_ban_rate.}
+dimensions:
+  - {name: hero_name, type: string}
+  - {name: patch_name, type: string}
+  - {name: is_current_patch, type: boolean}
+metrics:
+  - {name: patch_picks, agg: sum, expr: hero_patch_trends.picks}
+  - {name: patch_bans, agg: sum, expr: hero_patch_trends.bans}
+  - {name: patch_wins, agg: sum, expr: hero_patch_trends.wins}
+  - name: patch_win_rate
+    better: higher
+    type: ratio
+    numerator: patch_wins
+    denominator: patch_picks
+    format: percent
+    description: Wins divided by picks for the hero on the patch.
+  - {name: patch_pick_rate, agg: max, expr: hero_patch_trends.pick_rate, format: percent, description: "The hero's pick rate on one patch (one row per hero and patch; group by hero and patch)."}
+  - {name: patch_ban_rate, agg: max, expr: hero_patch_trends.ban_rate, format: percent, description: "The hero's ban rate on one patch (group by hero and patch)."}
+  - {name: pick_rate_change_vs_previous, agg: max, expr: hero_patch_trends.pick_rate_change, description: "Change in pick rate from the previous patch (group by hero and patch); null without previous-patch matches."}
+  - {name: win_rate_change_vs_previous, agg: max, expr: hero_patch_trends.win_rate_change, description: "Change in win rate from the previous patch (group by hero and patch); null without previous-patch picks."}

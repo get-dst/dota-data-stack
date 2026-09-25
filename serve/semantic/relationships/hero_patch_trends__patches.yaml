@@ -1,0 +1,4 @@
+left: hero_patch_trends
+right: patches
+on: hero_patch_trends.patch_id = patches.patch_id
+relationship: many_to_one

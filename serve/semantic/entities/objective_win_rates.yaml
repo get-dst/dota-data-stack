@@ -1,0 +1,35 @@
+name: objective_win_rates
+description: Per patch and first objective (first blood, first tower, first Roshan), how often
+  the side that took it went on to win a professional match.
+grain: one row per patch per objective
+use_cases:
+  - Use to compare which first objective predicts the winner best, per patch.
+  - Avoid for timings or per-match detail; that is match_objectives.
+common_questions:
+  - Which first objective has the highest win rate?
+  - How often does the team that kills Roshan first win on the current patch?
+source:
+  connection: warehouse
+  table: marts.objective_win_rates
+primary_key: [patch_id, objective]
+population: Professional matches in the loaded window in which a side took the objective;
+  matches without a Roshan kill, or without an objective log, are not counted for it.
+fields:
+  - {name: patch_id, type: integer}
+  - {name: patch_name, type: string}
+  - {name: objective, type: string, description: "first_blood, first_tower or first_roshan."}
+  - {name: matches, type: integer, description: Matches in which a side took the objective.}
+  - {name: taker_wins, type: integer, description: "Of those, matches the side that took it won."}
+  - {name: taker_win_rate, type: number, description: "taker_wins / matches, 0-1, precomputed per row; aggregate with the objective_win_rate metric."}
+dimensions:
+  - {name: objective, type: string}
+  - {name: patch_name, type: string}
+metrics:
+  - {name: total_matches, agg: sum, expr: objective_win_rates.matches}
+  - {name: total_taker_wins, agg: sum, expr: objective_win_rates.taker_wins}
+  - name: objective_win_rate
+    type: ratio
+    numerator: total_taker_wins
+    denominator: total_matches
+    format: percent
+    description: Share of matches the side that took the objective won.

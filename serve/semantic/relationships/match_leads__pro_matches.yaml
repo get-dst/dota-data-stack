@@ -1,0 +1,4 @@
+left: match_leads
+right: pro_matches
+on: match_leads.match_id = pro_matches.match_id
+relationship: one_to_one

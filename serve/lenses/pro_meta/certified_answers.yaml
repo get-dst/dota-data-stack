@@ -20,3 +20,19 @@
     FROM marts.dim_patch AS patches
     WHERE patches.is_current = TRUE
   status: active
+- question: How often does the side that kills Roshan first win on the current patch?
+  sql: |
+    SELECT CAST(SUM(objective_win_rates.taker_wins) AS DOUBLE)
+           / NULLIF(SUM(objective_win_rates.matches), 0) AS objective_win_rate
+    FROM marts.objective_win_rates AS objective_win_rates
+    JOIN marts.dim_patch AS patches ON patches.patch_id = objective_win_rates.patch_id
+    WHERE patches.is_current = TRUE
+      AND objective_win_rates.objective = 'first_roshan'
+  status: active
+- question: How many comebacks from 10 000 gold behind were there on the current patch?
+  sql: |
+    SELECT SUM(CASE WHEN match_leads.is_comeback THEN 1 ELSE 0 END) AS comebacks
+    FROM marts.match_leads AS match_leads
+    JOIN marts.dim_patch AS patches ON patches.patch_id = match_leads.patch_id
+    WHERE patches.is_current = TRUE
+  status: active

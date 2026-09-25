@@ -1,0 +1,4 @@
+left: match_objectives
+right: pro_matches
+on: match_objectives.match_id = pro_matches.match_id
+relationship: one_to_one

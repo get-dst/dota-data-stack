@@ -1,0 +1,39 @@
+version: 2
+
+# The raw child tables and staging views behind the timings, objectives and meta marts
+# (marts/timings/). Declared in their own file, next to sources.yml, so the two stay
+# independent.
+
+sources:
+  - name: raw_timings
+    description: Per-minute advantage arrays of the fetched pro matches, as dlt landed them
+      (load/opendota_pipeline.py); _dlt_parent_id points at raw.match_details._dlt_id and
+      _dlt_list_idx is the minute (0 = the horn).
+    schema: raw
+    tables:
+      - name: match_details__radiant_gold_adv
+        description: Radiant gold advantage per minute of each fetched pro match (value; negative = Dire ahead).
+      - name: match_details__radiant_xp_adv
+        description: Radiant experience advantage per minute of each fetched pro match (value; negative = Dire ahead).
+
+models:
+  - name: stg_match_advantage
+    description: One row per pro match per minute with the Radiant gold and XP advantage.
+    columns:
+      - {name: match_id, description: OpenDota match id.}
+      - {name: minute, description: "Game minute, 0 = the horn."}
+      - {name: radiant_gold_adv, description: Radiant net worth minus Dire net worth at that minute; negative = Dire ahead.}
+      - {name: radiant_xp_adv, description: Radiant experience minus Dire experience at that minute; negative = Dire ahead.}
+
+  - name: stg_match_objectives
+    description: Timed objective events of each pro match (first blood, buildings, Roshan, Aegis and others), sides resolved.
+    columns:
+      - {name: match_id, description: OpenDota match id.}
+      - {name: event_order, description: Position of the event in the match's objective log; breaks ties at the same second.}
+      - {name: event_type, description: "OpenDota event type, e.g. CHAT_MESSAGE_FIRSTBLOOD, building_kill, CHAT_MESSAGE_ROSHAN_KILL, CHAT_MESSAGE_AEGIS."}
+      - {name: time_s, description: Game seconds from the horn; negative before it.}
+      - {name: event_key, description: "For building_kill the building (e.g. npc_dota_goodguys_tower1_top); for first blood the victim's slot 0-9."}
+      - {name: player_slot, description: "Slot of the player credited, 0-4 Radiant and 128-132 Dire; null when no player is."}
+      - {name: building_side, description: "For building_kill, the side that owned the building: radiant or dire."}
+      - {name: building_type, description: "For building_kill: tower, barracks or ancient."}
+      - {name: actor_side, description: "Side that drew first blood, killed Roshan or picked up the Aegis: radiant or dire; null for other events."}
