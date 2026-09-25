@@ -1,0 +1,58 @@
+name: items
+display_name: Dota 2 itemization
+description: Item builds in professional Dota 2 matches from OpenDota — core build order,
+  item timings and their win rates, starting builds, final inventories and neutral items.
+owner: dota-data-stack
+# Match times are UTC epochs; the business day is UTC.
+timezone: UTC
+# The loader runs hourly; two days without new matches is stale.
+stale_after_days: 2
+connections: [warehouse]
+select:
+  entities:
+    - hero_core_items
+    - item_timing_buckets
+    - starting_items
+    - starting_builds
+    - final_inventories
+    - items
+    - hero_item_builds
+    - item_timings
+    - heroes
+    - patches
+  definitions:
+    - major_item
+    - core_item
+    - starting_build
+    - item_timing
+    - current_patch
+    - pro_match
+    - minimum_games
+not_computable:
+  - measure: items in public matches
+    aliases: [pub builds, pubs, public matches, ranked pubs, matchmaking, my bracket]
+    reason: the public match feed carries no items; every item table here is from professional matches
+  - measure: a named player's item builds
+    aliases: [player build, what does a pro player build, personal build, my build, my items]
+    reason: the item tables are aggregated per hero and patch and carry no player identity
+  - measure: item activations
+    aliases: [item uses, how many times an item was used, times activated, cast count]
+    reason: the match records loaded here carry what was bought and held, not how often an item was used
+  - measure: neutral item timing
+    aliases: [when a neutral item drops, neutral item drop, neutral drop, get their neutral, get their tier 1 neutral, get their tier 2 neutral, get their tier 3 neutral, get their tier 4 neutral, get their tier 5 neutral, neutral item minute, neutral item timing, neutral timing]
+    reason: neutral items are found, not bought, so the purchase log has no time for them; only the neutral held at game end is recorded
+  - measure: MMR
+    aliases: [medal, skill bracket, matchmaking rating]
+    reason: professional matches carry no matchmaking rating
+access:
+  allow:
+    - {group: demo}
+    - {group: everyone}
+rate_limit:
+  per_caller_rpm: 60
+  per_caller_rpd: 50
+
+eval_gate: block
+
+# Typed first; a question that does not type falls to raw SQL, disclosed UNTYPED.
+untyped_fallback: true

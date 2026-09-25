@@ -1,0 +1,4 @@
+left: final_inventories
+right: heroes
+on: final_inventories.hero_id = heroes.hero_id
+relationship: many_to_one

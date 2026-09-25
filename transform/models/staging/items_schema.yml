@@ -1,0 +1,13 @@
+version: 2
+
+models:
+  - name: stg_player_inventory
+    description: One row per player per pro match with the end-of-game slots the other staging views leave out - backpack, the enchantment slot and the consumed Moon Shard buff.
+    columns:
+      - {name: match_id, description: OpenDota match id.}
+      - {name: player_slot, description: "0-4 Radiant, 128-132 Dire."}
+      - {name: backpack_0, description: Item id in backpack slot 0 at game end; 0 = empty; joins stg_items.item_id.}
+      - {name: backpack_1, description: Item id in backpack slot 1 at game end; 0 = empty.}
+      - {name: backpack_2, description: Item id in backpack slot 2 at game end; 0 = empty.}
+      - {name: item_neutral2, description: "Item id in the second neutral slot at game end, the enchantment (Greedy, Alert, Timeless and the like); 0 = empty."}
+      - {name: has_moon_shard_buff, description: True when the hero had consumed a Moon Shard by game end.}

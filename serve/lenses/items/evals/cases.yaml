@@ -1,0 +1,44 @@
+# Behavioral expectations: what an enthusiast asks about pro itemization must answer; what
+# the data cannot carry must refuse, by name.
+- question: What do pros finish first on Juggernaut?
+  expect: answer
+  status: approved
+- question: Which heroes go Blink Dagger as their first major item most often?
+  expect: answer
+  status: approved
+- question: When does Juggernaut complete his second core item?
+  expect: answer
+  status: approved
+- question: Does an early Black King Bar win more on Earth Spirit?
+  expect: answer
+  status: approved
+- question: What do pros start with on Pudge?
+  expect: answer
+  status: approved
+- question: What is the most common starting build on Pudge?
+  expect: answer
+  status: approved
+- question: Which neutral item do pros end the game with most often?
+  expect: answer
+  status: approved
+- question: Which tier 5 neutral item has the best win rate?
+  expect: answer
+  status: approved
+- question: Which enchantment is most popular in pro games?
+  expect: answer
+  status: approved
+- question: Which heroes consume an Aghanim's Shard most often?
+  expect: answer
+  status: approved
+- question: Which major items cost more than 5000 gold?
+  expect: answer
+  status: approved
+- question: What should I build on Juggernaut in Divine pubs?
+  expect: refuse
+  status: approved
+- question: How many times was Black King Bar activated in pro games?
+  expect: refuse
+  status: approved
+- question: At what minute do pros get their tier 3 neutral item?
+  expect: refuse
+  status: approved

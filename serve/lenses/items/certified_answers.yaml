@@ -1,0 +1,24 @@
+# Certified answers: question -> SQL pairs a person checked. Served verbatim, re-verified
+# on every apply and by `dst test`.
+- question: What is the most common first major item on Juggernaut?
+  sql: |
+    SELECT item_order, item_name, SUM(games) AS games
+    FROM marts.hero_core_items AS hero_core_items
+    WHERE hero_name = 'Juggernaut' AND item_order = 'first'
+    GROUP BY item_order, item_name
+    ORDER BY games DESC
+  status: active
+- question: Which neutral item did pros end the game with most often?
+  sql: |
+    SELECT item_name, SUM(games_with_item) AS games
+    FROM marts.final_inventories AS final_inventories
+    WHERE slot_group = 'neutral'
+    GROUP BY item_name
+    ORDER BY games DESC
+  status: active
+- question: How many items count as major items?
+  sql: |
+    SELECT COUNT(*) AS major_items
+    FROM marts.dim_item AS items
+    WHERE items.is_major_item = TRUE
+  status: active

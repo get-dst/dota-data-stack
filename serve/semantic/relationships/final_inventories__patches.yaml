@@ -1,0 +1,4 @@
+left: final_inventories
+right: patches
+on: final_inventories.patch_id = patches.patch_id
+relationship: many_to_one

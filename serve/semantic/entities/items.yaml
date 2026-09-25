@@ -1,0 +1,38 @@
+name: items
+description: Every item in the game's shop and neutral pool, with its price and the flags the
+  item tables share — above all is_major_item, the finished items a build is planned around.
+grain: one row per item
+use_cases:
+  - Use for what an item costs, which items count as major items, and which neutral items sit in which tier.
+  - Avoid for how often an item is bought or held; that is hero_core_items, item_timing_buckets, starting_items or final_inventories.
+common_questions:
+  - Which major items cost more than 5000 gold?
+  - Which neutral items are tier 5?
+  - How much does Black King Bar cost?
+source:
+  connection: warehouse
+  table: marts.dim_item
+primary_key: [item_id]
+population: OpenDota's item constants for the current game version, internal and retired
+  items included; not a record of purchases.
+fields:
+  - {name: item_id, type: integer}
+  - {name: item_key, type: string, description: "Internal key, e.g. black_king_bar."}
+  - {name: item_name, type: string, description: "Display name, e.g. Black King Bar. Not unique: the five Dagon levels, three Necronomicon levels and two Diffusal Blade levels share a name."}
+  - {name: item_cost, type: integer, description: "Shop price in gold; 0 for neutral items, enchantments and items with no shop price."}
+  - {name: quality, type: string, description: "OpenDota's item quality (component, rare, epic, consumable, artifact, common, secret_shop); not a reliable finished-or-component flag."}
+  - {name: neutral_tier, type: integer, description: "Neutral item tier, 1 to 5; null for shop items and enchantments."}
+  - {name: component_count, type: integer, description: Components the item is assembled from; 0 for items bought whole.}
+  - {name: has_active_ability, type: boolean}
+  - {name: is_recipe, type: boolean}
+  - {name: is_consumable, type: boolean}
+  - {name: is_neutral, type: boolean, description: True for neutral items and enchantments.}
+  - {name: is_major_item, type: boolean, description: "True for a major item: at least 2000 gold, assembled from components or with its own active ability, not a recipe, consumable or neutral item."}
+dimensions:
+  - {name: item_name, type: string}
+  - {name: neutral_tier, type: integer}
+  - {name: is_major_item, type: boolean}
+  - {name: is_neutral, type: boolean}
+metrics:
+  - {name: item_count, agg: count, expr: items.item_id}
+  - {name: avg_item_cost, agg: avg, expr: items.item_cost, description: Average shop price in gold.}

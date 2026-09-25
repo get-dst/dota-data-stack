@@ -1,0 +1,53 @@
+name: hero_core_items
+description: The order pros finish their major items in — per hero and patch, which item was
+  the first, second and third major item of the game, how often, how those games ended, and
+  at what minute it was completed.
+grain: one row per hero, patch, item slot (1st, 2nd or 3rd major item) and item
+use_cases:
+  - Use for "what do pros finish first on X", a hero's core build order, and when each core item lands.
+  - Filter item_order = 'first' (item_slot 1) for the first major item, 'second' for the second, 'third' for the third.
+  - When ranking by a rate, keep rows with at least 20 games (the minimum_games term) and report the game count with every rate.
+  - Avoid for items bought at any point regardless of order; that is item_timings. Avoid for end-of-game inventories; that is final_inventories.
+common_questions:
+  - What do pros finish first on Juggernaut?
+  - What is Tusk's core build order in pro games?
+  - Which heroes go Blink Dagger as their first major item most often?
+  - When does Juggernaut complete his second core item?
+source:
+  connection: warehouse
+  table: marts.hero_core_items
+primary_key: [patch_id, hero_id, item_slot, item_id]
+population: Professional matches in the loaded window that have a purchase log (unparsed
+  matches carry none and are left out); major items only.
+fields:
+  - {name: patch_id, type: integer}
+  - {name: patch_name, type: string}
+  - {name: hero_id, type: integer}
+  - {name: hero_name, type: string}
+  - {name: item_slot, type: integer, description: "1 = the first major item completed in the game, 2 = the second, 3 = the third."}
+  - {name: item_order, type: string, description: "item_slot in words: first, second or third major item of the game."}
+  - {name: item_id, type: integer}
+  - {name: item_name, type: string, description: "Display name, e.g. Battle Fury."}
+  - {name: item_cost, type: integer, description: Shop price in gold.}
+  - {name: games, type: integer, description: Pro games in which the item was the hero's major item number item_slot.}
+  - {name: wins, type: integer}
+  - {name: median_bought_min, type: number, description: Median game minute the item was completed in those games.}
+  - {name: avg_bought_min, type: number, description: Average game minute the item was completed in those games.}
+  - {name: hero_games, type: integer, description: "Pro games the hero played on the patch with a purchase log; repeats on every row of the hero, so never sum it across rows."}
+dimensions:
+  - {name: hero_name, type: string}
+  - {name: item_name, type: string}
+  - {name: patch_name, type: string}
+  - {name: item_slot, type: integer}
+  - {name: item_order, type: string}
+metrics:
+  - {name: core_item_games, agg: sum, expr: hero_core_items.games, description: "Games in which the item was the hero's first, second or third major item (per item_order); rank by it for the most common first item."}
+  - {name: core_item_wins, agg: sum, expr: hero_core_items.wins}
+  - name: core_item_win_rate
+    better: higher
+    type: ratio
+    numerator: core_item_wins
+    denominator: core_item_games
+    format: percent
+    description: Share of the games with the item in that slot that were won.
+  - {name: median_completion_minute, agg: avg, expr: hero_core_items.median_bought_min, description: "Median completion minute; exact for one hero, item and slot on one patch, an average of patch medians otherwise."}

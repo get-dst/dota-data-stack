@@ -1,0 +1,185 @@
+version: 2
+
+models:
+  - name: dim_item
+    description: One row per item in OpenDota's item constants, with the flags the item marts
+      share. is_major_item marks a finished item worth planning a build around - at least
+      2000 gold, assembled from components or carrying its own active ability, and not a
+      recipe, consumable or neutral item.
+    columns:
+      - name: item_id
+        description: OpenDota item id; primary key; the value in the player item slots.
+        tests: [unique, not_null]
+      - name: item_key
+        description: "Internal key, e.g. black_king_bar; the key in purchase logs."
+        tests: [unique, not_null]
+      - name: item_name
+        description: "Display name, e.g. Black King Bar; null for a few internal items."
+      - name: item_cost
+        description: Shop price in gold; 0 for items with no price (neutral items, enchantments, wards, Roshan drops).
+      - name: quality
+        description: "OpenDota item quality: component, rare, epic, consumable, artifact, common, secret_shop; null for many items and not a reliable finished-or-component flag (the upgraded Blinks are marked component)."
+      - name: neutral_tier
+        description: Neutral item tier 1-5 from the constants; null for shop items, enchantments, and a few neutral items the constants leave untiered (Disgraced Regalia, Gris-Gris).
+      - name: component_count
+        description: Number of components the item is assembled from in the constants (recipes not counted as components); 0 for items bought whole.
+      - name: has_active_ability
+        description: True when the constants list an active ability for the item (Blink Dagger, Dagon, Black King Bar ...).
+      - name: is_recipe
+        description: True for recipe scrolls (item key starting with recipe).
+      - name: is_consumable
+        description: True for items of consumable quality (Tango, Clarity, Moon Shard, Cheese ...).
+      - name: is_neutral
+        description: True for neutral items (a tier in the constants) and for enchantments (keys starting with enhancement).
+      - name: is_major_item
+        description: "True for a major item: item_cost at least 2000, assembled from components or with an active ability, and not a recipe, consumable or neutral item. The cheapest are Crystalys (2000) and Kaya, Sange and Yasha (2100); Demon Edge, Hyperstone, Mystic Staff, Ultimate Orb, Eaglesong, Reaver and Sacred Relic are components, not major items."
+        tests: [not_null]
+
+  - name: hero_core_items
+    description: The order pros complete their major items in, one row per patch, hero, item slot
+      (1st, 2nd or 3rd major item of the game) and item - games, wins and the purchase minute.
+      Built from the purchase log; player-games without a purchase log (unparsed matches) are
+      left out.
+    columns:
+      - name: patch_id
+        description: Game version id; joins dim_patch.patch_id.
+      - name: patch_name
+        description: Game version, e.g. 7.41.
+      - name: hero_id
+        description: Hero; joins dim_hero.hero_id.
+      - name: hero_name
+        description: Display name of the hero.
+      - name: item_slot
+        description: 1, 2 or 3 - the item was the hero's first, second or third major item completed in the game, ordered by the time of each item's first purchase (ties broken by item key).
+      - name: item_order
+        description: item_slot in words - first, second or third.
+      - name: item_id
+        description: Item id; joins dim_item.item_id.
+      - name: item_name
+        description: Item display name, e.g. Black King Bar.
+      - name: item_cost
+        description: Shop price in gold.
+      - name: games
+        description: Pro games in which the item was the hero's major item number item_slot.
+      - name: wins
+        description: Of those games, the ones the hero's side won.
+      - name: median_bought_min
+        description: Median game minute at which the item was completed, over those games.
+      - name: avg_bought_min
+        description: Average game minute at which the item was completed, over those games.
+      - name: hero_games
+        description: Pro games the hero played on the patch that have a purchase log; repeats on every row of the hero, so never sum it across rows. A game where the hero finished fewer than item_slot major items has no row for that slot.
+
+  - name: item_timing_buckets
+    description: Win rate by timing, one row per patch, hero, major item and five-minute window
+      of its first completion (under 15, 15-20, 20-25, 25-30, 30 and over). Built from the
+      purchase log of pro matches.
+    columns:
+      - name: patch_id
+        description: Game version id; joins dim_patch.patch_id.
+      - name: patch_name
+        description: Game version, e.g. 7.41.
+      - name: hero_id
+        description: Hero; joins dim_hero.hero_id.
+      - name: hero_name
+        description: Display name of the hero.
+      - name: item_id
+        description: Item id of a major item; joins dim_item.item_id.
+      - name: item_name
+        description: Item display name, e.g. Black King Bar.
+      - name: item_cost
+        description: Shop price in gold.
+      - name: bucket_order
+        description: 1 to 5, earliest window first; sort by it, not by timing_bucket.
+      - name: timing_bucket
+        description: "The window of the first completion minute: <15, 15-20, 20-25, 25-30 or 30+. Windows include their start minute and exclude their end (15:00 is in 15-20)."
+      - name: bucket_start_min
+        description: First minute of the window (0, 15, 20, 25 or 30).
+      - name: games
+        description: Pro games in which the hero first completed the item inside the window.
+      - name: wins
+        description: Of those games, the ones the hero's side won.
+
+  - name: starting_items
+    description: What pros buy before the horn, one row per patch, hero and item - purchases at or
+      before 0:00 on the game clock, from the purchase log. The free starting Town Portal Scroll
+      is not a purchase and does not appear.
+    columns:
+      - name: patch_id
+        description: Game version id; joins dim_patch.patch_id.
+      - name: patch_name
+        description: Game version, e.g. 7.41.
+      - name: hero_id
+        description: Hero; joins dim_hero.hero_id.
+      - name: hero_name
+        description: Display name of the hero.
+      - name: item_id
+        description: Item id; joins dim_item.item_id.
+      - name: item_name
+        description: Item display name, e.g. Iron Branch.
+      - name: item_cost
+        description: Shop price in gold.
+      - name: games_bought
+        description: Pro games in which the hero bought at least one of the item before the horn.
+      - name: units_bought
+        description: Units bought before the horn over those games (three Iron Branches count three).
+      - name: wins_when_bought
+        description: Of the games_bought games, the ones the hero's side won.
+      - name: hero_games
+        description: Pro games the hero played on the patch that have a purchase log; repeats on every item row, so never sum it across items.
+
+  - name: starting_builds
+    description: Whole starting builds, one row per patch, hero and build - the full list of a
+      player's pre-game purchases (at or before 0:00) as one line, with how many games used it
+      and how many were won.
+    columns:
+      - name: patch_id
+        description: Game version id; joins dim_patch.patch_id.
+      - name: patch_name
+        description: Game version, e.g. 7.41.
+      - name: hero_id
+        description: Hero; joins dim_hero.hero_id.
+      - name: hero_name
+        description: Display name of the hero.
+      - name: starting_build
+        description: "Every item bought before the horn, in item-name order, counts after an x, e.g. Faerie Fire, Iron Branch x2, Tango."
+      - name: build_items
+        description: Number of item units in the build.
+      - name: games
+        description: Pro games in which the hero started with exactly this build.
+      - name: wins
+        description: Of those games, the ones the hero's side won.
+
+  - name: final_inventories
+    description: Everything a pro hero ended the game with, one row per patch, hero, slot group
+      and item. Slot groups - main (six inventory slots), backpack (three slots), neutral (the
+      tiered neutral item), enchantment (the second neutral slot), consumed (Aghanim's
+      Blessing, Aghanim's Shard and Moon Shard consumed into the hero). Covers every pro
+      player-game, parsed or not.
+    columns:
+      - name: patch_id
+        description: Game version id; joins dim_patch.patch_id.
+      - name: patch_name
+        description: Game version, e.g. 7.41.
+      - name: hero_id
+        description: Hero; joins dim_hero.hero_id.
+      - name: hero_name
+        description: Display name of the hero.
+      - name: slot_group
+        description: "main, backpack, neutral, enchantment or consumed. A held Aghanim's Scepter is in main or backpack; consumed holds the Blessing, whether bought or dropped by Roshan, and the Shard, whether bought or taken from a Tormentor."
+      - name: item_id
+        description: Item id; joins dim_item.item_id.
+      - name: item_name
+        description: Item display name, e.g. Black King Bar or Conjurer's Catalyst.
+      - name: item_cost
+        description: Shop price in gold; 0 for neutral items and enchantments.
+      - name: neutral_tier
+        description: Neutral tier 1-5 when the item is a tiered neutral item; null for shop items, enchantments and untiered neutral items.
+      - name: is_major_item
+        description: True when the item is a major item (see dim_item.is_major_item).
+      - name: games_with_item
+        description: Pro games the hero ended holding the item in this slot group; a game counts once even with two copies.
+      - name: wins_with_item
+        description: Of those games, the ones the hero's side won.
+      - name: hero_games
+        description: Pro games the hero played on the patch; repeats on every row of the hero, so never sum it across rows.

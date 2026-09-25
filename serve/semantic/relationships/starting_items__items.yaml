@@ -1,0 +1,4 @@
+left: starting_items
+right: items
+on: starting_items.item_id = items.item_id
+relationship: many_to_one

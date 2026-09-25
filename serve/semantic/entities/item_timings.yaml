@@ -5,6 +5,7 @@ grain: one row per hero, item and patch
 use_cases:
   - Use for "when do pros buy X on Y" and which items a hero rushes.
   - Avoid for what a hero ends the game holding; that is hero_item_builds.
+  - Avoid for the order items are completed in (a hero's first, second or third major item); this table has no order.
 common_questions:
   - When do pros buy Black King Bar on Juggernaut?
   - What does Anti-Mage rush this patch?
@@ -26,10 +27,12 @@ fields:
   - {name: wins_when_bought, type: integer}
   - {name: avg_first_bought_min, type: number, description: Average minute of the first purchase across those games.}
   - {name: earliest_bought_min, type: number}
+  - {name: is_major_item, type: boolean, description: "True for a major item: at least 2000 gold, assembled or with its own active ability, not a recipe, consumable or neutral item."}
 dimensions:
   - {name: hero_name, type: string}
   - {name: item_name, type: string}
   - {name: patch_name, type: string}
+  - {name: is_major_item, type: boolean}
 metrics:
   - {name: total_games_bought, agg: sum, expr: item_timings.games_bought}
   - {name: total_wins_when_bought, agg: sum, expr: item_timings.wins_when_bought}
