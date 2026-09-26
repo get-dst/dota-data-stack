@@ -3,7 +3,7 @@ description: "How each professional player plays, per patch: teamfight participa
 grain: "one row per player (Steam account) per patch"
 use_cases:
   - "Use for rankings and comparisons of named pro players by how they play."
-  - "Every rate here is null under 10 games (the player_minimum_games term), so a ranking lists only players past the floor; report the games beside every rate."
+  - "Every rate here except the lane draw share is null under 10 games (the player_minimum_games term), so a ranking lists only players past the floor; report the games beside every rate."
   - "Filter main_position to compare players of one role."
   - "Avoid for heroes or positions in general; that is hero_playstyle."
 common_questions:
@@ -128,8 +128,9 @@ metrics:
     format: percent
     description: "Share of lanes lost at 10 minutes (the lane_outcome term)."
   - name: player_lane_draw_rate
-    type: derived
-    expr: "CASE WHEN {player_games} >= 10 THEN {player_lanes_drawn} * 1.0 / NULLIF({player_lane_games}, 0) END"
+    type: ratio
+    numerator: player_lanes_drawn
+    denominator: player_lane_games
     format: percent
     description: "Share of lanes drawn at 10 minutes, within 400 gold either way (the lane_outcome term)."
   - {name: player_enemy_hero_damage_taken, agg: sum, expr: "player_playstyle.enemy_hero_damage_taken"}

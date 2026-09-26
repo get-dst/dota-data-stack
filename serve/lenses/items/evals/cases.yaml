@@ -3,6 +3,9 @@
 - question: What do pros finish first on Juggernaut?
   expect: answer
   status: approved
+- question: What is the most common first major item on Juggernaut?
+  expect: answer
+  status: approved
 - question: Which heroes go Blink Dagger as their first major item most often?
   expect: answer
   status: approved
