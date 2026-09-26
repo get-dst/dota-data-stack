@@ -52,7 +52,5 @@ dimensions:
   - {name: match_date, type: date}
 metrics:
   - {name: farm_player_games, agg: count, expr: "farm_per_match.match_id"}
-  - {name: avg_farm_share_at_10, agg: avg, expr: "farm_per_match.farm_share_10", description: "Average share of the side's gold at minute 10 over player-games of a team, league, date or match. A hero, position or player average is hero_playstyle.farm_share_10 or player_playstyle."}
-  - {name: avg_farm_share_at_20, agg: avg, expr: "farm_per_match.farm_share_20", description: "Average share of the side's gold at minute 20 over player-games of a team, league, date or match. A hero, position or player average is hero_playstyle.farm_share_20 or player_playstyle."}
   - {name: avg_gold_at_10, agg: avg, expr: "farm_per_match.gold_10", better: higher}
   - {name: avg_lh_at_10, agg: avg, expr: "farm_per_match.last_hits_10", better: higher}
