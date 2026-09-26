@@ -218,7 +218,7 @@ def pro_matches(since_days: int) -> Iterator[list[dict[str, Any]]]:
 
 # Detail calls spent in THIS process — the per-run budget. The fetched-id set is
 # the durable state; this counter must not be, or a second run would start spent.
-_SPENT = {"calls": 0, "started": time.monotonic()}
+_SPENT = {"calls": 0, "reserved": 0, "started": time.monotonic()}
 
 
 @dlt.resource(primary_key="match_id", write_disposition="merge")
@@ -313,16 +313,26 @@ _IN_WAREHOUSE: set[int] = set()
 _UNPARSED_TRIES = 3
 
 
-def _details(match_ids: list[int]) -> Iterator[tuple[int, Any]]:
+# One pool for the whole run: dlt evaluates several pages' transformers at once, so a
+# pool per page would multiply what is in flight.
+_EX = ThreadPoolExecutor(max_workers=_FETCH_WORKERS)
+
+
+def _details(match_ids: list[int], max_calls: int) -> Iterator[tuple[int, Any]]:
     """Detail records for the ids, a few calls in flight at once, yielded in order.
-    The second element is the record, or the exception ``get`` raised for it."""
-    with ThreadPoolExecutor(max_workers=_FETCH_WORKERS) as ex:
-        futures = [ex.submit(get, f"matches/{mid}", paid=True) for mid in match_ids]
-        for mid, fut in zip(match_ids, futures, strict=True):
-            try:
-                yield mid, fut.result()
-            except Exception as exc:  # noqa: BLE001 — sorted out by the caller
-                yield mid, exc
+    The second element is the record, or the exception ``get`` raised for it. Ids are
+    reserved against the run's budget before any call is made, so concurrent pages
+    cannot each spend the whole allowance."""
+    with _LOCK:
+        room = max(max_calls - _SPENT["reserved"], 0)
+        ids = match_ids[:room]
+        _SPENT["reserved"] += len(ids)
+    futures = [_EX.submit(get, f"matches/{mid}", paid=True) for mid in ids]
+    for mid, fut in zip(ids, futures, strict=True):
+        try:
+            yield mid, fut.result()
+        except Exception as exc:  # noqa: BLE001 — sorted out by the caller
+            yield mid, exc
 
 
 @dlt.transformer(data_from=pro_matches, primary_key="match_id", write_disposition="merge")
@@ -340,7 +350,7 @@ def match_details(matches: list[dict[str, Any]], max_calls: int) -> Iterator[dic
         if unparsed.get(str(mid), 0) >= _UNPARSED_TRIES:
             continue  # paid for a few times and still unparsed: stop paying for it
         wanted.append(mid)
-    for mid, d in _details(wanted[: max(max_calls - _SPENT["calls"], 0)]):
+    for mid, d in _details(wanted, max_calls):
         if isinstance(d, PaidBudgetExhausted):
             print(f"match_details: stopped — {d}")
             return
@@ -383,8 +393,7 @@ def refetch_missing_adv(match_ids: list[int], max_calls: int) -> Iterator[dict[s
     match list, so nothing new is bought here. Same per-run budget, same monthly cap,
     same api_usage count as any detail call. A record without players never replaces
     the one already stored."""
-    wanted = sorted(match_ids, reverse=True)[: max(max_calls - _SPENT["calls"], 0)]
-    for _mid, d in _details(wanted):
+    for _mid, d in _details(sorted(match_ids, reverse=True), max_calls):
         if isinstance(d, PaidBudgetExhausted):
             print(f"refetch: stopped — {d}")
             return
@@ -478,9 +487,10 @@ def opendota(
 ) -> Any:
     if refetch is not None:  # the one-off backfill fetches nothing else
         return [refetch_missing_adv(refetch, max_calls)]
+    matches = pro_matches(since_days)
     return [
-        pro_matches(since_days),
-        pro_matches(since_days) | match_details(max_calls),
+        matches,
+        matches | match_details(max_calls),
         public_matches(public_pages),
         _dimension("heroes", "heroes", key="id"),
         _dimension("items", "constants/items", key="name"),
