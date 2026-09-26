@@ -1,0 +1,58 @@
+name: farm_per_match
+description: "One player's share of the side's farm in one parsed professional match: gold earned at minutes 10 and 20 over the five players' total, last hits at 10 and 20, and farm and net-worth rank inside the side."
+grain: "one row per player per parsed match that reached minute 10"
+use_cases:
+  - "Use for farm share by team, league, date or one match."
+  - "For rankings of heroes, positions or players use hero_playstyle or player_playstyle, which carry the games floor; hero_name and player_name are filters here, not groupings."
+common_questions:
+  - "Which team gives its carry the biggest share of farm at 10 minutes?"
+source:
+  connection: warehouse
+  table: marts.farm_priority
+default_time_field: started_at
+primary_key: [match_id, player_slot]
+population: "Players in parsed professional matches that reached minute 10; minute-20 columns are null in shorter games."
+fields:
+  - {name: match_id, type: integer}
+  - {name: player_slot, type: integer, description: "0-4 Radiant, 128-132 Dire."}
+  - {name: is_radiant, type: boolean}
+  - {name: team_id, type: integer}
+  - {name: team_name, type: string, description: "Team name as the match record carries it; null when OpenDota lists no team for the side, so a team ranking leaves the null rows out."}
+  - {name: account_id, type: integer}
+  - {name: player_name, type: string}
+  - {name: hero_id, type: integer}
+  - {name: hero_name, type: string}
+  - {name: position, type: integer, description: "1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support; null for jungle, roaming or unparsed lanes."}
+  - {name: position_name, type: string, description: "The position as a word: carry, mid, offlane, soft support or hard support; the filter for questions about carries, mids, offlaners or supports."}
+  - {name: is_win, type: boolean}
+  - {name: gold_10, type: integer, description: "Gold earned since the horn at minute 10."}
+  - {name: team_gold_10, type: integer}
+  - {name: farm_share_10, type: number, description: "gold_10 / team_gold_10, 0-1."}
+  - {name: gold_20, type: integer}
+  - {name: team_gold_20, type: integer}
+  - {name: farm_share_20, type: number, description: "0-1; null before minute 20."}
+  - {name: last_hits_10, type: integer}
+  - {name: last_hits_20, type: integer}
+  - {name: farm_rank_10, type: integer, description: "1 = most gold on the side at minute 10."}
+  - {name: net_worth, type: integer}
+  - {name: networth_rank, type: integer, description: "1 = richest on the side at game end."}
+  - {name: started_at, type: timestamp}
+  - {name: match_date, type: date}
+  - {name: patch_id, type: integer}
+  - {name: patch_name, type: string}
+  - {name: league_id, type: integer}
+  - {name: league_name, type: string}
+  - {name: duration_min, type: number}
+dimensions:
+  - {name: team_name, type: string}
+  - {name: patch_name, type: string}
+  - {name: league_name, type: string}
+  - {name: position, type: integer}
+  - {name: position_name, type: string}
+  - {name: match_date, type: date}
+metrics:
+  - {name: farm_player_games, agg: count, expr: "farm_per_match.match_id"}
+  - {name: avg_farm_share_at_10, agg: avg, expr: "farm_per_match.farm_share_10", description: "Average share of the side's gold at minute 10 over player-games of a team, league, date or match. A hero, position or player average is hero_playstyle.farm_share_10 or player_playstyle."}
+  - {name: avg_farm_share_at_20, agg: avg, expr: "farm_per_match.farm_share_20", description: "Average share of the side's gold at minute 20 over player-games of a team, league, date or match. A hero, position or player average is hero_playstyle.farm_share_20 or player_playstyle."}
+  - {name: avg_gold_at_10, agg: avg, expr: "farm_per_match.gold_10", better: higher}
+  - {name: avg_lh_at_10, agg: avg, expr: "farm_per_match.last_hits_10", better: higher}

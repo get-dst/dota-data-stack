@@ -1,0 +1,60 @@
+name: space_per_match
+description: "One player's space_created proxy (the term) in one parsed professional match: damage absorbed from enemy heroes per game minute, and deaths the side traded for a tower or Roshan within 60 seconds."
+grain: "one row per player per parsed match"
+use_cases:
+  - "Use for the space proxy by team, league, date or one match."
+  - "For rankings of heroes, positions or players use hero_playstyle or player_playstyle, which carry the games floor; hero_name and player_name are filters here, not groupings."
+  - "It is a declared proxy (the space_created term): say so when answering."
+common_questions:
+  - "Which team's offlaners absorb the most damage?"
+source:
+  connection: warehouse
+  table: marts.space_created
+default_time_field: started_at
+primary_key: [match_id, player_slot]
+population: "Players in parsed professional matches in the loaded window."
+fields:
+  - {name: match_id, type: integer}
+  - {name: player_slot, type: integer, description: "0-4 Radiant, 128-132 Dire."}
+  - {name: is_radiant, type: boolean}
+  - {name: team_id, type: integer}
+  - {name: team_name, type: string, description: "Team name as the match record carries it; null when OpenDota lists no team for the side, so a team ranking leaves the null rows out."}
+  - {name: account_id, type: integer}
+  - {name: player_name, type: string}
+  - {name: hero_id, type: integer}
+  - {name: hero_name, type: string}
+  - {name: position, type: integer, description: "1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support; null for jungle, roaming or unparsed lanes."}
+  - {name: position_name, type: string, description: "The position as a word: carry, mid, offlane, soft support or hard support; the filter for questions about carries, mids, offlaners or supports."}
+  - {name: is_win, type: boolean}
+  - {name: duration_min, type: number}
+  - {name: enemy_hero_damage_taken, type: integer}
+  - {name: enemy_hero_damage_taken_per_min, type: number, description: "Damage taken from enemy heroes per game minute."}
+  - {name: total_deaths, type: integer}
+  - {name: hero_kill_deaths, type: integer, description: "Deaths to enemy heroes."}
+  - {name: trade_deaths, type: integer}
+  - {name: trade_death_share, type: number, description: "0-1; null without a death to a hero."}
+  - {name: started_at, type: timestamp}
+  - {name: match_date, type: date}
+  - {name: patch_id, type: integer}
+  - {name: patch_name, type: string}
+  - {name: league_id, type: integer}
+  - {name: league_name, type: string}
+dimensions:
+  - {name: team_name, type: string}
+  - {name: patch_name, type: string}
+  - {name: league_name, type: string}
+  - {name: position, type: integer}
+  - {name: position_name, type: string}
+  - {name: match_date, type: date}
+metrics:
+  - {name: space_player_games, agg: count, expr: "space_per_match.match_id"}
+  - {name: avg_damage_absorbed_per_min, agg: avg, expr: "space_per_match.enemy_hero_damage_taken_per_min", better: higher, description: "Damage taken from enemy heroes per game minute, averaged over player-games of a team, league, date or match. A hero, position or player rate is hero_playstyle.damage_absorbed_per_min or player_playstyle."}
+  - {name: traded_deaths, agg: sum, expr: "space_per_match.trade_deaths"}
+  - {name: deaths_to_heroes, agg: sum, expr: "space_per_match.hero_kill_deaths"}
+  - name: traded_death_share
+    better: higher
+    type: ratio
+    numerator: traded_deaths
+    denominator: deaths_to_heroes
+    format: percent
+    description: "Share of deaths to heroes traded for a tower or Roshan within 60 s."

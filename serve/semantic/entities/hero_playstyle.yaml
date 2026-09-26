@@ -1,0 +1,187 @@
+name: hero_playstyle
+description: "How each hero is played in professional matches, per patch and position (1-5): teamfight participation, farm share, lane results, the space_created proxy (damage absorbed, traded deaths), wards, runes and buybacks."
+grain: "one row per hero per patch per position"
+use_cases:
+  - "Use for rankings and comparisons of heroes or positions by how they play: which hero fights most, farms most, wins its lane, creates space, wards most."
+  - "Rankings over this entity apply the playstyle_minimum_games term (games >= 10) and report the games beside every rate."
+  - "Group by position for 'which position …' questions; filter a hero for one hero's numbers."
+  - "Avoid for named players; that is player_playstyle. Avoid for teams or single matches; those are the per-match entities (fights_per_match, farm_per_match, lanes_per_match, space_per_match, vision_per_match)."
+common_questions:
+  - "Which hero has the highest fight participation as a position 4?"
+  - "Which carry heroes win their lane most often?"
+  - "Which heroes create the most space?"
+  - "What share of the team's farm does a position 1 take at 10 minutes?"
+  - "Which support places the most observer wards per game?"
+source:
+  connection: warehouse
+  table: marts.hero_playstyle
+primary_key: [patch_id, hero_id, position]
+population: "Player-games in parsed professional matches (OpenDota's per-minute curves and logs) in the loaded window, with a derived position."
+fields:
+  - {name: patch_id, type: integer}
+  - {name: patch_name, type: string}
+  - {name: hero_id, type: integer}
+  - {name: hero_name, type: string}
+  - {name: position, type: integer, description: "1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support."}
+  - {name: position_name, type: string, description: "The position as a word: carry, mid, offlane, soft support or hard support; the filter for questions about carries, mids, offlaners or supports."}
+  - {name: games, type: integer, description: "Player-games in the row: the sample size. Rankings keep rows with games >= 10 (the playstyle_minimum_games term)."}
+  - {name: wins, type: integer}
+  - {name: game_minutes, type: number, description: "Minutes played, summed."}
+  - {name: match_fights, type: integer, description: "Teamfights in those games."}
+  - {name: fights_present, type: integer, description: "Teamfights the player was present in (damaged or healed a hero, died or got a kill inside the window)."}
+  - {name: fight_participation, type: number, description: "fights_present / match_fights, 0-1."}
+  - {name: fight_kills, type: integer}
+  - {name: fight_deaths, type: integer, description: "Deaths inside teamfight windows."}
+  - {name: deaths_outside_fights, type: integer, description: "Deaths outside any teamfight window: pick-offs, ganks, deaths to creeps or towers."}
+  - {name: fight_damage, type: integer, description: "Hero damage dealt inside teamfight windows."}
+  - {name: fight_gold_delta, type: integer, description: "Gold gained over teamfight windows (passive income included)."}
+  - {name: avg_fight_gold_delta, type: number, description: "fight_gold_delta per game."}
+  - {name: farm_games_10, type: integer, description: "Games that reached minute 10."}
+  - {name: farm_share_10_total, type: number, description: "Share of the side's gold at minute 10, summed over games; divide by farm_games_10."}
+  - {name: avg_farm_share_10, type: number, description: "Average share of the side's gold earned at minute 10, 0-1."}
+  - {name: farm_games_20, type: integer, description: "Games that reached minute 20."}
+  - {name: farm_share_20_total, type: number}
+  - {name: avg_farm_share_20, type: number, description: "Average share of the side's gold earned at minute 20, 0-1."}
+  - {name: last_hits_10_total, type: integer}
+  - {name: avg_last_hits_10, type: number, description: "Average last hits at minute 10."}
+  - {name: lane_games, type: integer, description: "Games with a lane result (laned in a map lane against at least one enemy hero)."}
+  - {name: lanes_won, type: integer}
+  - {name: lanes_drawn, type: integer}
+  - {name: lanes_lost, type: integer}
+  - {name: lane_win_rate, type: number, description: "lanes_won / lane_games, 0-1 (the lane_outcome term)."}
+  - {name: avg_lane_gold_diff_10, type: number, description: "Average gold lead of the player's lane over the enemy laners at minute 10 (per-hero averages)."}
+  - {name: enemy_hero_damage_taken, type: integer, description: "Damage taken from enemy heroes (space_created part 1)."}
+  - {name: enemy_hero_damage_taken_per_min, type: number, description: "Damage taken from enemy heroes per game minute: attention absorbed (space_created part 1)."}
+  - {name: hero_kill_deaths, type: integer, description: "Deaths to enemy heroes."}
+  - {name: trade_deaths, type: integer, description: "Deaths followed within 60 s by the side taking an enemy tower or Roshan (space_created part 2)."}
+  - {name: trade_death_share, type: number, description: "trade_deaths / hero_kill_deaths, 0-1 (space_created part 2)."}
+  - {name: observers_placed, type: integer}
+  - {name: sentries_placed, type: integer}
+  - {name: runes_taken, type: integer, description: "Every rune in the log, water and wisdom included."}
+  - {name: buybacks, type: integer}
+dimensions:
+  - {name: hero_name, type: string}
+  - {name: patch_name, type: string}
+  - {name: position, type: integer}
+  - {name: position_name, type: string}
+metrics:
+  - {name: games, agg: sum, expr: "hero_playstyle.games", description: "Player-games; the sample size to state beside every rate."}
+  - {name: wins, agg: sum, expr: "hero_playstyle.wins", description: "Games won, a count. Win rates belong to hero_position_meta and player_performances, which cover every pro match, not only the parsed ones."}
+  - {name: match_fights, agg: sum, expr: "hero_playstyle.match_fights"}
+  - {name: fights_present, agg: sum, expr: "hero_playstyle.fights_present"}
+  - name: fight_participation
+    better: higher
+    type: ratio
+    numerator: fights_present
+    denominator: match_fights
+    format: percent
+    description: "Share of the teamfights in those games the player was present in (the fight_participation term)."
+  - {name: fight_deaths, agg: sum, expr: "hero_playstyle.fight_deaths"}
+  - {name: deaths_outside_fights, agg: sum, expr: "hero_playstyle.deaths_outside_fights"}
+  - name: fight_deaths_per_game
+    better: lower
+    type: ratio
+    numerator: fight_deaths
+    denominator: games
+    description: "Deaths inside teamfights per game."
+  - name: deaths_outside_fights_per_game
+    better: lower
+    type: ratio
+    numerator: deaths_outside_fights
+    denominator: games
+    description: "Deaths outside teamfights (pick-offs, ganks, creeps, towers) per game."
+  - {name: fight_gold_delta, agg: sum, expr: "hero_playstyle.fight_gold_delta"}
+  - name: fight_gold_per_game
+    better: higher
+    type: ratio
+    numerator: fight_gold_delta
+    denominator: games
+    description: "Gold gained over teamfight windows per game (the gold swing of fights; passive income included)."
+  - {name: farm_games_10, agg: sum, expr: "hero_playstyle.farm_games_10"}
+  - {name: farm_share_10_total, agg: sum, expr: "hero_playstyle.farm_share_10_total"}
+  - name: farm_share_10
+    type: ratio
+    numerator: farm_share_10_total
+    denominator: farm_games_10
+    format: percent
+    description: "Average share of the side's gold earned at minute 10 (the farm_share term)."
+  - {name: farm_games_20, agg: sum, expr: "hero_playstyle.farm_games_20"}
+  - {name: farm_share_20_total, agg: sum, expr: "hero_playstyle.farm_share_20_total"}
+  - name: farm_share_20
+    type: ratio
+    numerator: farm_share_20_total
+    denominator: farm_games_20
+    format: percent
+    description: "Average share of the side's gold earned at minute 20 (the farm_share term)."
+  - {name: last_hits_10_total, agg: sum, expr: "hero_playstyle.last_hits_10_total"}
+  - name: last_hits_at_10
+    better: higher
+    type: ratio
+    numerator: last_hits_10_total
+    denominator: farm_games_10
+    description: "Average last hits at minute 10."
+  - {name: lane_games, agg: sum, expr: "hero_playstyle.lane_games"}
+  - {name: lanes_won, agg: sum, expr: "hero_playstyle.lanes_won"}
+  - {name: lanes_lost, agg: sum, expr: "hero_playstyle.lanes_lost"}
+  - {name: lanes_drawn, agg: sum, expr: "hero_playstyle.lanes_drawn"}
+  - name: lane_win_rate
+    better: higher
+    type: ratio
+    numerator: lanes_won
+    denominator: lane_games
+    format: percent
+    description: "Share of lanes won at 10 minutes (the lane_outcome term)."
+  - name: lane_loss_rate
+    better: lower
+    type: ratio
+    numerator: lanes_lost
+    denominator: lane_games
+    format: percent
+    description: "Share of lanes lost at 10 minutes (the lane_outcome term)."
+  - name: lane_draw_rate
+    type: ratio
+    numerator: lanes_drawn
+    denominator: lane_games
+    format: percent
+    description: "Share of lanes drawn at 10 minutes, within 400 gold either way (the lane_outcome term)."
+  - {name: enemy_hero_damage_taken, agg: sum, expr: "hero_playstyle.enemy_hero_damage_taken"}
+  - {name: game_minutes, agg: sum, expr: "hero_playstyle.game_minutes"}
+  - name: damage_absorbed_per_min
+    better: higher
+    type: ratio
+    numerator: enemy_hero_damage_taken
+    denominator: game_minutes
+    description: "Damage taken from enemy heroes per game minute: attention absorbed, part 1 of the space_created proxy."
+  - {name: hero_kill_deaths, agg: sum, expr: "hero_playstyle.hero_kill_deaths"}
+  - {name: trade_deaths, agg: sum, expr: "hero_playstyle.trade_deaths"}
+  - name: trade_death_share
+    better: higher
+    type: ratio
+    numerator: trade_deaths
+    denominator: hero_kill_deaths
+    format: percent
+    description: "Share of deaths to heroes that the side traded for a tower or Roshan within 60 s: part 2 of the space_created proxy."
+  - {name: observers_placed, agg: sum, expr: "hero_playstyle.observers_placed"}
+  - {name: sentries_placed, agg: sum, expr: "hero_playstyle.sentries_placed"}
+  - {name: runes_taken, agg: sum, expr: "hero_playstyle.runes_taken"}
+  - {name: buybacks, agg: sum, expr: "hero_playstyle.buybacks"}
+  - name: observers_per_game
+    type: ratio
+    numerator: observers_placed
+    denominator: games
+    description: "Observer wards placed per game."
+  - name: sentries_per_game
+    type: ratio
+    numerator: sentries_placed
+    denominator: games
+    description: "Sentry wards placed per game."
+  - name: runes_per_game
+    type: ratio
+    numerator: runes_taken
+    denominator: games
+    description: "Runes taken per game."
+  - name: buybacks_per_game
+    type: ratio
+    numerator: buybacks
+    denominator: games
+    description: "Buybacks per game."

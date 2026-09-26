@@ -1,0 +1,82 @@
+name: lanes_per_match
+description: "One laning player's lane at 10 minutes in one parsed professional match, against the enemy heroes in the same map lane: gold, last-hit and XP differences and the lane result (won, drawn, lost), which both laners of a side share."
+grain: "one row per laning player per parsed match"
+use_cases:
+  - "Use for lane results by team, league, date or one match, and for a hero's lane against a specific lane."
+  - "For rankings of heroes, positions or players use hero_playstyle or player_playstyle, which carry the games floor; hero_name and player_name are filters here, not groupings."
+common_questions:
+  - "Which team wins its lanes most often?"
+  - "How did the mid lane go in match 9015110394?"
+source:
+  connection: warehouse
+  table: marts.lane_outcomes
+default_time_field: started_at
+primary_key: [match_id, player_slot]
+population: "Players in parsed professional matches that reached minute 10 who laned in lanes 1-3 against at least one enemy hero."
+fields:
+  - {name: match_id, type: integer}
+  - {name: player_slot, type: integer, description: "0-4 Radiant, 128-132 Dire."}
+  - {name: is_radiant, type: boolean}
+  - {name: team_id, type: integer}
+  - {name: team_name, type: string, description: "Team name as the match record carries it; null when OpenDota lists no team for the side, so a team ranking leaves the null rows out."}
+  - {name: account_id, type: integer}
+  - {name: player_name, type: string}
+  - {name: hero_id, type: integer}
+  - {name: hero_name, type: string}
+  - {name: position, type: integer, description: "1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support; null for jungle, roaming or unparsed lanes."}
+  - {name: position_name, type: string, description: "The position as a word: carry, mid, offlane, soft support or hard support; the filter for questions about carries, mids, offlaners or supports."}
+  - {name: is_win, type: boolean}
+  - {name: lane, type: integer, description: "Map lane: 1 bottom, 2 middle, 3 top."}
+  - {name: lane_role, type: integer, description: "1 safe lane, 2 mid, 3 off lane, relative to the side."}
+  - {name: own_laners, type: integer}
+  - {name: enemy_laners, type: integer}
+  - {name: gold_10, type: integer}
+  - {name: last_hits_10, type: integer}
+  - {name: xp_10, type: integer}
+  - {name: gold_diff_10, type: number, description: "The player's gold at 10 minus the enemy laners' average."}
+  - {name: last_hits_diff_10, type: number}
+  - {name: xp_diff_10, type: number}
+  - {name: lane_gold_diff_10, type: number, description: "The side's laners' average gold at 10 minus the enemy laners' average."}
+  - {name: lane_last_hits_diff_10, type: number}
+  - {name: lane_result, type: string, description: "won, drawn or lost (the lane_outcome term)."}
+  - {name: started_at, type: timestamp}
+  - {name: match_date, type: date}
+  - {name: patch_id, type: integer}
+  - {name: patch_name, type: string}
+  - {name: league_id, type: integer}
+  - {name: league_name, type: string}
+dimensions:
+  - {name: team_name, type: string}
+  - {name: patch_name, type: string}
+  - {name: league_name, type: string}
+  - {name: position, type: integer}
+  - {name: position_name, type: string}
+  - {name: match_date, type: date}
+  - {name: lane_result, type: string}
+  - {name: lane_role, type: integer}
+metrics:
+  - {name: laning_games, agg: count, expr: "lanes_per_match.match_id"}
+  - {name: lanes_won_count, agg: sum, expr: "CASE WHEN lanes_per_match.lane_result = 'won' THEN 1 ELSE 0 END"}
+  - {name: lanes_drawn_count, agg: sum, expr: "CASE WHEN lanes_per_match.lane_result = 'drawn' THEN 1 ELSE 0 END"}
+  - {name: lanes_lost_count, agg: sum, expr: "CASE WHEN lanes_per_match.lane_result = 'lost' THEN 1 ELSE 0 END"}
+  - name: match_lane_win_rate
+    better: higher
+    type: ratio
+    numerator: lanes_won_count
+    denominator: laning_games
+    format: percent
+    description: "Share of laning player-games whose lane was won at 10 minutes, for a team, league, date or match. A hero, position or player rate is hero_playstyle.lane_win_rate or player_playstyle."
+  - name: match_lane_draw_rate
+    type: ratio
+    numerator: lanes_drawn_count
+    denominator: laning_games
+    format: percent
+    description: "Share of laning player-games whose lane was drawn at 10 minutes (within 400 gold either way), for a team, league, date or match; hero_playstyle.lane_draw_rate for heroes and positions."
+  - name: match_lane_loss_rate
+    better: lower
+    type: ratio
+    numerator: lanes_lost_count
+    denominator: laning_games
+    format: percent
+    description: "Share of laning player-games whose lane was lost at 10 minutes."
+  - {name: avg_lane_gold_diff, agg: avg, expr: "lanes_per_match.lane_gold_diff_10", better: higher, description: "Average lane gold difference at minute 10."}

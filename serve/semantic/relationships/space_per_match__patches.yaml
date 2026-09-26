@@ -1,0 +1,4 @@
+left: space_per_match
+right: patches
+on: space_per_match.patch_id = patches.patch_id
+relationship: many_to_one
