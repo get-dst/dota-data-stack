@@ -26,8 +26,8 @@ jobs:
       PGPASSWORD: ${{ secrets.PGPASSWORD }}
       PGDATABASE: ${{ secrets.PGDATABASE }}
       OPENDOTA_API_KEY: ${{ secrets.OPENDOTA_API_KEY }}
-      DOTA_SINCE_DAYS: "90"
-      DOTA_MAX_DETAIL_CALLS: "2500"
+      DOTA_SINCE_DAYS: "365"
+      DOTA_MAX_DETAIL_CALLS: "300"
       DOTA_PAID_CALLS_MONTH: "90000"
     steps:
       - uses: actions/checkout@v4
