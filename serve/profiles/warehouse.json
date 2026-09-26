@@ -1,6 +1,6 @@
 {
   "connection": "warehouse",
-  "recorded_at": "2026-09-25T16:11:40.666147Z",
+  "recorded_at": "2026-09-25T22:03:26.012760Z",
   "tables": [
     {
       "connection": "warehouse",
@@ -1205,6 +1205,162 @@
     },
     {
       "connection": "warehouse",
+      "table": "marts.farm_priority",
+      "columns": [
+        {
+          "name": "match_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "player_slot",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "is_radiant",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "team_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "team_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "account_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "player_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "hero_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "hero_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "position",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "position_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "is_win",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "gold_10",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "team_gold_10",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "farm_share_10",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "gold_20",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "team_gold_20",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "farm_share_20",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "last_hits_10",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "last_hits_20",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "farm_rank_10",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "net_worth",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "networth_rank",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "started_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "nullable": true
+        },
+        {
+          "name": "match_date",
+          "type": "DATE",
+          "nullable": true
+        },
+        {
+          "name": "patch_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "patch_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "league_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "league_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "duration_min",
+          "type": "DOUBLE",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "connection": "warehouse",
       "table": "marts.final_inventories",
       "columns": [
         {
@@ -1777,6 +1933,217 @@
     },
     {
       "connection": "warehouse",
+      "table": "marts.hero_playstyle",
+      "columns": [
+        {
+          "name": "patch_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "patch_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "hero_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "hero_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "position",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "position_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "games",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "wins",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "game_minutes",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "match_fights",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "fights_present",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "fight_participation",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "fight_kills",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "fight_deaths",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "deaths_outside_fights",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "fight_damage",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "fight_gold_delta",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "avg_fight_gold_delta",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "farm_games_10",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "farm_share_10_total",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "avg_farm_share_10",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "farm_games_20",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "farm_share_20_total",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "avg_farm_share_20",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "last_hits_10_total",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "avg_last_hits_10",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "lane_games",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "lanes_won",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "lanes_drawn",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "lanes_lost",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "lane_win_rate",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "avg_lane_gold_diff_10",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "enemy_hero_damage_taken",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "enemy_hero_damage_taken_per_min",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "hero_kill_deaths",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "trade_deaths",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "trade_death_share",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "observers_placed",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "sentries_placed",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "runes_taken",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "buybacks",
+          "type": "HUGEINT",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "connection": "warehouse",
       "table": "marts.hero_position_meta",
       "columns": [
         {
@@ -1898,6 +2265,167 @@
         {
           "name": "wins",
           "type": "HUGEINT",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "connection": "warehouse",
+      "table": "marts.lane_outcomes",
+      "columns": [
+        {
+          "name": "match_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "player_slot",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "is_radiant",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "team_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "team_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "account_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "player_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "hero_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "hero_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "position",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "position_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "is_win",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "lane",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "lane_role",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "own_laners",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "enemy_laners",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "gold_10",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "last_hits_10",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "xp_10",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "gold_diff_10",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "last_hits_diff_10",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "xp_diff_10",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "lane_gold_diff_10",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "lane_last_hits_diff_10",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "lane_result",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "started_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "nullable": true
+        },
+        {
+          "name": "match_date",
+          "type": "DATE",
+          "nullable": true
+        },
+        {
+          "name": "patch_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "patch_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "league_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "league_name",
+          "type": "VARCHAR",
           "nullable": true
         }
       ]
@@ -2394,6 +2922,378 @@
     },
     {
       "connection": "warehouse",
+      "table": "marts.player_fight_stats",
+      "columns": [
+        {
+          "name": "match_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "player_slot",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "is_radiant",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "team_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "team_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "account_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "player_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "hero_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "hero_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "position",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "position_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "is_win",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "match_fights",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "fights_present",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "fight_participation",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "fight_kills",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "fight_deaths",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "total_deaths",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "deaths_outside_fights",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "fight_buybacks",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "fight_damage",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "fight_healing",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "fight_gold_delta",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "fight_xp_delta",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "started_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "nullable": true
+        },
+        {
+          "name": "match_date",
+          "type": "DATE",
+          "nullable": true
+        },
+        {
+          "name": "patch_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "patch_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "league_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "league_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "duration_min",
+          "type": "DOUBLE",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "connection": "warehouse",
+      "table": "marts.player_playstyle",
+      "columns": [
+        {
+          "name": "patch_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "patch_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "account_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "player_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "main_position",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "main_position_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "games",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "wins",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "game_minutes",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "match_fights",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "fights_present",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "fight_participation",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "fight_kills",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "fight_deaths",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "deaths_outside_fights",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "fight_damage",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "fight_gold_delta",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "avg_fight_gold_delta",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "farm_games_10",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "farm_share_10_total",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "avg_farm_share_10",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "farm_games_20",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "farm_share_20_total",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "avg_farm_share_20",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "last_hits_10_total",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "avg_last_hits_10",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "lane_games",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "lanes_won",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "lanes_drawn",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "lanes_lost",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "lane_win_rate",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "avg_lane_gold_diff_10",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "enemy_hero_damage_taken",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "enemy_hero_damage_taken_per_min",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "hero_kill_deaths",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "trade_deaths",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "trade_death_share",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "observers_placed",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "sentries_placed",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "runes_taken",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "buybacks",
+          "type": "HUGEINT",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "connection": "warehouse",
       "table": "marts.pro_draft_matchups",
       "columns": [
         {
@@ -2653,6 +3553,137 @@
         {
           "name": "wins",
           "type": "HUGEINT",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "connection": "warehouse",
+      "table": "marts.space_created",
+      "columns": [
+        {
+          "name": "match_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "player_slot",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "is_radiant",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "team_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "team_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "account_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "player_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "hero_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "hero_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "position",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "position_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "is_win",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "duration_min",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "enemy_hero_damage_taken",
+          "type": "HUGEINT",
+          "nullable": true
+        },
+        {
+          "name": "enemy_hero_damage_taken_per_min",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "total_deaths",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "hero_kill_deaths",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "trade_deaths",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "trade_death_share",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "started_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "nullable": true
+        },
+        {
+          "name": "match_date",
+          "type": "DATE",
+          "nullable": true
+        },
+        {
+          "name": "patch_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "patch_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "league_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "league_name",
+          "type": "VARCHAR",
           "nullable": true
         }
       ]
@@ -2983,6 +4014,197 @@
         {
           "name": "pick_rate_lift",
           "type": "DOUBLE",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "connection": "warehouse",
+      "table": "marts.vision_and_runes",
+      "columns": [
+        {
+          "name": "match_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "player_slot",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "is_radiant",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "team_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "team_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "account_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "player_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "hero_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "hero_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "position",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "position_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "is_win",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "observers_placed",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "sentries_placed",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "observers_before_10",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "sentries_before_10",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "runes_taken",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "bounty_runes",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "power_runes",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "water_runes",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "wisdom_runes",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "double_damage_runes",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "haste_runes",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "illusion_runes",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "invisibility_runes",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "regeneration_runes",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "arcane_runes",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "shield_runes",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "buybacks",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "first_buyback_min",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "duration_min",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "started_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "nullable": true
+        },
+        {
+          "name": "match_date",
+          "type": "DATE",
+          "nullable": true
+        },
+        {
+          "name": "patch_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "patch_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "league_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "league_name",
+          "type": "VARCHAR",
           "nullable": true
         }
       ]
