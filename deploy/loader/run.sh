@@ -8,4 +8,6 @@ load=$?
 cd transform && dbt build --profiles-dir .
 transform=$?
 echo "load exit $load, transform exit $transform"
+# For sizing the job's memory limit.
+[ -r /sys/fs/cgroup/memory.peak ] && echo "peak memory: $(($(cat /sys/fs/cgroup/memory.peak) / 1048576)) MiB"
 [ "$load" -eq 0 ] && [ "$transform" -eq 0 ]
