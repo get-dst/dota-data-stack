@@ -157,9 +157,11 @@ def _fetch(url: str, params: dict[str, Any]) -> requests.Response:
     return r
 
 
-def get(path: str, *, paid: bool = False, **params: Any) -> Any:
+def get(path: str, **params: Any) -> Any:
     global _last_call
-    paid = paid and _KEY is not None
+    # With a key every call goes through it, a hundredth of a cent each: the free tier's
+    # 60 a minute per IP then never trips on the match list while details are in flight.
+    paid = _KEY is not None
     if paid and _PAID["remaining"] <= 0:
         raise PaidBudgetExhausted("DOTA_PAID_CALLS_MONTH reached for this month")
     wait = (_PAID_INTERVAL_S if paid else _FREE_INTERVAL_S) - (time.monotonic() - _last_call)
@@ -171,7 +173,7 @@ def get(path: str, *, paid: bool = False, **params: Any) -> Any:
     # blip: one quick retry, then give the id up for this run. A run that slept a
     # minute per bad match once crawled for nine hours on a few hundred of them.
     last = "no attempt"
-    for attempt in range(3):
+    for attempt in range(5):
         try:
             r = _fetch(f"{API}/{path}", params)
         except (requests.RequestException, TimeoutError) as exc:
@@ -181,7 +183,8 @@ def get(path: str, *, paid: bool = False, **params: Any) -> Any:
             continue
         _last_call = time.monotonic()
         if r.status_code == 429:
-            time.sleep(10 * (attempt + 1))
+            # Told to slow down: wait it out; a 429 is never a reason to drop the run.
+            time.sleep(20 * (attempt + 1))
             last = "HTTP 429"
             continue
         if r.status_code >= 500:
@@ -327,7 +330,7 @@ def _details(match_ids: list[int], max_calls: int) -> Iterator[tuple[int, Any]]:
         room = max(max_calls - _SPENT["reserved"], 0)
         ids = match_ids[:room]
         _SPENT["reserved"] += len(ids)
-    futures = [_EX.submit(get, f"matches/{mid}", paid=True) for mid in ids]
+    futures = [_EX.submit(get, f"matches/{mid}") for mid in ids]
     for mid, fut in zip(ids, futures, strict=True):
         try:
             yield mid, fut.result()
