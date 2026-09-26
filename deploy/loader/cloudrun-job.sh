@@ -15,7 +15,9 @@ SA=${SA:-dota-loader@${PROJECT}.iam.gserviceaccount.com}
 SCHEDULER_SA=${SCHEDULER_SA:-dota-scheduler@${PROJECT}.iam.gserviceaccount.com}
 here=$(cd "$(dirname "$0")" && pwd)
 root=$(cd "$here/../.." && pwd)
-TAG=${TAG:-$(git -C "$root" rev-parse --short HEAD)}
+# What goes into the image; its tag is the last commit that changed any of it.
+inputs=(load transform .dlt pyproject.toml uv.lock deploy/loader/Dockerfile deploy/loader/run.sh)
+TAG=${TAG:-$(git -C "$root" log -1 --format=%h -- "${inputs[@]}")}
 IMAGE=${IMAGE:-${REGION}-docker.pkg.dev/${PROJECT}/dst/dota-loader:${TAG}}
 ENV_FILE=${ENV_FILE:-$root/.env}
 g() { gcloud --quiet --project "$PROJECT" "$@"; }
@@ -54,8 +56,8 @@ secrets)
   done
   ;;
 build)
-  # The tag is the commit, so the tree the image is built from must be that commit.
-  dirty=$(git -C "$root" status --porcelain -- load transform .dlt pyproject.toml uv.lock deploy/loader)
+  # The tag names a commit, so the files the image is built from must be committed.
+  dirty=$(git -C "$root" status --porcelain -- "${inputs[@]}")
   if [ -n "$dirty" ]; then
     printf 'uncommitted changes would ship under %s:\n%s\n' "$TAG" "$dirty" >&2; exit 1
   fi
@@ -88,7 +90,7 @@ schedule)
 run)
   # Once, now, waiting for the result. Refuses while another execution is running.
   running=$(g run jobs executions list --job "$JOB" --region "$REGION" \
-    --filter 'NOT status.completionTime:*' --format 'value(metadata.name)')
+    --format 'value(metadata.name,status.completionTime)' | awk -F'\t' '$2 == "" {print $1}')
   if [ -n "$running" ]; then echo "already running: $running" >&2; exit 1; fi
   g run jobs execute "$JOB" --region "$REGION" --wait
   ;;
@@ -108,7 +110,8 @@ for e in json.load(sys.stdin):
     took = "-"
     if s.get("startTime") and s.get("completionTime"):
         took = "%.0f s" % (at(s["completionTime"]) - at(s["startTime"])).total_seconds()
-    print(meta["name"], s.get("startTime", "-"), result, took, sep="  ")
+    by = meta.get("annotations", {}).get("run.googleapis.com/creator", "")
+    print(meta["name"], s.get("startTime", "-"), result, took, by, sep="  ")
 '
   g scheduler jobs describe "$TRIGGER" --location "$REGION" \
     --format 'value(schedule,timeZone,state,lastAttemptTime)' 2>/dev/null || echo "no schedule yet"
