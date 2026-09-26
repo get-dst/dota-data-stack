@@ -1,5 +1,7 @@
-# Hourly: pull new pro matches and the public sample into the warehouse and rebuild
-# the marts. Target by secret: MOTHERDUCK_TOKEN → MotherDuck (database `dota`);
+# The manual run, kept to show the stack on GitHub Actions: pull new pro matches and the
+# public sample into the warehouse and rebuild the marts. The scheduled load runs as a
+# Cloud Run job (deploy/loader); do not dispatch this while that job is running.
+# Target by secret: MOTHERDUCK_TOKEN → MotherDuck (database `dota`);
 # else DATABASE_URL + PG* → Postgres; else a throwaway local DuckDB that keeps nothing.
 # OPENDOTA_API_KEY pays for match details; the monthly cap below is enforced from the
 # warehouse's own api_usage table, so no schedule can spend past it.
@@ -8,8 +10,6 @@ concurrency:
   group: load
   cancel-in-progress: false
 on:
-  schedule:
-    - cron: "23 * * * *"
   workflow_dispatch:
 jobs:
   load:
