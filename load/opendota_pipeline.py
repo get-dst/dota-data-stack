@@ -157,11 +157,11 @@ def _fetch(url: str, params: dict[str, Any]) -> requests.Response:
     return r
 
 
-def get(path: str, **params: Any) -> Any:
+def get(path: str, *, paid: bool = False, **params: Any) -> Any:
     global _last_call
-    # With a key every call goes through it, a hundredth of a cent each: the free tier's
-    # 60 a minute per IP then never trips on the match list while details are in flight.
-    paid = _KEY is not None
+    # Only match details go through the key (a hundredth of a cent each); lists and
+    # dimensions stay on the free tier, where a 429 is waited out below.
+    paid = paid and _KEY is not None
     if paid and _PAID["remaining"] <= 0:
         raise PaidBudgetExhausted("DOTA_PAID_CALLS_MONTH reached for this month")
     wait = (_PAID_INTERVAL_S if paid else _FREE_INTERVAL_S) - (time.monotonic() - _last_call)
@@ -222,6 +222,9 @@ def pro_matches(since_days: int) -> Iterator[list[dict[str, Any]]]:
         if keep:
             yield keep
         if len(keep) < len(page) or len(page) < 100:
+            return
+        # A whole page the warehouse already holds: everything older was listed before.
+        if _IN_WAREHOUSE and all(m["match_id"] in _IN_WAREHOUSE for m in page):
             return
         before = page[-1]["match_id"]
 
@@ -346,7 +349,7 @@ def _details(match_ids: list[int], max_calls: int) -> Iterator[tuple[int, Any]]:
         room = max(max_calls - _SPENT["reserved"], 0)
         ids = match_ids[:room]
         _SPENT["reserved"] += len(ids)
-    futures = [_EX.submit(get, f"matches/{mid}") for mid in ids]
+    futures = [_EX.submit(get, f"matches/{mid}", paid=True) for mid in ids]
     for mid, fut in zip(ids, futures, strict=True):
         try:
             yield mid, fut.result()
