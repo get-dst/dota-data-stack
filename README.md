@@ -15,7 +15,7 @@ around them). The pro lenses count the 9,269 of those matches played in leagues 
 rates premium or professional: 92,690 player rows, 58,454 teamfights, 4.2 million item
 purchases. Tier-3 leagues, which OpenDota rates excluded, stay in the raw tables. Next to
 them sit 52,263 public matchmaking games with their rank bracket. A scheduled job adds
-whatever is new.
+whatever is new every four hours.
 
 ## Ask it
 

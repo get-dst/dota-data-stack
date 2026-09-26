@@ -58,7 +58,8 @@ records their tokens (`resolution.decisions[].usage`) but does not price them.
       c.sql('create table marts.write_probe as select 1')"
       ```
       Expected: a count, then an error on the CREATE.
-- [ ] Freshness needs nothing new. The hourly `load.yml` writes `md:dota`. Read-scaling
+- [ ] Freshness needs nothing new. The `dota-load` Cloud Run job (`deploy/loader/`, every
+      4 hours) writes `md:dota`. Read-scaling
       replicas are eventually consistent ("within minutes", per MotherDuck's docs), and the
       lenses declare `stale_after_days: 2`. If the load stops for two days, answers say
       they are stale; that is the guarantee firing, not a fault.
@@ -162,9 +163,9 @@ cd serve && dst apply --url $DEMO --token $DEMO_TOKEN --timeout 1500
   1. *"Ask roshan: what is the current patch in pro Dota?"* → **7.41**. It comes back typed
      (`resolution.method: construction`); this wording does not match the certified
      "What is the current patch?", so it is not a certified answer.
-  2. *"How many pro matches were played on the current patch?"* → certified; **1,587** at
-     rehearsal time (2026-09-25 11:30 UTC). It grows with the hourly load, so check the
-     count matches its SQL rather than the number.
+  2. *"How many pro matches were played on the current patch?"* → certified. The count
+     grows with every load and counts premium and professional leagues only, so check it
+     matches its SQL rather than a number.
   3. *"What is the average MMR of players in pro matches?"* → **refused by name** ("this
      lens cannot compute MMR — professional matches carry no matchmaking rating …").
 
@@ -190,8 +191,8 @@ cd serve && dst apply --url $DEMO --token $DEMO_TOKEN --timeout 1500
   250/day or the org near 2000/day is the signal.
 - **Spend**: the DeepSeek balance page, and Jev's. Cloud Run and Cloud SQL on the GCP
   billing report.
-- **Data**: the `load` workflow on GitHub Actions. Two days red means stale answers,
-  disclosed as stale.
+- **Data**: the `dota-load` Cloud Run job (`deploy/loader/cloudrun-job.sh status`). Two
+  days of failed runs means stale answers, disclosed as stale.
 
 ## Pulling the plug
 
