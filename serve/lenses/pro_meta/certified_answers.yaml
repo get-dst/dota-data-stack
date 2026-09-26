@@ -2,7 +2,7 @@
 # on every apply and by `dst test`. Start small; promote from the review queue.
 - question: How many pro matches were played on the current patch?
   sql: |
-    SELECT COUNT(*) AS match_count
+    SELECT COUNT(pro_matches.match_id) AS match_count
     FROM marts.fact_match AS pro_matches
     JOIN marts.dim_patch AS patches ON patches.patch_id = pro_matches.patch_id
     WHERE patches.is_current = TRUE

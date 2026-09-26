@@ -64,7 +64,6 @@ fields:
 dimensions:
   - {name: hero_name, type: string}
   - {name: patch_name, type: string}
-  - {name: position, type: integer}
   - {name: position_name, type: string}
 metrics:
   - {name: games, agg: sum, expr: "hero_playstyle.games", description: "Player-games; the sample size to state beside every rate."}

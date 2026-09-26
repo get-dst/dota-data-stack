@@ -3,7 +3,7 @@
 # cannot be compared as a set.
 - question: How many ranked matches are in the sample on the current patch?
   sql: |
-    SELECT COUNT(*) AS match_count
+    SELECT COUNT(pub_matches.match_id) AS match_count
     FROM marts.fact_pub_match AS pub_matches
     JOIN marts.dim_patch AS patches ON patches.patch_id = pub_matches.patch_id
     WHERE pub_matches.game_type = 'ranked_all_pick' AND patches.is_current = TRUE
