@@ -14,6 +14,22 @@
 - question: Which team has the highest win rate?
   expect: answer
   status: approved
+# Team questions live on team_matches, two rows per match; the player grain counted a
+# team's matches five times.
+- question: How many matches did Team Liquid play in August 2026?
+  expect: answer
+  status: approved
+- question: How did Team Spirit do on the current patch?
+  expect: answer
+  status: approved
+- question: How did Team Liquid do in September compared to August?
+  expect: answer
+  status: approved
+# A hero win rate over a period is null under 20 games, so a hero with two wins in
+# two games cannot top the month.
+- question: Which hero has the highest win rate this month?
+  expect: answer
+  status: approved
 - question: Who has the highest average GPM?
   expect: answer
   status: approved

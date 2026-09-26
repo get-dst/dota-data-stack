@@ -4,6 +4,7 @@ description: Hero win rate by how long the game went, per rank bracket, over the
 grain: one row per hero, patch, rank bracket and duration bucket
 use_cases:
   - Use for whether a hero wins more in long or short games.
+  - bucket_win_rate is null under 20 games (the minimum_games term), so a ranking lists only heroes past the floor in that bucket; report the game count with every rate.
   - Avoid for overall win rate; that is pub_hero_stats.
 common_questions:
   - Does Anti-Mage win more in games over 45 minutes?
@@ -36,7 +37,7 @@ metrics:
   - {name: bucket_wins, agg: sum, expr: pub_hero_by_duration.wins}
   - name: bucket_win_rate
     better: higher
-    type: ratio
-    numerator: bucket_wins
-    denominator: bucket_games
+    type: derived
+    expr: "CASE WHEN {bucket_games} >= 20 THEN {bucket_wins} * 1.0 / NULLIF({bucket_games}, 0) END"
     format: percent
+    description: Wins divided by games in the duration bucket; null under 20 games (the minimum_games term), so a thin bucket cannot rank first.

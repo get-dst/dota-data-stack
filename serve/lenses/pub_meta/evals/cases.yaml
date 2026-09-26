@@ -45,6 +45,11 @@
 - question: Is Pudge's win rate going up this week?
   expect: answer
   status: approved
+# The win-rate metrics are null under 20 games, so a hero with a few sampled games
+# cannot top the month.
+- question: Which hero has the highest win rate this month?
+  expect: answer
+  status: approved
 # Retired: Immortal games are rare in the public feed, so the bracket is usually absent.
 - question: Which heroes are picked most at Immortal?
   expect: answer

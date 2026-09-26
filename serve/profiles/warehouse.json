@@ -1,6 +1,6 @@
 {
   "connection": "warehouse",
-  "recorded_at": "2026-09-26T09:41:13.473962Z",
+  "recorded_at": "2026-09-26T11:00:24.411201Z",
   "tables": [
     {
       "connection": "warehouse",
@@ -392,6 +392,21 @@
         },
         {
           "name": "last_match_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "nullable": true
+        },
+        {
+          "name": "is_ranked",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "loaded_matches",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "last_loaded_match_at",
           "type": "TIMESTAMP WITH TIME ZONE",
           "nullable": true
         }
@@ -1010,6 +1025,11 @@
           "nullable": true
         },
         {
+          "name": "position_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
           "name": "leaver_status",
           "type": "BIGINT",
           "nullable": true
@@ -1199,6 +1219,122 @@
         {
           "name": "patch_name",
           "type": "VARCHAR",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "connection": "warehouse",
+      "table": "marts.fact_team_match",
+      "columns": [
+        {
+          "name": "match_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "is_radiant",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "side",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "team_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "team_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "opponent_team_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "opponent_team_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "is_win",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "kills",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "kills_against",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "has_first_pick",
+          "type": "BOOLEAN",
+          "nullable": true
+        },
+        {
+          "name": "started_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "nullable": true
+        },
+        {
+          "name": "match_date",
+          "type": "DATE",
+          "nullable": true
+        },
+        {
+          "name": "duration_min",
+          "type": "DOUBLE",
+          "nullable": true
+        },
+        {
+          "name": "patch_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "patch_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "league_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "league_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "league_tier",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "game_mode_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "series_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "series_type",
+          "type": "BIGINT",
           "nullable": true
         }
       ]

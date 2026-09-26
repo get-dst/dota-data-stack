@@ -2,10 +2,10 @@
 # on every apply and by `dst test`.
 - question: What is the most common first major item on Juggernaut?
   sql: |
-    SELECT item_order, item_name, SUM(games) AS games
+    SELECT item_name, SUM(games) AS games
     FROM marts.hero_core_items AS hero_core_items
     WHERE hero_name = 'Juggernaut' AND item_order = 'first'
-    GROUP BY item_order, item_name
+    GROUP BY item_name
     ORDER BY games DESC
   status: active
 - question: Which neutral item did pros end the game with most often?

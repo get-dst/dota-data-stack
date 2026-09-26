@@ -4,7 +4,7 @@ description: Professional matches between two teams, from each team's point of v
 grain: one row per team, opponent and patch
 use_cases:
   - Use for how one team has done against another.
-  - Avoid for a team's overall record; that is player_performances grouped by team, or pro_matches.
+  - Avoid for a team's overall record, match count or win rate; that is team_matches.
 common_questions:
   - How has Team Spirit done against Team Liquid this patch?
 source:

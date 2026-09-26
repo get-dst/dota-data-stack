@@ -3,7 +3,7 @@ description: Hero games and wins in the public sample, per patch, rank bracket a
   type. The table behind every "best hero at bracket X" question.
 grain: one row per hero per patch per bracket per game type
 use_cases:
-  - When ranking by a rate, keep rows with at least 20 games (the minimum_games term) and report the game count with every rate.
+  - hero_win_rate is null under 20 games (the minimum_games term), so a ranking by it lists only heroes past the floor; report the game count with every rate.
   - Use for hero win rate and pick rate in pubs, by bracket and patch.
   - Avoid for hero-versus-hero or hero-with-hero questions; those are pub_matchups and pub_duos.
 common_questions:
@@ -39,8 +39,7 @@ metrics:
   - {name: hero_wins, agg: sum, expr: pub_hero_stats.wins}
   - name: hero_win_rate
     better: higher
-    type: ratio
-    numerator: hero_wins
-    denominator: hero_games
+    type: derived
+    expr: "CASE WHEN {hero_games} >= 20 THEN {hero_wins} * 1.0 / NULLIF({hero_games}, 0) END"
     format: percent
-    description: Wins divided by games for the hero over the selected brackets and patches.
+    description: Wins divided by games for the hero over the selected brackets and patches; null under 20 games (the minimum_games term), so a small sample cannot rank first.

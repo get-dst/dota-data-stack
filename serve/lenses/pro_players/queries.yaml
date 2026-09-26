@@ -16,7 +16,7 @@ sample_queries:
   - question: Which heroes does Yatoro play most?
     sql: |
       SELECT hero_name, COUNT(*) AS games,
-             SUM(CASE WHEN is_win THEN 1 ELSE 0 END) * 1.0 / COUNT(*) AS hero_win_rate
+             AVG(CASE WHEN is_win THEN 1.0 ELSE 0.0 END) AS hero_win_rate
       FROM marts.fact_player_match AS player_performances
       WHERE player_performances.pro_name = 'Yatoro'
       GROUP BY hero_name

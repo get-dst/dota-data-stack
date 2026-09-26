@@ -18,7 +18,6 @@ select:
   definitions:
     - position
     - hero_win_rate
-    - team_win_rate
     - current_patch
     - pro_match
     - minimum_games

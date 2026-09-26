@@ -4,6 +4,7 @@ description: Per hero, patch and position (1-5) over professional matches — ga
 grain: one row per hero per patch per position
 use_cases:
   - Use for which position a hero is played in and how it fares there.
+  - position_win_rate is null under 10 games in the position (the minimum_games floor for these thin rows), so a ranking lists only rows past the floor; report the games beside every rate.
   - Avoid for a hero's overall numbers regardless of position; that is hero_patch_trends.
 common_questions:
   - Which position is Pudge played in most?
@@ -37,11 +38,10 @@ metrics:
   - {name: hero_total_games, agg: sum, expr: hero_position_meta.hero_games, description: "The hero's positioned games; only meaningful grouped or filtered by position."}
   - name: position_win_rate
     better: higher
-    type: ratio
-    numerator: position_wins
-    denominator: position_games
+    type: derived
+    expr: "CASE WHEN {position_games} >= 10 THEN {position_wins} * 1.0 / NULLIF({position_games}, 0) END"
     format: percent
-    description: Win rate of the hero in the position.
+    description: Win rate of the hero in the position; null under 10 games (the minimum_games floor for per-position rows), so a hero played there a few times cannot rank first.
   - name: position_share
     type: ratio
     numerator: position_games

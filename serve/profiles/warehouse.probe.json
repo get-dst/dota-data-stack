@@ -1,6 +1,6 @@
 {
   "connection": "warehouse",
-  "probed_at": "2026-09-26T09:41:13.464691Z",
+  "probed_at": "2026-09-26T11:00:24.405553Z",
   "tables": [
     {
       "connection": "warehouse",
@@ -18,7 +18,7 @@
         "min": "2025-09-26T00:00:00Z",
         "max": "2026-09-26T00:00:00Z"
       },
-      "profiled_at": "2026-09-26T09:40:47.282739Z",
+      "profiled_at": "2026-09-26T10:59:59.544014Z",
       "source": "mixed",
       "columns": [
         {
@@ -345,7 +345,7 @@
         "min": "2026-09-24T00:00:00Z",
         "max": "2026-09-26T00:00:00Z"
       },
-      "profiled_at": "2026-09-26T09:40:47.591767Z",
+      "profiled_at": "2026-09-26T10:59:59.863433Z",
       "source": "mixed",
       "columns": [
         {
@@ -617,7 +617,7 @@
       "last_updated_physical": null,
       "last_updated_logical": null,
       "time_coverage": null,
-      "profiled_at": "2026-09-26T09:40:47.798237Z",
+      "profiled_at": "2026-09-26T11:00:00.002979Z",
       "source": "mixed",
       "columns": [
         {
@@ -686,7 +686,7 @@
       "last_updated_physical": null,
       "last_updated_logical": null,
       "time_coverage": null,
-      "profiled_at": "2026-09-26T09:40:48.271670Z",
+      "profiled_at": "2026-09-26T11:00:00.289248Z",
       "source": "mixed",
       "columns": [
         {
@@ -941,7 +941,7 @@
       "last_updated_physical": null,
       "last_updated_logical": null,
       "time_coverage": null,
-      "profiled_at": "2026-09-26T09:40:48.836637Z",
+      "profiled_at": "2026-09-26T11:00:00.893967Z",
       "source": "mixed",
       "columns": [
         {
@@ -1683,7 +1683,7 @@
       "last_updated_physical": null,
       "last_updated_logical": null,
       "time_coverage": null,
-      "profiled_at": "2026-09-26T09:40:48.992711Z",
+      "profiled_at": "2026-09-26T11:00:01.047157Z",
       "source": "mixed",
       "columns": [
         {
@@ -1760,7 +1760,7 @@
         "min": "2010-12-24T01:00:00+01:00",
         "max": "2026-03-24T01:50:59.580000+01:00"
       },
-      "profiled_at": "2026-09-26T09:40:49.237601Z",
+      "profiled_at": "2026-09-26T11:00:01.308938Z",
       "source": "mixed",
       "columns": [
         {
@@ -1927,7 +1927,7 @@
       "last_updated_physical": null,
       "last_updated_logical": null,
       "time_coverage": null,
-      "profiled_at": "2026-09-26T09:40:49.604371Z",
+      "profiled_at": "2026-09-26T11:00:01.657499Z",
       "source": "mixed",
       "columns": [
         {
@@ -2651,7 +2651,7 @@
         "min": "2017-09-25T15:34:15+02:00",
         "max": "2026-09-26T11:08:24+02:00"
       },
-      "profiled_at": "2026-09-26T09:40:49.957896Z",
+      "profiled_at": "2026-09-26T11:00:01.978748Z",
       "source": "mixed",
       "columns": [
         {
@@ -2954,8 +2954,8 @@
     {
       "connection": "warehouse",
       "table": "marts.dim_team",
-      "description": "Professional teams from OpenDota's team ranking (the top thousand by rating), one row per team, with all-time records; unnamed teams are dropped.",
-      "row_count": 984,
+      "description": "Professional teams, one row per team; every team in OpenDota's ranking (the top thousand by rating, with rating and all-time records) and every team identified on a loaded match, so a team id on a match always resolves here. Most teams that play in the window are outside the ranking and carry only a name and their loaded matches.",
+      "row_count": 2731,
       "is_view": false,
       "sampled_rows": null,
       "partitioning": null,
@@ -2963,11 +2963,11 @@
       "last_updated_physical": null,
       "last_updated_logical": "2026-09-26T10:11:57+02:00",
       "time_coverage": {
-        "column": "last_match_at",
-        "min": "2012-09-24T00:01:22+02:00",
+        "column": "last_loaded_match_at",
+        "min": "2025-09-26T16:22:41+02:00",
         "max": "2026-09-26T10:11:57+02:00"
       },
-      "profiled_at": "2026-09-26T09:40:50.161901Z",
+      "profiled_at": "2026-09-26T11:00:02.233921Z",
       "source": "mixed",
       "columns": [
         {
@@ -2977,13 +2977,13 @@
           "description": "OpenDota team id; primary key.",
           "description_source": "warehouse",
           "null_rate": 0.0,
-          "distinct_count": 984,
+          "distinct_count": 2731,
           "distinct_is_exact": true,
           "is_low_cardinality": false,
           "top_values": null,
           "values_complete": false,
           "min": "2",
-          "max": "10261180",
+          "max": "10271406",
           "value_shape": null,
           "access_hint": null
         },
@@ -2991,10 +2991,10 @@
           "name": "team_name",
           "type": "VARCHAR",
           "nullable": true,
-          "description": "Team name.",
+          "description": "Team name; from the ranking when the team is ranked, else from its latest loaded match.",
           "description_source": "warehouse",
           "null_rate": 0.0,
-          "distinct_count": 911,
+          "distinct_count": 2419,
           "distinct_is_exact": true,
           "is_low_cardinality": false,
           "top_values": null,
@@ -3008,9 +3008,9 @@
           "name": "team_tag",
           "type": "VARCHAR",
           "nullable": true,
-          "description": "Short team tag.",
+          "description": "Short team tag; null for a team outside the ranking.",
           "description_source": "warehouse",
-          "null_rate": 0.0,
+          "null_rate": 0.639692,
           "distinct_count": 750,
           "distinct_is_exact": true,
           "is_low_cardinality": false,
@@ -3025,9 +3025,9 @@
           "name": "rating",
           "type": "DOUBLE",
           "nullable": true,
-          "description": "OpenDota Elo-style team rating.",
+          "description": "OpenDota Elo-style team rating; null for a team outside the ranking.",
           "description_source": "warehouse",
-          "null_rate": 0.0,
+          "null_rate": 0.639692,
           "distinct_count": 947,
           "distinct_is_exact": true,
           "is_low_cardinality": false,
@@ -3042,9 +3042,9 @@
           "name": "all_time_wins",
           "type": "BIGINT",
           "nullable": true,
-          "description": "Wins over the team's whole OpenDota history, not the loaded window.",
+          "description": "Wins over the team's whole OpenDota history, not the loaded window; null for a team outside the ranking.",
           "description_source": "warehouse",
-          "null_rate": 0.0,
+          "null_rate": 0.639692,
           "distinct_count": 242,
           "distinct_is_exact": true,
           "is_low_cardinality": false,
@@ -3059,9 +3059,9 @@
           "name": "all_time_losses",
           "type": "BIGINT",
           "nullable": true,
-          "description": "Losses over the team's whole OpenDota history, not the loaded window.",
+          "description": "Losses over the team's whole OpenDota history, not the loaded window; null for a team outside the ranking.",
           "description_source": "warehouse",
-          "null_rate": 0.0,
+          "null_rate": 0.639692,
           "distinct_count": 226,
           "distinct_is_exact": true,
           "is_low_cardinality": false,
@@ -3076,15 +3076,69 @@
           "name": "last_match_at",
           "type": "TIMESTAMP WITH TIME ZONE",
           "nullable": true,
-          "description": "Start time of the team's most recent match OpenDota knows.",
+          "description": "Start time of the team's most recent match OpenDota knows; null for a team outside the ranking.",
           "description_source": "warehouse",
-          "null_rate": 0.0,
+          "null_rate": 0.639692,
           "distinct_count": 953,
           "distinct_is_exact": true,
           "is_low_cardinality": false,
           "top_values": null,
           "values_complete": false,
           "min": "2012-09-24 00:01:22+02:00",
+          "max": "2026-09-26 10:11:57+02:00",
+          "value_shape": null,
+          "access_hint": null
+        },
+        {
+          "name": "is_ranked",
+          "type": "BOOLEAN",
+          "nullable": true,
+          "description": "True when the team is in OpenDota's ranking, so rating and the all-time records are present.",
+          "description_source": "warehouse",
+          "null_rate": 0.0,
+          "distinct_count": 2,
+          "distinct_is_exact": true,
+          "is_low_cardinality": true,
+          "top_values": [
+            "false",
+            "true"
+          ],
+          "values_complete": true,
+          "min": null,
+          "max": null,
+          "value_shape": null,
+          "access_hint": null
+        },
+        {
+          "name": "loaded_matches",
+          "type": "BIGINT",
+          "nullable": true,
+          "description": "Pro matches of the team in the loaded window; 0 for a ranked team with none.",
+          "description_source": "warehouse",
+          "null_rate": 0.0,
+          "distinct_count": 164,
+          "distinct_is_exact": true,
+          "is_low_cardinality": false,
+          "top_values": null,
+          "values_complete": false,
+          "min": "0",
+          "max": "1038",
+          "value_shape": null,
+          "access_hint": null
+        },
+        {
+          "name": "last_loaded_match_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "nullable": true,
+          "description": "Start time of the team's latest loaded match; null when it has none.",
+          "description_source": "warehouse",
+          "null_rate": 0.306847,
+          "distinct_count": 1712,
+          "distinct_is_exact": true,
+          "is_low_cardinality": false,
+          "top_values": null,
+          "values_complete": false,
+          "min": "2025-09-26 16:22:41+02:00",
           "max": "2026-09-26 10:11:57+02:00",
           "value_shape": null,
           "access_hint": null
@@ -3107,7 +3161,7 @@
         "min": "2025-09-26T11:44:10+02:00",
         "max": "2026-09-26T10:11:57+02:00"
       },
-      "profiled_at": "2026-09-26T09:40:51.529240Z",
+      "profiled_at": "2026-09-26T11:00:03.534038Z",
       "source": "mixed",
       "columns": [
         {
@@ -3947,7 +4001,7 @@
         "min": "2025-09-26T11:44:10+02:00",
         "max": "2026-09-26T10:11:57+02:00"
       },
-      "profiled_at": "2026-09-26T09:40:52.257227Z",
+      "profiled_at": "2026-09-26T11:00:04.165064Z",
       "source": "mixed",
       "columns": [
         {
@@ -4413,7 +4467,7 @@
         "min": "2025-09-26T11:44:10+02:00",
         "max": "2026-09-26T10:11:57+02:00"
       },
-      "profiled_at": "2026-09-26T09:40:52.981147Z",
+      "profiled_at": "2026-09-26T11:00:04.884126Z",
       "source": "mixed",
       "columns": [
         {
@@ -5105,7 +5159,7 @@
         "min": "2025-09-26T11:44:10+02:00",
         "max": "2026-09-26T10:11:57+02:00"
       },
-      "profiled_at": "2026-09-26T09:40:54.457857Z",
+      "profiled_at": "2026-09-26T11:00:06.455386Z",
       "source": "mixed",
       "columns": [
         {
@@ -5211,7 +5265,7 @@
           "name": "account_id",
           "type": "BIGINT",
           "nullable": true,
-          "description": "Steam account id (32-bit); joins dim_pro_player.account_id.",
+          "description": "Steam account id (32-bit); joins dim_pro_player.account_id for the accounts OpenDota lists as pro, about a third of the rows, so the reference is partial by design and not tested.",
           "description_source": "warehouse",
           "null_rate": 0.0,
           "distinct_count": 9481,
@@ -6063,7 +6117,7 @@
           "name": "position",
           "type": "INTEGER",
           "nullable": true,
-          "description": "Derived role 1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support: mid is 2; in the safe and off lanes the higher-GPM player of the side is 1/3 and the other 5/4; null for jungle or unparsed lanes.",
+          "description": "Derived role 1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support: mid is 2; in the safe and off lanes the higher-GPM player of the side is 1/3 and the other 5/4; null for jungle or unparsed lanes (unit test position_from_lane_and_farm).",
           "description_source": "warehouse",
           "null_rate": 0.00118,
           "distinct_count": 5,
@@ -6079,6 +6133,29 @@
           "values_complete": true,
           "min": "1",
           "max": "5",
+          "value_shape": null,
+          "access_hint": null
+        },
+        {
+          "name": "position_name",
+          "type": "VARCHAR",
+          "nullable": true,
+          "description": "position as a word: carry, mid, offlane, soft support or hard support; null when position is null.",
+          "description_source": "warehouse",
+          "null_rate": 0.00118,
+          "distinct_count": 5,
+          "distinct_is_exact": true,
+          "is_low_cardinality": true,
+          "top_values": [
+            "mid",
+            "carry",
+            "offlane",
+            "hard support",
+            "soft support"
+          ],
+          "values_complete": true,
+          "min": null,
+          "max": null,
           "value_shape": null,
           "access_hint": null
         },
@@ -6398,7 +6475,7 @@
       "last_updated_physical": null,
       "last_updated_logical": null,
       "time_coverage": null,
-      "profiled_at": "2026-09-26T09:40:46.963449Z",
+      "profiled_at": "2026-09-26T10:59:59.231273Z",
       "source": "catalog",
       "columns": [
         {
@@ -6640,7 +6717,7 @@
         "min": "2026-09-24T18:04:36+02:00",
         "max": "2026-09-26T09:44:44+02:00"
       },
-      "profiled_at": "2026-09-26T09:40:55.141062Z",
+      "profiled_at": "2026-09-26T11:00:07.034600Z",
       "source": "mixed",
       "columns": [
         {
@@ -6925,6 +7002,570 @@
     },
     {
       "connection": "warehouse",
+      "table": "marts.fact_team_match",
+      "description": "One row per side per professional match, two per match; the grain for a team's matches, wins and win rate (tests/team_match_grain.sql pins two rows and one win per match). fact_player_match has five rows per side, so it never counts a team's matches.",
+      "row_count": 45780,
+      "is_view": false,
+      "sampled_rows": null,
+      "partitioning": null,
+      "clustering": [],
+      "last_updated_physical": null,
+      "last_updated_logical": "2026-09-26T10:11:57+02:00",
+      "time_coverage": {
+        "column": "started_at",
+        "min": "2025-09-26T11:44:10+02:00",
+        "max": "2026-09-26T10:11:57+02:00"
+      },
+      "profiled_at": "2026-09-26T11:00:07.778954Z",
+      "source": "mixed",
+      "columns": [
+        {
+          "name": "match_id",
+          "type": "BIGINT",
+          "nullable": true,
+          "description": "OpenDota match id; with side the primary key; joins fact_match.match_id.",
+          "description_source": "warehouse",
+          "null_rate": 0.0,
+          "distinct_count": 22890,
+          "distinct_is_exact": true,
+          "is_low_cardinality": false,
+          "top_values": null,
+          "values_complete": false,
+          "min": "8480921022",
+          "max": "9016621041",
+          "value_shape": null,
+          "access_hint": null
+        },
+        {
+          "name": "is_radiant",
+          "type": "BOOLEAN",
+          "nullable": true,
+          "description": "True for the Radiant side's row.",
+          "description_source": "warehouse",
+          "null_rate": 0.0,
+          "distinct_count": 2,
+          "distinct_is_exact": true,
+          "is_low_cardinality": true,
+          "top_values": [
+            "false",
+            "true"
+          ],
+          "values_complete": true,
+          "min": null,
+          "max": null,
+          "value_shape": null,
+          "access_hint": null
+        },
+        {
+          "name": "side",
+          "type": "VARCHAR",
+          "nullable": true,
+          "description": "radiant or dire.",
+          "description_source": "warehouse",
+          "null_rate": 0.0,
+          "distinct_count": 2,
+          "distinct_is_exact": true,
+          "is_low_cardinality": true,
+          "top_values": [
+            "dire",
+            "radiant"
+          ],
+          "values_complete": true,
+          "min": null,
+          "max": null,
+          "value_shape": null,
+          "access_hint": null
+        },
+        {
+          "name": "team_id",
+          "type": "BIGINT",
+          "nullable": true,
+          "description": "Team on this side; joins dim_team.team_id; null when OpenDota did not identify the side's team.",
+          "description_source": "warehouse",
+          "null_rate": 0.03827,
+          "distinct_count": 1893,
+          "distinct_is_exact": true,
+          "is_low_cardinality": false,
+          "top_values": null,
+          "values_complete": false,
+          "min": "15",
+          "max": "10271406",
+          "value_shape": null,
+          "access_hint": null
+        },
+        {
+          "name": "team_name",
+          "type": "VARCHAR",
+          "nullable": true,
+          "description": "Team name on this side as the match record carries it; null when not identified.",
+          "description_source": "warehouse",
+          "null_rate": 0.03827,
+          "distinct_count": 1662,
+          "distinct_is_exact": true,
+          "is_low_cardinality": false,
+          "top_values": null,
+          "values_complete": false,
+          "min": null,
+          "max": null,
+          "value_shape": null,
+          "access_hint": null
+        },
+        {
+          "name": "opponent_team_id",
+          "type": "BIGINT",
+          "nullable": true,
+          "description": "Team on the other side; joins dim_team.team_id; null when not identified.",
+          "description_source": "warehouse",
+          "null_rate": 0.03827,
+          "distinct_count": 1893,
+          "distinct_is_exact": true,
+          "is_low_cardinality": false,
+          "top_values": null,
+          "values_complete": false,
+          "min": "15",
+          "max": "10271406",
+          "value_shape": null,
+          "access_hint": null
+        },
+        {
+          "name": "opponent_team_name",
+          "type": "VARCHAR",
+          "nullable": true,
+          "description": "Team name on the other side.",
+          "description_source": "warehouse",
+          "null_rate": 0.03827,
+          "distinct_count": 1662,
+          "distinct_is_exact": true,
+          "is_low_cardinality": false,
+          "top_values": null,
+          "values_complete": false,
+          "min": null,
+          "max": null,
+          "value_shape": null,
+          "access_hint": null
+        },
+        {
+          "name": "is_win",
+          "type": "BOOLEAN",
+          "nullable": true,
+          "description": "True when this side won; exactly one of a match's two rows.",
+          "description_source": "warehouse",
+          "null_rate": 0.0,
+          "distinct_count": 2,
+          "distinct_is_exact": true,
+          "is_low_cardinality": true,
+          "top_values": [
+            "false",
+            "true"
+          ],
+          "values_complete": true,
+          "min": null,
+          "max": null,
+          "value_shape": null,
+          "access_hint": null
+        },
+        {
+          "name": "kills",
+          "type": "BIGINT",
+          "nullable": true,
+          "description": "Hero kills by this side.",
+          "description_source": "warehouse",
+          "null_rate": 0.0,
+          "distinct_count": 88,
+          "distinct_is_exact": true,
+          "is_low_cardinality": false,
+          "top_values": null,
+          "values_complete": false,
+          "min": "0",
+          "max": "100",
+          "value_shape": null,
+          "access_hint": null
+        },
+        {
+          "name": "kills_against",
+          "type": "BIGINT",
+          "nullable": true,
+          "description": "Hero kills by the other side.",
+          "description_source": "warehouse",
+          "null_rate": 0.0,
+          "distinct_count": 88,
+          "distinct_is_exact": true,
+          "is_low_cardinality": false,
+          "top_values": null,
+          "values_complete": false,
+          "min": "0",
+          "max": "100",
+          "value_shape": null,
+          "access_hint": null
+        },
+        {
+          "name": "has_first_pick",
+          "type": "BOOLEAN",
+          "nullable": true,
+          "description": "True when this side made the match's first pick (the first_pick definition); null when the match has no recorded draft.",
+          "description_source": "warehouse",
+          "null_rate": 0.01931,
+          "distinct_count": 2,
+          "distinct_is_exact": true,
+          "is_low_cardinality": true,
+          "top_values": [
+            "false",
+            "true"
+          ],
+          "values_complete": true,
+          "min": null,
+          "max": null,
+          "value_shape": null,
+          "access_hint": null
+        },
+        {
+          "name": "started_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "nullable": true,
+          "description": "Match start time (timestamp with time zone), from fact_match.",
+          "description_source": "warehouse",
+          "null_rate": 0.0,
+          "distinct_count": 22843,
+          "distinct_is_exact": true,
+          "is_low_cardinality": false,
+          "top_values": null,
+          "values_complete": false,
+          "min": "2025-09-26 11:44:10+02:00",
+          "max": "2026-09-26 10:11:57+02:00",
+          "value_shape": null,
+          "access_hint": null
+        },
+        {
+          "name": "match_date",
+          "type": "DATE",
+          "nullable": true,
+          "description": "UTC calendar date of started_at.",
+          "description_source": "warehouse",
+          "null_rate": 0.0,
+          "distinct_count": 353,
+          "distinct_is_exact": true,
+          "is_low_cardinality": false,
+          "top_values": null,
+          "values_complete": false,
+          "min": "2025-09-26",
+          "max": "2026-09-26",
+          "value_shape": null,
+          "access_hint": null
+        },
+        {
+          "name": "duration_min",
+          "type": "DOUBLE",
+          "nullable": true,
+          "description": "Game length in minutes.",
+          "description_source": "warehouse",
+          "null_rate": 0.0,
+          "distinct_count": 3139,
+          "distinct_is_exact": true,
+          "is_low_cardinality": false,
+          "top_values": null,
+          "values_complete": false,
+          "min": "6.166666666666667",
+          "max": "111.63333333333334",
+          "value_shape": null,
+          "access_hint": null
+        },
+        {
+          "name": "patch_id",
+          "type": "BIGINT",
+          "nullable": true,
+          "description": "Game version id the match was played on; joins dim_patch.patch_id.",
+          "description_source": "warehouse",
+          "null_rate": 0.0,
+          "distinct_count": 3,
+          "distinct_is_exact": true,
+          "is_low_cardinality": true,
+          "top_values": [
+            "60",
+            "59",
+            "58"
+          ],
+          "values_complete": true,
+          "min": "58",
+          "max": "60",
+          "value_shape": null,
+          "access_hint": null
+        },
+        {
+          "name": "patch_name",
+          "type": "VARCHAR",
+          "nullable": true,
+          "description": "Game version the match was played on, e.g. 7.41.",
+          "description_source": "warehouse",
+          "null_rate": 0.0,
+          "distinct_count": 3,
+          "distinct_is_exact": true,
+          "is_low_cardinality": true,
+          "top_values": [
+            "7.41",
+            "7.40",
+            "7.39"
+          ],
+          "values_complete": true,
+          "min": null,
+          "max": null,
+          "value_shape": null,
+          "access_hint": null
+        },
+        {
+          "name": "league_id",
+          "type": "BIGINT",
+          "nullable": true,
+          "description": "League or tournament id; joins dim_league.league_id.",
+          "description_source": "warehouse",
+          "null_rate": 0.0,
+          "distinct_count": 141,
+          "distinct_is_exact": true,
+          "is_low_cardinality": false,
+          "top_values": null,
+          "values_complete": false,
+          "min": "16110",
+          "max": "20279",
+          "value_shape": null,
+          "access_hint": null
+        },
+        {
+          "name": "league_name",
+          "type": "VARCHAR",
+          "nullable": true,
+          "description": "League or tournament name as the match record carries it.",
+          "description_source": "warehouse",
+          "null_rate": 0.0,
+          "distinct_count": 135,
+          "distinct_is_exact": true,
+          "is_low_cardinality": false,
+          "top_values": [
+            "Destiny League",
+            "Ultras Dota Pro League  2025-26",
+            "Dota 2 Space League",
+            "SIVVIT League",
+            "European Pro League  2025-2026 Season",
+            "EPL World Series: Southeast Asia 2025-2026 Season ",
+            "Ultras Dota Pro League  2024-25",
+            "ESL One Birmingham 2026 Qualifiers",
+            "DreamLeague Season 28 Qualifiers",
+            "EPL Masters 2026 ",
+            "DreamLeague Season 29 Qualifiers",
+            "Party To Play league",
+            "WBT CYBER CLUB #1",
+            "Road To EWC 2026 Regional Qualifiers",
+            "Ancients League",
+            "Road to ENC 2026 Regional Qualifiers",
+            "DreamLeague Season 27",
+            "DreamLeague Season 28",
+            "ExitLag ChampZ: Dota 2",
+            "DreamLeague Season 29",
+            "DreamLeague Division 2 Season 1",
+            "DreamLeague Division 2 Season 4",
+            "Premier Series",
+            "刀塔扭蛋杯",
+            "Esports World Cup 2026",
+            "Snake Trophy ",
+            "The International 2026",
+            "ESL One Birmingham 2026",
+            "EPL Championship 2025-2026",
+            "EPL World Series: Southeast Asia 2024-2025 Season ",
+            "European Pro League  2024-2025 Season",
+            "FISSURE PLAYGROUND 2",
+            "PGL Wallachia 2026 Season 7",
+            "PGL Wallachia 2026 Season 8",
+            "PGL Wallachia 2025 Season 6",
+            "Snake Trophy",
+            "CIS Battle 3",
+            "BLAST SLAM VII",
+            "PGL Wallachia 2026 Season 9",
+            "BLAST SLAM VI",
+            "DreamLeague Division 2 Season 2",
+            "FISSURE Universe Episode 8",
+            "SLAM IV",
+            "Liga OverPower Season 2",
+            "SLAM V",
+            "WB team CyberClub CUP",
+            "肛宝联赛-老婆杯",
+            "DreamLeague Division 2 Season 3",
+            "Immigrant Night Club #1",
+            "1win Essence I",
+            "Boss Battle",
+            "Lunar Trophy ",
+            "CIS Battle 4",
+            "BetBoom Streamers Battle x Динамо 12",
+            "FISSURE Universe Episode 7",
+            "The Games of the Future 2026",
+            "BetBoom Streamers Battle x Динамо 11",
+            "The International 2026 - Regional Qualifier Europe",
+            "BLAST Slam V: China Closed Qualifier",
+            "CCT Dota 2 Season 2 Series 6",
+            "1win Essence II",
+            "Pakistan Dota Masters - Season 2",
+            "BetBoom Streamers Battle 13",
+            "CCT Dota 2 Season 2 Series 7",
+            "CCT Dota 2 Season 2 South America Series 3",
+            "CCT Dota 2 Season 2 Series 8",
+            "The Boris Invitational: Streamer Battles 2",
+            "互联网联赛",
+            "CCT Dota 2 Season 2 South America Series 2",
+            "EPICENTER CUP - VERANO",
+            "CCT Dota 2 Season 2 South America Series 1",
+            "CCT Dota 2 Season 2 South America Series 4",
+            "BETBOOM Streamers Battle Dota 15",
+            "CCT Dota 2 Season 2 Series 5",
+            "ESL challenger China",
+            "Americas Convergence Series 1",
+            "1win Streamers League #1",
+            "BLAST Slam VII China Qualifier",
+            "ESL challenger China powered By ACL",
+            "Games of the Future 2025 Abu Dhabi",
+            "天蝉杯",
+            "The International 2026 - Regional Qualifier Southeast Asia",
+            "1win Series Dota 2",
+            "BLAST Slam VI China Qualifier",
+            "Trinity League",
+            "WINTER CUP 2026 SEASON 2",
+            "Americas Open Premier Cup",
+            "PGL Wallachia Season #6 EEU Closed Qualifiers",
+            "PGL Wallachia Season #7 Asia Closed Qualifiers",
+            "The International 2026 - Regional Qualifier South America",
+            "PGL Wallachia Season #6 AMER Closed Qualifiers",
+            "Redragon Latam Series Dota2",
+            "PGL Wallachia Season #6 SEA Closed Qualifiers",
+            "PGL Wallachia Season #7 EEU Closed Qualifiers",
+            "FISSURE PLAYGROUND 2 - Closed Qualifiers - China",
+            "FISSURE PLAYGROUND 2 - Closed Qualifiers - WEU+EEU",
+            "PGL Wallachia Season #7 WEU Closed Qualifiers",
+            "PGL Wallachia Season #6 WEU Closed Qualifiers",
+            "Asgard Championship",
+            "Flame Tournament",
+            "PGL Wallachia Season #7 AMER Closed Qualifiers",
+            "RES Unchained - A Blast Dota Slam V Qualifier SEA",
+            "DreamLeague Season 27 Qualifiers",
+            "RES Unchained - A Blast Dota Slam V Qualifier EU",
+            "The International 2026 - Regional Qualifier China",
+            "Tennisi Stampede Champions - Season 2",
+            "Asia Pacific Predator League 2026",
+            "NEXUS SERIES I",
+            "Tennisi Stampede Champions - Season 1",
+            "WINLINE Star Series Season 4",
+            "RES Unchained - A Blast Dota Slam IV Qualifier EU",
+            "RES Unchained - A Blast Dota Slam IV Qualifier SEA",
+            "CIS Esports League",
+            "RES Unchained - A Blast Dota Slam VI Qualifier EU",
+            "RES Unchained - A Blast Dota Slam IX Qualifier SEA",
+            "RES Unchained - A Blast Dota Slam VI Qualifier SEA",
+            "BLAST Slam IV: China Closed Qualifier",
+            "REDRAGON Battle Series DOTA2",
+            "RES Unchained - A Blast Dota Slam VII Qualifier SEA",
+            "RES Unchained - A Blast Dota Slam VIII Qualifier SEA",
+            "RES Unchained - A Blast Dota Slam VII Qualifier EU",
+            "RES Unchained - A Blast Dota Slam VIII Qualifier EU",
+            "PGL Wallachia Season #6 CN Closed Qualifiers",
+            "The International 2026 - Regional Qualifier North America",
+            "RES Unchained - A Blast Dota Slam IX Qualifier EU",
+            "Road to APAC Predator League 2026 : Indonesian Series",
+            "FISSURE PLAYGROUND 2 - Closed Qualifiers - Americas",
+            "Lunar Snake Trophy",
+            "Открытые Киберспортивные Игры Сбера 2025",
+            "FB杯DOTA2精英联赛26赛季",
+            "DOTA2-Ticu梦幻联赛",
+            "FISSURE PLAYGROUND 2 - Closed Qualifiers - EEU",
+            "FISSURE PLAYGROUND 2 - Closed Qualifiers - Americas (SA)",
+            "INDIA PREDATOR LEAGUE 2026",
+            "FONBET MEDIA ELEAGUE SEASON 4 DOTA2 2026"
+          ],
+          "values_complete": true,
+          "min": null,
+          "max": null,
+          "value_shape": null,
+          "access_hint": null
+        },
+        {
+          "name": "league_tier",
+          "type": "VARCHAR",
+          "nullable": true,
+          "description": "OpenDota league tier: professional, premium, amateur or excluded.",
+          "description_source": "warehouse",
+          "null_rate": 0.0,
+          "distinct_count": 3,
+          "distinct_is_exact": true,
+          "is_low_cardinality": true,
+          "top_values": [
+            "excluded",
+            "professional",
+            "premium"
+          ],
+          "values_complete": true,
+          "min": null,
+          "max": null,
+          "value_shape": null,
+          "access_hint": null
+        },
+        {
+          "name": "game_mode_id",
+          "type": "BIGINT",
+          "nullable": true,
+          "description": "Game mode code (OpenDota game_modes): 2 Captains Mode, 1 All Pick, 22 All Draft.",
+          "description_source": "warehouse",
+          "null_rate": 0.0,
+          "distinct_count": 3,
+          "distinct_is_exact": true,
+          "is_low_cardinality": true,
+          "top_values": [
+            "2",
+            "1",
+            "22"
+          ],
+          "values_complete": true,
+          "min": "1",
+          "max": "22",
+          "value_shape": null,
+          "access_hint": null
+        },
+        {
+          "name": "series_id",
+          "type": "BIGINT",
+          "nullable": true,
+          "description": "OpenDota series id shared by the games of one series; null when not reported.",
+          "description_source": "warehouse",
+          "null_rate": 0.001879,
+          "distinct_count": 11025,
+          "distinct_is_exact": true,
+          "is_low_cardinality": false,
+          "top_values": null,
+          "values_complete": false,
+          "min": "0",
+          "max": "1146895",
+          "value_shape": null,
+          "access_hint": null
+        },
+        {
+          "name": "series_type",
+          "type": "BIGINT",
+          "nullable": true,
+          "description": "Series format: 0 best of 1, 1 best of 3, 2 best of 5, 3 best of 2; null when not reported.",
+          "description_source": "warehouse",
+          "null_rate": 0.001879,
+          "distinct_count": 4,
+          "distinct_is_exact": true,
+          "is_low_cardinality": true,
+          "top_values": [
+            "1",
+            "0",
+            "3",
+            "2"
+          ],
+          "values_complete": true,
+          "min": "0",
+          "max": "3",
+          "value_shape": null,
+          "access_hint": null
+        }
+      ]
+    },
+    {
+      "connection": "warehouse",
       "table": "marts.farm_priority",
       "description": "One row per player per parsed pro match that reached minute 10: the player's share of the side's farm — gold earned since the horn at minutes 10 and 20 (OpenDota's per-minute gold, starting gold not included) over the five players' total — last hits at 10 and 20, and the player's rank within the side by gold at 10 and by net worth at game end. A position's farm priority made measurable.",
       "row_count": 228580,
@@ -6939,7 +7580,7 @@
         "min": "2025-09-26T11:44:10+02:00",
         "max": "2026-09-25T22:06:32+02:00"
       },
-      "profiled_at": "2026-09-26T09:40:56.117404Z",
+      "profiled_at": "2026-09-26T11:00:08.693685Z",
       "source": "mixed",
       "columns": [
         {
@@ -7651,7 +8292,7 @@
       "last_updated_physical": null,
       "last_updated_logical": null,
       "time_coverage": null,
-      "profiled_at": "2026-09-26T09:40:56.552164Z",
+      "profiled_at": "2026-09-26T11:00:09.122855Z",
       "source": "mixed",
       "columns": [
         {
@@ -8399,7 +9040,7 @@
         "min": "2025-09-26T11:44:10+02:00",
         "max": "2026-09-25T22:06:32+02:00"
       },
-      "profiled_at": "2026-09-26T09:40:57.008544Z",
+      "profiled_at": "2026-09-26T11:00:09.539940Z",
       "source": "mixed",
       "columns": [
         {
@@ -8784,7 +9425,7 @@
       "last_updated_physical": null,
       "last_updated_logical": null,
       "time_coverage": null,
-      "profiled_at": "2026-09-26T09:40:57.404935Z",
+      "profiled_at": "2026-09-26T11:00:09.925854Z",
       "source": "mixed",
       "columns": [
         {
@@ -9229,7 +9870,7 @@
           "description": "Average game minute at which the item was completed, over those games.",
           "description_source": "warehouse",
           "null_rate": 0.0,
-          "distinct_count": 14130,
+          "distinct_count": 14134,
           "distinct_is_exact": true,
           "is_low_cardinality": false,
           "top_values": null,
@@ -9270,7 +9911,7 @@
       "last_updated_physical": null,
       "last_updated_logical": null,
       "time_coverage": null,
-      "profiled_at": "2026-09-26T09:40:57.728521Z",
+      "profiled_at": "2026-09-26T11:00:10.203252Z",
       "source": "mixed",
       "columns": [
         {
@@ -9733,7 +10374,7 @@
       "last_updated_physical": null,
       "last_updated_logical": null,
       "time_coverage": null,
-      "profiled_at": "2026-09-26T09:40:58.083348Z",
+      "profiled_at": "2026-09-26T11:00:10.525446Z",
       "source": "mixed",
       "columns": [
         {
@@ -10317,7 +10958,7 @@
       "last_updated_physical": null,
       "last_updated_logical": null,
       "time_coverage": null,
-      "profiled_at": "2026-09-26T09:40:58.438950Z",
+      "profiled_at": "2026-09-26T11:00:11.021876Z",
       "source": "mixed",
       "columns": [
         {
@@ -10743,7 +11384,7 @@
           "description": "Average game minute of the first purchase across those games.",
           "description_source": "warehouse",
           "null_rate": 0.0,
-          "distinct_count": 23749,
+          "distinct_count": 23781,
           "distinct_is_exact": true,
           "is_low_cardinality": false,
           "top_values": null,
@@ -10808,7 +11449,7 @@
         "min": "2025-05-23T01:36:01.602000+02:00",
         "max": "2026-03-24T01:50:59.580000+01:00"
       },
-      "profiled_at": "2026-09-26T09:40:59.066814Z",
+      "profiled_at": "2026-09-26T11:00:11.570199Z",
       "source": "mixed",
       "columns": [
         {
@@ -11408,7 +12049,7 @@
       "last_updated_physical": null,
       "last_updated_logical": null,
       "time_coverage": null,
-      "profiled_at": "2026-09-26T09:40:59.588608Z",
+      "profiled_at": "2026-09-26T11:00:11.915479Z",
       "source": "mixed",
       "columns": [
         {
@@ -11668,7 +12309,7 @@
           "description": "Player-games in the group: the sample size. Rankings keep only rows with at least 10 (the playstyle_minimum_games definition).",
           "description_source": "warehouse",
           "null_rate": 0.0,
-          "distinct_count": 453,
+          "distinct_count": 451,
           "distinct_is_exact": true,
           "is_low_cardinality": false,
           "top_values": null,
@@ -11685,7 +12326,7 @@
           "description": "Of those, games won.",
           "description_source": "warehouse",
           "null_rate": 0.0,
-          "distinct_count": 314,
+          "distinct_count": 315,
           "distinct_is_exact": true,
           "is_low_cardinality": false,
           "top_values": null,
@@ -11702,13 +12343,13 @@
           "description": "Minutes played, summed; the denominator of the per-minute rates.",
           "description_source": "warehouse",
           "null_rate": 0.0,
-          "distinct_count": 1673,
+          "distinct_count": 1675,
           "distinct_is_exact": true,
           "is_low_cardinality": false,
           "top_values": null,
           "values_complete": false,
           "min": "6.966666666666667",
-          "max": "72806.05000000003",
+          "max": "72806.04999999999",
           "value_shape": null,
           "access_hint": null
         },
@@ -11719,7 +12360,7 @@
           "description": "Teamfights in those games, summed.",
           "description_source": "warehouse",
           "null_rate": 0.0,
-          "distinct_count": 921,
+          "distinct_count": 916,
           "distinct_is_exact": true,
           "is_low_cardinality": false,
           "top_values": null,
@@ -11736,7 +12377,7 @@
           "description": "Teamfights the player was present in, summed.",
           "description_source": "warehouse",
           "null_rate": 0.0,
-          "distinct_count": 891,
+          "distinct_count": 890,
           "distinct_is_exact": true,
           "is_low_cardinality": false,
           "top_values": null,
@@ -11770,7 +12411,7 @@
           "description": "Kills inside fight windows, summed.",
           "description_source": "warehouse",
           "null_rate": 0.0,
-          "distinct_count": 658,
+          "distinct_count": 659,
           "distinct_is_exact": true,
           "is_low_cardinality": false,
           "top_values": null,
@@ -11872,7 +12513,7 @@
           "description": "Games that reached minute 10 (the farm share at 10 denominator).",
           "description_source": "warehouse",
           "null_rate": 0.0,
-          "distinct_count": 459,
+          "distinct_count": 456,
           "distinct_is_exact": true,
           "is_low_cardinality": false,
           "top_values": null,
@@ -11912,7 +12553,7 @@
           "top_values": null,
           "values_complete": false,
           "min": "0.07618991930768332",
-          "max": "0.33209270039116323",
+          "max": "0.33209270039116334",
           "value_shape": null,
           "access_hint": null
         },
@@ -11923,7 +12564,7 @@
           "description": "Games that reached minute 20.",
           "description_source": "warehouse",
           "null_rate": 0.0,
-          "distinct_count": 437,
+          "distinct_count": 435,
           "distinct_is_exact": true,
           "is_low_cardinality": false,
           "top_values": null,
@@ -11946,7 +12587,7 @@
           "top_values": null,
           "values_complete": false,
           "min": "0.06863692549724688",
-          "max": "327.41736432494037",
+          "max": "327.4173643249401",
           "value_shape": null,
           "access_hint": null
         },
@@ -11974,7 +12615,7 @@
           "description": "Last hits at minute 10, summed.",
           "description_source": "warehouse",
           "null_rate": 0.00237,
-          "distinct_count": 1182,
+          "distinct_count": 1180,
           "distinct_is_exact": true,
           "is_low_cardinality": false,
           "top_values": null,
@@ -11991,7 +12632,7 @@
           "description": "Average last hits at minute 10.",
           "description_source": "warehouse",
           "null_rate": 0.00237,
-          "distinct_count": 1361,
+          "distinct_count": 1360,
           "distinct_is_exact": true,
           "is_low_cardinality": false,
           "top_values": null,
@@ -12008,7 +12649,7 @@
           "description": "Games with a lane result (laned in lanes 1-3 against at least one enemy hero).",
           "description_source": "warehouse",
           "null_rate": 0.0,
-          "distinct_count": 457,
+          "distinct_count": 454,
           "distinct_is_exact": true,
           "is_low_cardinality": false,
           "top_values": null,
@@ -12059,7 +12700,7 @@
           "description": "Games whose lane was lost.",
           "description_source": "warehouse",
           "null_rate": 0.0,
-          "distinct_count": 245,
+          "distinct_count": 243,
           "distinct_is_exact": true,
           "is_low_cardinality": false,
           "top_values": null,
@@ -12144,7 +12785,7 @@
           "description": "Deaths to enemy heroes, summed.",
           "description_source": "warehouse",
           "null_rate": 0.0,
-          "distinct_count": 836,
+          "distinct_count": 837,
           "distinct_is_exact": true,
           "is_low_cardinality": false,
           "top_values": null,
@@ -12229,7 +12870,7 @@
           "description": "Runes taken, summed.",
           "description_source": "warehouse",
           "null_rate": 0.0,
-          "distinct_count": 737,
+          "distinct_count": 736,
           "distinct_is_exact": true,
           "is_low_cardinality": false,
           "top_values": null,
@@ -12270,7 +12911,7 @@
       "last_updated_physical": null,
       "last_updated_logical": null,
       "time_coverage": null,
-      "profiled_at": "2026-09-26T09:40:59.913348Z",
+      "profiled_at": "2026-09-26T11:00:12.245031Z",
       "source": "mixed",
       "columns": [
         {
@@ -12507,7 +13148,7 @@
           "description": "Pro player-games on the hero in that position on the patch.",
           "description_source": "warehouse",
           "null_rate": 0.0,
-          "distinct_count": 453,
+          "distinct_count": 451,
           "distinct_is_exact": true,
           "is_low_cardinality": false,
           "top_values": null,
@@ -12524,7 +13165,7 @@
           "description": "Of those, games the hero's side won.",
           "description_source": "warehouse",
           "null_rate": 0.0,
-          "distinct_count": 314,
+          "distinct_count": 315,
           "distinct_is_exact": true,
           "is_low_cardinality": false,
           "top_values": null,
@@ -12558,7 +13199,7 @@
           "description": "wins / games, 0-1.",
           "description_source": "warehouse",
           "null_rate": 0.0,
-          "distinct_count": 714,
+          "distinct_count": 715,
           "distinct_is_exact": true,
           "is_low_cardinality": false,
           "top_values": null,
@@ -12616,7 +13257,7 @@
       "last_updated_physical": null,
       "last_updated_logical": null,
       "time_coverage": null,
-      "profiled_at": "2026-09-26T09:41:00.388851Z",
+      "profiled_at": "2026-09-26T11:00:12.681004Z",
       "source": "mixed",
       "columns": [
         {
@@ -13082,7 +13723,7 @@
         "min": "2025-09-26T11:44:10+02:00",
         "max": "2026-09-25T22:06:32+02:00"
       },
-      "profiled_at": "2026-09-26T09:41:01.636553Z",
+      "profiled_at": "2026-09-26T11:00:13.754593Z",
       "source": "mixed",
       "columns": [
         {
@@ -13823,7 +14464,7 @@
       "last_updated_physical": null,
       "last_updated_logical": null,
       "time_coverage": null,
-      "profiled_at": "2026-09-26T09:41:02.179474Z",
+      "profiled_at": "2026-09-26T11:00:14.231375Z",
       "source": "mixed",
       "columns": [
         {
@@ -14332,7 +14973,7 @@
         "min": "2025-09-26T00:00:00Z",
         "max": "2026-09-22T00:00:00Z"
       },
-      "profiled_at": "2026-09-26T09:41:02.387311Z",
+      "profiled_at": "2026-09-26T11:00:14.449036Z",
       "source": "mixed",
       "columns": [
         {
@@ -14642,7 +15283,7 @@
         "min": "2025-09-26T11:44:10+02:00",
         "max": "2026-09-25T22:06:32+02:00"
       },
-      "profiled_at": "2026-09-26T09:41:03.382312Z",
+      "profiled_at": "2026-09-26T11:00:15.358837Z",
       "source": "mixed",
       "columns": [
         {
@@ -16059,7 +16700,7 @@
         "min": "2025-09-26T11:44:10+02:00",
         "max": "2026-09-26T10:11:57+02:00"
       },
-      "profiled_at": "2026-09-26T09:41:04.661604Z",
+      "profiled_at": "2026-09-26T11:00:16.478681Z",
       "source": "mixed",
       "columns": [
         {
@@ -16805,7 +17446,7 @@
       "last_updated_physical": null,
       "last_updated_logical": null,
       "time_coverage": null,
-      "profiled_at": "2026-09-26T09:41:05.085879Z",
+      "profiled_at": "2026-09-26T11:00:16.815654Z",
       "source": "mixed",
       "columns": [
         {
@@ -16970,7 +17611,7 @@
         "min": "2025-09-26T11:44:10+02:00",
         "max": "2026-09-25T22:06:32+02:00"
       },
-      "profiled_at": "2026-09-26T09:41:06.273234Z",
+      "profiled_at": "2026-09-26T11:00:17.900420Z",
       "source": "mixed",
       "columns": [
         {
@@ -17761,7 +18402,7 @@
       "last_updated_physical": null,
       "last_updated_logical": null,
       "time_coverage": null,
-      "profiled_at": "2026-09-26T09:41:06.731679Z",
+      "profiled_at": "2026-09-26T11:00:18.318662Z",
       "source": "mixed",
       "columns": [
         {
@@ -17933,7 +18574,7 @@
           "top_values": null,
           "values_complete": false,
           "min": "7.033333333333333",
-          "max": "26824.550000000007",
+          "max": "26824.550000000017",
           "value_shape": null,
           "access_hint": null
         },
@@ -18120,7 +18761,7 @@
           "top_values": null,
           "values_complete": false,
           "min": "0.05728950642886769",
-          "max": "201.29376923043753",
+          "max": "201.29376923043748",
           "value_shape": null,
           "access_hint": null
         },
@@ -18171,7 +18812,7 @@
           "top_values": null,
           "values_complete": false,
           "min": "0.059595232381409485",
-          "max": "202.90027679905438",
+          "max": "202.9002767990543",
           "value_shape": null,
           "access_hint": null
         },
@@ -18358,7 +18999,7 @@
           "top_values": null,
           "values_complete": false,
           "min": "0.0",
-          "max": "2298.8012232778756",
+          "max": "2298.801223277875",
           "value_shape": null,
           "access_hint": null
         },
@@ -18495,7 +19136,7 @@
       "last_updated_physical": null,
       "last_updated_logical": null,
       "time_coverage": null,
-      "profiled_at": "2026-09-26T09:41:07.042812Z",
+      "profiled_at": "2026-09-26T11:00:18.566242Z",
       "source": "mixed",
       "columns": [
         {
@@ -18912,7 +19553,7 @@
       "last_updated_physical": null,
       "last_updated_logical": null,
       "time_coverage": null,
-      "profiled_at": "2026-09-26T09:41:07.375501Z",
+      "profiled_at": "2026-09-26T11:00:18.881532Z",
       "source": "mixed",
       "columns": [
         {
@@ -19346,7 +19987,7 @@
       "last_updated_physical": null,
       "last_updated_logical": null,
       "time_coverage": null,
-      "profiled_at": "2026-09-26T09:41:07.769031Z",
+      "profiled_at": "2026-09-26T11:00:19.290050Z",
       "source": "mixed",
       "columns": [
         {
@@ -19691,7 +20332,7 @@
       "last_updated_physical": null,
       "last_updated_logical": null,
       "time_coverage": null,
-      "profiled_at": "2026-09-26T09:41:08.167538Z",
+      "profiled_at": "2026-09-26T11:00:19.709854Z",
       "source": "mixed",
       "columns": [
         {
@@ -20069,7 +20710,7 @@
       "last_updated_physical": null,
       "last_updated_logical": null,
       "time_coverage": null,
-      "profiled_at": "2026-09-26T09:41:08.522166Z",
+      "profiled_at": "2026-09-26T11:00:20.052912Z",
       "source": "mixed",
       "columns": [
         {
@@ -20507,7 +21148,7 @@
         "min": "2025-09-26T11:44:10+02:00",
         "max": "2026-09-25T22:06:32+02:00"
       },
-      "profiled_at": "2026-09-26T09:41:09.519799Z",
+      "profiled_at": "2026-09-26T11:00:20.833405Z",
       "source": "mixed",
       "columns": [
         {
@@ -21132,7 +21773,7 @@
       "last_updated_physical": null,
       "last_updated_logical": null,
       "time_coverage": null,
-      "profiled_at": "2026-09-26T09:41:09.887447Z",
+      "profiled_at": "2026-09-26T11:00:21.177212Z",
       "source": "mixed",
       "columns": [
         {
@@ -21443,7 +22084,7 @@
       "last_updated_physical": null,
       "last_updated_logical": null,
       "time_coverage": null,
-      "profiled_at": "2026-09-26T09:41:10.161330Z",
+      "profiled_at": "2026-09-26T11:00:21.416831Z",
       "source": "mixed",
       "columns": [
         {
@@ -21842,7 +22483,7 @@
         "min": "2025-09-26T00:00:00Z",
         "max": "2026-09-25T00:00:00Z"
       },
-      "profiled_at": "2026-09-26T09:41:10.496146Z",
+      "profiled_at": "2026-09-26T11:00:21.695253Z",
       "source": "mixed",
       "columns": [
         {
@@ -22041,7 +22682,7 @@
         "min": "2025-09-26T11:44:10+02:00",
         "max": "2026-09-26T10:11:57+02:00"
       },
-      "profiled_at": "2026-09-26T09:41:11.457228Z",
+      "profiled_at": "2026-09-26T11:00:22.625849Z",
       "source": "mixed",
       "columns": [
         {
@@ -23146,7 +23787,7 @@
       "last_updated_physical": null,
       "last_updated_logical": null,
       "time_coverage": null,
-      "profiled_at": "2026-09-26T09:41:11.777389Z",
+      "profiled_at": "2026-09-26T11:00:22.933082Z",
       "source": "mixed",
       "columns": [
         {
@@ -23507,7 +24148,7 @@
         "min": "2025-09-26T11:44:10+02:00",
         "max": "2026-09-25T22:06:32+02:00"
       },
-      "profiled_at": "2026-09-26T09:41:13.458259Z",
+      "profiled_at": "2026-09-26T11:00:24.399696Z",
       "source": "mixed",
       "columns": [
         {
@@ -24497,6 +25138,9 @@
     ],
     "marts.fact_pub_match": [
       "pub_matches"
+    ],
+    "marts.fact_team_match": [
+      "team_matches"
     ],
     "marts.farm_priority": [
       "farm_per_match"
