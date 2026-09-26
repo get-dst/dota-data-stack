@@ -1,10 +1,13 @@
 # Certified answers: scalar shapes only, re-verified on every apply and by `dst test`.
+# Retired: the average farm share of a position lives on three entities (hero and player
+# rollups, the per-match table), so the typed reading of the question has no single home.
+# The behavioural cases keep the question; the farm_share term answers it.
 - question: What share of the side's gold has a position 1 player earned at 10 minutes, on average?
   sql: |
     SELECT SUM(farm_share_10_total) / SUM(farm_games_10) AS farm_share_10
     FROM marts.hero_playstyle AS hero_playstyle
     WHERE position_name = 'carry'
-  status: active
+  status: retired
 - question: How many teamfights does a parsed pro match have on average?
   sql: |
     SELECT AVG(match_fights) AS avg_teamfights
