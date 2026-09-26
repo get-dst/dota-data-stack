@@ -25,13 +25,18 @@ service_account() {  # email, display name
     g iam service-accounts create "${1%%@*}" --display-name "$2"
 }
 
+bind() {  # retried: a new service account is refused in IAM policies for a minute or so
+  for _ in 1 2 3 4 5 6 7 8 9; do g "$@" >/dev/null 2>&1 && return; sleep 10; done
+  g "$@" >/dev/null
+}
+
 case "${1:-}" in
 secrets)
   # From .env into Secret Manager. Values stay in shell variables, never printed; a
   # version is added only when the value changed.
   service_account "$SA" "dota loader (Cloud Run job)"
-  g projects add-iam-policy-binding "$PROJECT" --member "serviceAccount:$SA" \
-    --role roles/logging.logWriter --condition None >/dev/null
+  bind projects add-iam-policy-binding "$PROJECT" --member "serviceAccount:$SA" \
+    --role roles/logging.logWriter --condition None
   for pair in dota-motherduck-token=MOTHERDUCK_TOKEN dota-opendota-key=OPENDOTA_API_KEY; do
     secret=${pair%%=*} key=${pair#*=}
     value=$(grep "^${key}=" "$ENV_FILE" | cut -d= -f2- | tr -d "\"'\r\n" || true)
@@ -44,8 +49,8 @@ secrets)
       printf %s "$value" | g secrets versions add "$secret" --data-file=- >/dev/null
       echo "$secret: new version"
     fi
-    g secrets add-iam-policy-binding "$secret" --member "serviceAccount:$SA" \
-      --role roles/secretmanager.secretAccessor >/dev/null
+    bind secrets add-iam-policy-binding "$secret" --member "serviceAccount:$SA" \
+      --role roles/secretmanager.secretAccessor
   done
   ;;
 build)
@@ -70,8 +75,8 @@ schedule)
   # account, which may only run this job.
   g services enable cloudscheduler.googleapis.com
   service_account "$SCHEDULER_SA" "dota loader trigger (Cloud Scheduler)"
-  g run jobs add-iam-policy-binding "$JOB" --region "$REGION" \
-    --member "serviceAccount:$SCHEDULER_SA" --role roles/run.invoker >/dev/null
+  bind run jobs add-iam-policy-binding "$JOB" --region "$REGION" \
+    --member "serviceAccount:$SCHEDULER_SA" --role roles/run.invoker
   verb=create
   g scheduler jobs describe "$TRIGGER" --location "$REGION" >/dev/null 2>&1 && verb=update
   g scheduler jobs "$verb" http "$TRIGGER" --location "$REGION" \
