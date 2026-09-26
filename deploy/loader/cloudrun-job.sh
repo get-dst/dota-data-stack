@@ -9,7 +9,7 @@ PROJECT=${PROJECT:-kurator-core}
 REGION=${REGION:-europe-west1}
 JOB=${JOB:-dota-load}
 TRIGGER=${TRIGGER:-dota-load-schedule}
-SCHEDULE=${SCHEDULE:-23 */3 * * *}
+SCHEDULE=${SCHEDULE:-23 */4 * * *}
 MEMORY=${MEMORY:-1Gi}
 SA=${SA:-dota-loader@${PROJECT}.iam.gserviceaccount.com}
 SCHEDULER_SA=${SCHEDULER_SA:-dota-scheduler@${PROJECT}.iam.gserviceaccount.com}
@@ -64,12 +64,13 @@ build)
   g builds submit "$root" --config "$here/cloudbuild.yaml" --substitutions "_IMAGE=$IMAGE"
   ;;
 job)
-  # 50 minutes stays under the shortest interval between scheduled runs, so two loads
-  # never overlap. No retries: a failed run waits for the next one.
+  # 50 minutes stays under the interval between scheduled runs, so two loads never
+  # overlap. No retries: a failed run waits for the next one. On one vCPU, dlt
+  # normalizes in-process: worker processes would add no speed, only memory.
   service_account "$SA" "dota loader (Cloud Run job)"
   g run jobs deploy "$JOB" --region "$REGION" --image "$IMAGE" --service-account "$SA" \
     --cpu 1 --memory "$MEMORY" --task-timeout 50m --max-retries 0 --parallelism 1 --tasks 1 \
-    --set-env-vars "DSTACK_TARGET=motherduck,MOTHERDUCK_DATABASE=dota,DOTA_SINCE_DAYS=365,DOTA_MAX_DETAIL_CALLS=300,DOTA_PAID_CALLS_MONTH=90000" \
+    --set-env-vars "DSTACK_TARGET=motherduck,MOTHERDUCK_DATABASE=dota,DOTA_SINCE_DAYS=365,DOTA_MAX_DETAIL_CALLS=300,DOTA_PAID_CALLS_MONTH=90000,NORMALIZE__WORKERS=1" \
     --set-secrets "MOTHERDUCK_TOKEN=dota-motherduck-token:latest,OPENDOTA_API_KEY=dota-opendota-key:latest"
   ;;
 schedule)
