@@ -14,9 +14,10 @@ source:
   table: marts.match_objectives
 default_time_field: started_at
 primary_key: [match_id]
-population: Every professional match in the loaded window. A match whose objective log is
-  empty (has_objective_log false) has null objective columns; first Roshan columns are
-  null when Roshan was never killed.
+population: Every professional match in the loaded window in a league OpenDota rates
+  premium or professional. A match whose objective log is empty (has_objective_log false)
+  has null objective columns; first Roshan columns are null when Roshan was never killed.
+  Leagues it rates below professional are not counted.
 fields:
   - {name: match_id, type: integer}
   - {name: started_at, type: timestamp, description: "Match start, UTC."}

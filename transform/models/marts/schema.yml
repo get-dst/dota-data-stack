@@ -2,7 +2,9 @@ version: 2
 
 # Every mart and every column is described here; persist_docs (dbt_project.yml) writes
 # these as COMMENTs on the warehouse tables. Two samples live in the marts and never mix:
-# "pro" = professional matches from OpenDota's pro-match feed with full match detail;
+# "pro" = professional matches from OpenDota's pro-match feed with full match detail, in
+# leagues OpenDota rates premium or professional (stg_leagues holds the rule; matches in
+# leagues it rates excluded, its tier-3 leagues, stay in raw and reach no mart);
 # "public sample" = a sample of public matchmaking games from OpenDota's public feed
 # (the newest games at each load, not every game played).
 #
@@ -61,7 +63,9 @@ models:
       - name: league_name
         description: League or tournament name as the match record carries it.
       - name: league_tier
-        description: "OpenDota league tier: professional, premium, amateur or excluded."
+        description: "OpenDota league tier: premium or professional. Matches in leagues it rates below professional are not in the marts."
+        tests:
+          - accepted_values: {arguments: {values: [premium, professional]}}
       - name: patch_id
         description: Game version id the match was played on; joins dim_patch.patch_id.
         tests:
@@ -145,7 +149,9 @@ models:
       - name: league_name
         description: League or tournament name as the match record carries it.
       - name: league_tier
-        description: "OpenDota league tier: professional, premium, amateur or excluded."
+        description: "OpenDota league tier: premium or professional. Matches in leagues it rates below professional are not in the marts."
+        tests:
+          - accepted_values: {arguments: {values: [premium, professional]}}
       - name: game_mode_id
         description: "Game mode code (OpenDota game_modes): 2 Captains Mode, 1 All Pick, 22 All Draft."
       - name: series_id
@@ -397,8 +403,10 @@ models:
   - name: dim_team
     description: Professional teams, one row per team; every team in OpenDota's ranking (the
       top thousand by rating, with rating and all-time records) and every team identified
-      on a loaded match, so a team id on a match always resolves here. Most teams that play
-      in the window are outside the ranking and carry only a name and their loaded matches.
+      on a loaded pro match, so a team id on a match always resolves here. A team that is not
+      ranked and played only in leagues OpenDota rates below professional has no row. Most
+      teams that play in the window are outside the ranking and carry only a name and their
+      loaded matches.
     columns:
       - name: team_id
         description: OpenDota team id; primary key.
@@ -420,12 +428,13 @@ models:
         description: True when the team is in OpenDota's ranking, so rating and the all-time records are present.
         tests: [not_null]
       - name: loaded_matches
-        description: Pro matches of the team in the loaded window; 0 for a ranked team with none.
+        description: Pro matches of the team in the loaded window, premium and professional leagues only; 0 for a ranked team with none.
       - name: last_loaded_match_at
         description: Start time of the team's latest loaded match; null when it has none.
 
   - name: dim_league
-    description: Leagues and tournaments as OpenDota lists them, one row per league.
+    description: Leagues and tournaments OpenDota rates premium or professional, one row per
+      league. Leagues it rates below professional, or does not rate, are not listed.
     columns:
       - name: league_id
         description: OpenDota league id; primary key.
@@ -433,7 +442,9 @@ models:
       - name: league_name
         description: League or tournament name.
       - name: league_tier
-        description: "OpenDota tier: professional, premium, amateur or excluded; null for a few leagues."
+        description: "OpenDota tier: premium or professional."
+        tests:
+          - accepted_values: {arguments: {values: [premium, professional]}}
 
   - name: fact_pub_match
     description: One row per sampled public matchmaking match.

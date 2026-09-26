@@ -18,7 +18,7 @@ select
     coalesce(k.kills, 0) as kills
 from {{ source('raw_behaviour', 'match_details__teamfights__players') }} as tp
 inner join {{ source('raw_behaviour', 'match_details__teamfights') }} as f on f._dlt_id = tp._dlt_parent_id
-inner join {{ source('raw', 'match_details') }} as m on m._dlt_id = f._dlt_parent_id
+inner join {{ ref('stg_matches') }} as m on m._dlt_id = f._dlt_parent_id
 left join (
     select _dlt_parent_id, sum(count) as kills
     from {{ source('raw_behaviour', 'match_details__teamfights__players__killed') }}

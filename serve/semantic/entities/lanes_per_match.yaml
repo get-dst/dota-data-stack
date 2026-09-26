@@ -12,7 +12,9 @@ source:
   table: marts.lane_outcomes
 default_time_field: started_at
 primary_key: [match_id, player_slot]
-population: "Players in parsed professional matches that reached minute 10 who laned in lanes 1-3 against at least one enemy hero."
+population: Players in parsed professional matches in leagues OpenDota rates premium or
+  professional that reached minute 10 who laned in lanes 1-3 against at least one enemy
+  hero. Leagues it rates below professional are not counted.
 fields:
   - {name: match_id, type: integer}
   - {name: player_slot, type: integer, description: "0-4 Radiant, 128-132 Dire."}

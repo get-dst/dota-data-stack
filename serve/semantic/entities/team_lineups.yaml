@@ -14,8 +14,9 @@ source:
   table: marts.team_lineups
 default_time_field: started_at
 primary_key: [match_id, is_radiant]
-population: Sides of professional matches that OpenDota tied to a team; a side with no
-  identified team has no row.
+population: Sides of professional matches in leagues OpenDota rates premium or
+  professional that OpenDota tied to a team; a side with no identified team has no row.
+  Leagues it rates below professional are not counted.
 fields:
   - {name: match_id, type: integer}
   - {name: is_radiant, type: boolean}

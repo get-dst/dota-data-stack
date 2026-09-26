@@ -45,4 +45,4 @@ select
     p.kda,
     p.win = 1 as is_win
 from {{ source('raw', 'match_details__players') }} as p
-inner join {{ source('raw', 'match_details') }} as m on m._dlt_id = p._dlt_parent_id
+inner join {{ ref('stg_matches') }} as m on m._dlt_id = p._dlt_parent_id

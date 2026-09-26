@@ -1,14 +1,16 @@
 name: leagues
-description: Tournaments and leagues, with OpenDota's tier.
+description: Tournaments and leagues OpenDota rates premium or professional, with the tier.
 grain: one row per league
 source:
   connection: warehouse
   table: marts.dim_league
 primary_key: [league_id]
+population: Leagues and tournaments OpenDota rates premium or professional. Leagues it rates
+  below professional, or does not rate, are not listed.
 fields:
   - {name: league_id, type: integer}
   - {name: league_name, type: string}
-  - {name: league_tier, type: string, description: "professional, premium, amateur or excluded."}
+  - {name: league_tier, type: string, description: "OpenDota tier of the league: premium or professional (premium is the top tier)."}
 dimensions:
   - {name: league_name, type: string}
   - {name: league_tier, type: string}

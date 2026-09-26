@@ -14,7 +14,9 @@ source:
   connection: warehouse
   table: marts.player_playstyle
 primary_key: [patch_id, account_id]
-population: "Players in parsed professional matches in the loaded window, by Steam account."
+population: Players in parsed professional matches in leagues OpenDota rates premium or
+  professional, in the loaded window, by Steam account. Leagues it rates below
+  professional are not counted.
 fields:
   - {name: patch_id, type: integer}
   - {name: patch_name, type: string}

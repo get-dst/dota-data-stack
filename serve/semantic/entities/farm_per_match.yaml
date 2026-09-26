@@ -11,7 +11,9 @@ source:
   table: marts.farm_priority
 default_time_field: started_at
 primary_key: [match_id, player_slot]
-population: "Players in parsed professional matches that reached minute 10; minute-20 columns are null in shorter games."
+population: Players in parsed professional matches in leagues OpenDota rates premium or
+  professional that reached minute 10; minute-20 columns are null in shorter games.
+  Leagues it rates below professional are not counted.
 fields:
   - {name: match_id, type: integer}
   - {name: player_slot, type: integer, description: "0-4 Radiant, 128-132 Dire."}

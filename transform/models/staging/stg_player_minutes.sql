@@ -10,7 +10,7 @@ select
     l.value as last_hits
 from {{ source('raw_behaviour', 'match_details__players__gold_t') }} as g
 inner join {{ source('raw', 'match_details__players') }} as p on p._dlt_id = g._dlt_parent_id
-inner join {{ source('raw', 'match_details') }} as m on m._dlt_id = p._dlt_parent_id
+inner join {{ ref('stg_matches') }} as m on m._dlt_id = p._dlt_parent_id
 left join {{ source('raw_behaviour', 'match_details__players__xp_t') }} as x
     on x._dlt_parent_id = g._dlt_parent_id and x._dlt_list_idx = g._dlt_list_idx
 left join {{ source('raw_behaviour', 'match_details__players__lh_t') }} as l

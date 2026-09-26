@@ -13,8 +13,9 @@ source:
   table: marts.daily_hero_stats
 default_time_field: match_date
 primary_key: [match_date, patch_id, hero_id]
-population: Every hero picked or banned on a given day in professional matches; a hero banned
-  but not picked that day has a row with zero picks.
+population: Every hero picked or banned on a given day in professional matches in leagues
+  OpenDota rates premium or professional; a hero banned but not picked that day has a row
+  with zero picks. Leagues it rates below professional are not counted.
 fields:
   - {name: match_date, type: date}
   - {name: patch_id, type: integer}

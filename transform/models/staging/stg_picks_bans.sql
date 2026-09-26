@@ -6,4 +6,4 @@ select
     pb.hero_id,
     pb.team = 0 as is_radiant
 from {{ source('raw', 'match_details__picks_bans') }} as pb
-inner join {{ source('raw', 'match_details') }} as m on m._dlt_id = pb._dlt_parent_id
+inner join {{ ref('stg_matches') }} as m on m._dlt_id = pb._dlt_parent_id

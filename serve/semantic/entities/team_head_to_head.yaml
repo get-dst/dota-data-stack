@@ -11,7 +11,9 @@ source:
   connection: warehouse
   table: marts.team_head_to_head
 primary_key: [team_id, opponent_team_id, patch_id]
-population: Professional matches in the loaded window where both teams are identified.
+population: Professional matches in leagues OpenDota rates premium or professional, in the
+  loaded window, where both teams are identified. Leagues it rates below professional are
+  not counted.
 fields:
   - {name: team_id, type: integer}
   - {name: team_name, type: string}

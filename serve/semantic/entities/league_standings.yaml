@@ -11,8 +11,9 @@ source:
   connection: warehouse
   table: marts.league_standings
 primary_key: [league_id, team_id]
-population: Professional matches in the loaded window; a league that started before the
-  window shows only the matches inside it.
+population: Professional matches in leagues OpenDota rates premium or professional, in the
+  loaded window; a league that started before the window shows only the matches inside it.
+  Leagues it rates below professional are not counted.
 fields:
   - {name: league_id, type: integer}
   - {name: league_name, type: string}

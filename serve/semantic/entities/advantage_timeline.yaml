@@ -13,8 +13,9 @@ source:
   table: marts.gold_advantage_timeline
 default_time_field: started_at
 primary_key: [match_id, minute]
-population: Professional matches in the loaded window whose per-minute advantage OpenDota
-  supplies; a match without it has no rows.
+population: Professional matches in leagues OpenDota rates premium or professional, in the
+  loaded window, whose per-minute advantage OpenDota supplies; a match without it has no
+  rows. Leagues it rates below professional are not counted.
 fields:
   - {name: match_id, type: integer}
   - {name: minute, type: integer, description: "Game minute, 0 = the horn."}

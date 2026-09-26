@@ -1,8 +1,9 @@
 -- One row per professional team: every team in OpenDota's ranking (the top thousand by
--- rating, with rating and all-time records) and every team identified on a loaded match,
--- so a team id on a match always resolves here. The ranking covers few of the teams
--- that actually play in the window; a team outside it has its name from its latest
--- loaded match and null rating, tag and all-time records.
+-- rating, with rating and all-time records) and every team identified on a loaded pro
+-- match (stg_matches: premium and professional leagues only), so a team id on a match
+-- always resolves here. The ranking covers few of the teams that actually play in the
+-- window; a team outside it has its name from its latest loaded match and null rating,
+-- tag and all-time records.
 with match_sides as (
     select radiant_team_id as team_id, radiant_team_name as team_name, started_at
     from {{ ref('stg_matches') }}

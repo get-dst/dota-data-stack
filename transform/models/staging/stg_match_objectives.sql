@@ -37,4 +37,4 @@ select
             case when o.player_slot < 128 then 'radiant' when o.player_slot >= 128 then 'dire' end
     end as actor_side
 from {{ source('raw', 'match_details__objectives') }} as o
-inner join {{ source('raw', 'match_details') }} as m on m._dlt_id = o._dlt_parent_id
+inner join {{ ref('stg_matches') }} as m on m._dlt_id = o._dlt_parent_id

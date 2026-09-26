@@ -14,9 +14,10 @@ source:
   connection: warehouse
   table: marts.pro_draft_matchups
 primary_key: [patch_id, hero_id, opponent_hero_id]
-population: Every professional match with its ten player rows, in any game mode. Pro
-  samples are small; a pair with few games says little, so state the game count with
-  the rate.
+population: Every professional match in a league OpenDota rates premium or professional,
+  with its ten player rows, in any game mode. Pro samples are small; a pair with few games
+  says little, so state the game count with the rate. Leagues it rates below professional
+  are not counted.
 fields:
   - {name: patch_id, type: integer}
   - {name: patch_name, type: string}

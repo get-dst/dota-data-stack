@@ -12,7 +12,8 @@ source:
   table: marts.space_created
 default_time_field: started_at
 primary_key: [match_id, player_slot]
-population: "Players in parsed professional matches in the loaded window."
+population: Players in parsed professional matches in leagues OpenDota rates premium or
+  professional, in the loaded window. Leagues it rates below professional are not counted.
 fields:
   - {name: match_id, type: integer}
   - {name: player_slot, type: integer, description: "0-4 Radiant, 128-132 Dire."}

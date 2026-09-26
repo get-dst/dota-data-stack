@@ -15,8 +15,10 @@ source:
   table: marts.match_leads
 default_time_field: started_at
 primary_key: [match_id]
-population: Professional matches in the loaded window whose per-minute advantage OpenDota
-  supplies. A lead at a minute mark is null when the match ended before it.
+population: Professional matches in leagues OpenDota rates premium or professional, in the
+  loaded window, whose per-minute advantage OpenDota supplies. A lead at a minute mark is
+  null when the match ended before it. Leagues it rates below professional are not
+  counted.
 fields:
   - {name: match_id, type: integer}
   - {name: started_at, type: timestamp, description: "Match start, UTC."}

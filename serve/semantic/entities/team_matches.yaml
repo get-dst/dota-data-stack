@@ -17,9 +17,10 @@ source:
   table: marts.fact_team_match
 default_time_field: started_at
 primary_key: [match_id, side]
-population: Both sides of every professional match in the loaded window. A side OpenDota did
-  not tie to a team has a null team and no name; it stays in the table so every match has
-  two rows, and is left out of any grouping by team.
+population: Both sides of every professional match in the loaded window in a league
+  OpenDota rates premium or professional. A side OpenDota did not tie to a team has a null
+  team and no name; it stays in the table so every match has two rows, and is left out of
+  any grouping by team. Leagues it rates below professional are not counted.
 fields:
   - {name: match_id, type: integer, description: OpenDota match id.}
   - {name: is_radiant, type: boolean, description: True for the Radiant side's row.}
@@ -39,7 +40,7 @@ fields:
   - {name: patch_name, type: string, description: "Game version the match was played on, e.g. 7.41."}
   - {name: league_id, type: integer}
   - {name: league_name, type: string}
-  - {name: league_tier, type: string, description: "OpenDota tier: professional, premium, amateur, excluded."}
+  - {name: league_tier, type: string, description: "OpenDota tier of the league: premium or professional (premium is the top tier)."}
   - {name: game_mode_id, type: integer}
   - {name: series_id, type: integer}
   - {name: series_type, type: integer, description: "0 = best of 1, 1 = best of 3, 2 = best of 5, 3 = best of 2; null when not reported."}

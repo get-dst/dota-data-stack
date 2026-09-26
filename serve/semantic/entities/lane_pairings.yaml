@@ -15,8 +15,10 @@ source:
   connection: warehouse
   table: marts.lane_pairings
 primary_key: [patch_id, lane_role, hero_id, position, partner_hero_id, partner_position]
-population: Professional matches whose lanes OpenDota parsed. Solo lanes (usually mid) and
-  players with no parsed lane have no pair, so a hero's games here are fewer than its picks.
+population: Professional matches in leagues OpenDota rates premium or professional whose
+  lanes OpenDota parsed. Solo lanes (usually mid) and players with no parsed lane have no
+  pair, so a hero's games here are fewer than its picks. Leagues it rates below
+  professional are not counted.
 fields:
   - {name: patch_id, type: integer}
   - {name: patch_name, type: string}
