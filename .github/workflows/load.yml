@@ -9,7 +9,7 @@ concurrency:
   cancel-in-progress: false
 on:
   schedule:
-    - cron: "17 * * * *"
+    - cron: "23 * * * *"
   workflow_dispatch:
 jobs:
   load:
