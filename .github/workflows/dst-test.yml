@@ -50,6 +50,9 @@ jobs:
       DST_API_KEY_JEV: ${{ secrets.DST_API_KEY_JEV }}
       # Typed first; the lenses set untyped_fallback, so an untyped question still answers.
       DST_TYPED_SERVING: auto
+      # A fresh runner's first MotherDuck open is slower than a warm machine's; the
+      # apply's per-step warehouse deadline gets room for it.
+      DST_APPLY_STEP_TIMEOUT_S: "300"
       FASTEMBED_CACHE_PATH: ${{ github.workspace }}/.cache/fastembed
     steps:
       - uses: actions/checkout@v4
