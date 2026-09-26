@@ -20,7 +20,7 @@ whatever is new.
 ## Ask it
 
 Real questions against the live warehouse, answered by the lenses in `serve/` on dst
-0.5.8, verbatim except where cut with `…`.
+0.5.9, verbatim except where cut with `…`.
 
 **A typed answer.** Every slot of the query (metric, filters, bracket) was picked from the
 declared semantic layer, so the SQL is compiled, not written by a model.
