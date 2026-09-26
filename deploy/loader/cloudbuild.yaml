@@ -1,0 +1,9 @@
+# The loader image. The Dockerfile needs the repository root as its context:
+#
+#   gcloud builds submit . --config deploy/loader/cloudbuild.yaml --substitutions=_IMAGE=<image>
+#
+# deploy/loader/cloudrun-job.sh build runs this with the image tagged by commit.
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args: [build, -f, deploy/loader/Dockerfile, -t, "${_IMAGE}", .]
+images: ["${_IMAGE}"]
