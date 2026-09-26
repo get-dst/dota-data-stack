@@ -9,4 +9,4 @@ select
     p.item_neutral2,
     p.moonshard = 1 as has_moon_shard_buff
 from {{ source('raw', 'match_details__players') }} as p
-inner join {{ source('raw', 'match_details') }} as m on m._dlt_id = p._dlt_parent_id
+inner join {{ ref('stg_matches') }} as m on m._dlt_id = p._dlt_parent_id

@@ -10,4 +10,4 @@ select
     coalesce(k.smoke, false) as under_smoke
 from {{ source('raw_behaviour', 'match_details__players__kills_log') }} as k
 inner join {{ source('raw', 'match_details__players') }} as p on p._dlt_id = k._dlt_parent_id
-inner join {{ source('raw', 'match_details') }} as m on m._dlt_id = p._dlt_parent_id
+inner join {{ ref('stg_matches') }} as m on m._dlt_id = p._dlt_parent_id

@@ -1,7 +1,9 @@
 -- One row per pro match with full detail. Epoch seconds become timestamps here and
--- nowhere else; the raw columns keep OpenDota's names.
+-- nowhere else; the raw columns keep OpenDota's names. The inner join to stg_leagues
+-- keeps only matches in a league OpenDota rates premium or professional; the child
+-- staging models join here on _dlt_id, so they carry the same matches.
 select
-    match_id,
+    m.match_id,
     to_timestamp(start_time) as started_at,
     duration as duration_s,
     radiant_win,
@@ -13,7 +15,7 @@ select
     coalesce(dire_team__name, dire_name) as dire_team_name,
     leagueid as league_id,
     league__name as league_name,
-    league__tier as league_tier,
+    l.league_tier,
     patch as patch_id,
     game_mode as game_mode_id,
     lobby_type as lobby_type_id,
@@ -27,5 +29,7 @@ select
     barracks_status_dire,
     comeback,
     stomp,
-    human_players
-from {{ source('raw', 'match_details') }}
+    human_players,
+    m._dlt_id
+from {{ source('raw', 'match_details') }} as m
+inner join {{ ref('stg_leagues') }} as l on l.league_id = m.leagueid

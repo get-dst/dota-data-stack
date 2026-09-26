@@ -27,11 +27,13 @@ models:
       - {name: has_active_ability, description: True when the item has an ability of type active in OpenDota's constants.}
 
   - name: stg_leagues
-    description: One row per league from raw.leagues.
+    description: One row per league OpenDota rates premium or professional, from raw.leagues. The
+      rule that decides which matches are pro matches; leagues rated excluded (tier-3), amateur
+      or unrated are dropped here.
     columns:
       - {name: league_id, description: OpenDota league id.}
       - {name: league_name, description: League or tournament name.}
-      - {name: league_tier, description: "professional, premium, amateur or excluded; null for a few."}
+      - {name: league_tier, description: "premium or professional."}
 
   - name: stg_match_players
     description: Ten rows per pro match, one per player, with the parent match id resolved to match_id.
@@ -81,7 +83,9 @@ models:
       - {name: is_win, description: True when the player's side won.}
 
   - name: stg_matches
-    description: One row per pro match with full detail from raw.match_details; epoch seconds become timestamps here.
+    description: One row per pro match with full detail from raw.match_details, only matches in a
+      league stg_leagues keeps (OpenDota tier premium or professional); epoch seconds become
+      timestamps here.
     columns:
       - {name: match_id, description: OpenDota match id.}
       - {name: started_at, description: Match start time (timestamp with time zone).}
@@ -95,7 +99,7 @@ models:
       - {name: dire_team_name, description: Dire team name (team record first, then the match's name field).}
       - {name: league_id, description: League id.}
       - {name: league_name, description: League name.}
-      - {name: league_tier, description: "professional, premium, amateur or excluded."}
+      - {name: league_tier, description: "OpenDota tier of the league: premium or professional."}
       - {name: patch_id, description: OpenDota patch id.}
       - {name: game_mode_id, description: "Game mode code: 2 Captains Mode, 1 All Pick, 22 All Draft."}
       - {name: lobby_type_id, description: Lobby type code; 1 = practice (tournament lobby).}
@@ -110,6 +114,7 @@ models:
       - {name: comeback, description: OpenDota comeback value (largest gold deficit the winner overcame); often null.}
       - {name: stomp, description: OpenDota stomp value (largest gold lead the winner held); often null.}
       - {name: human_players, description: Human players in the match; 10 on every loaded row.}
+      - {name: _dlt_id, description: "dlt row id, kept so the child staging models join here and carry only these matches."}
 
   - name: stg_patches
     description: One row per patch as a time window, ending when the next patch starts.
