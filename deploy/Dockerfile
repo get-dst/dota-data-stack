@@ -5,7 +5,7 @@
 # and downloads the model at build time: a cold start never fetches from Hugging Face.
 #
 #   docker build -f deploy/Dockerfile --build-arg BASE=<a dst image> -t dota-demo deploy
-ARG BASE=ghcr.io/get-dst/dst:0.5.7
+ARG BASE=ghcr.io/get-dst/dst:0.5.8
 FROM ${BASE}
 USER root
 # No-op when the base was already built with UV_EXTRA=local-embed.

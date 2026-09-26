@@ -61,13 +61,13 @@ jobs:
           cache-dependency-glob: .github/workflows/dst-test.yml
       - name: Install dst
         run: |
-          uv tool install 'dst-core[local-embed]==0.5.7'
+          uv tool install 'dst-core[local-embed]==0.5.8'
           uv tool dir --bin >> "$GITHUB_PATH"
       # The local embedder downloads its model on first use; don't pay that per run.
       - uses: actions/cache@v4
         with:
           path: .cache/fastembed
-          key: fastembed-dst-core-0.5.7
+          key: fastembed-dst-core-0.5.8
       - name: plan, apply, test
         env:
           OUT_DIR: ${{ runner.temp }}/dst
