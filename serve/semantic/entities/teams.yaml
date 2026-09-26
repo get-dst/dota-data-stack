@@ -1,22 +1,32 @@
 name: teams
-description: Professional teams as OpenDota ranks them, with all-time records.
+description: Professional teams, one row per team. Every team OpenDota ranks (with its rating
+  and all-time records) and every team identified on a loaded match, so a team on a match
+  always has a row here.
 grain: one row per team
+use_cases:
+  - Use for a team's rating, tag and all-time record, and for how many teams there are.
+  - Avoid for a team's matches, wins or win rate in the loaded window; that is team_matches.
 source:
   connection: warehouse
   table: marts.dim_team
 primary_key: [team_id]
-population: The top thousand teams by OpenDota rating; a team outside that list still
-  appears on its matches by name.
+population: Teams in OpenDota's ranking (the top thousand by rating) and teams identified on a
+  loaded professional match. Most teams that play in the window are outside the ranking; for
+  them rating, tag and the all-time records are null and is_ranked is false.
 fields:
   - {name: team_id, type: integer}
   - {name: team_name, type: string}
-  - {name: team_tag, type: string}
-  - {name: rating, type: number, description: OpenDota Elo-style rating.}
-  - {name: all_time_wins, type: integer, description: "Wins over the team's whole OpenDota history, not the loaded window."}
-  - {name: all_time_losses, type: integer}
-  - {name: last_match_at, type: timestamp}
+  - {name: team_tag, type: string, description: Short tag; null for a team outside the ranking.}
+  - {name: rating, type: number, description: OpenDota Elo-style rating; null for a team outside the ranking.}
+  - {name: all_time_wins, type: integer, description: "Wins over the team's whole OpenDota history, not the loaded window; null for a team outside the ranking."}
+  - {name: all_time_losses, type: integer, description: Null for a team outside the ranking.}
+  - {name: last_match_at, type: timestamp, description: Start of the team's latest match OpenDota knows; null for a team outside the ranking.}
+  - {name: is_ranked, type: boolean, description: "True when the team is in OpenDota's ranking, so rating and the all-time records are present."}
+  - {name: loaded_matches, type: integer, description: The team's pro matches in the loaded window.}
+  - {name: last_loaded_match_at, type: timestamp, description: Start of the team's latest loaded match.}
 dimensions:
   - {name: team_name, type: string}
+  - {name: is_ranked, type: boolean}
 metrics:
   - {name: team_count, agg: count, expr: teams.team_id}
-  - {name: avg_rating, agg: avg, expr: teams.rating, better: higher}
+  - {name: avg_rating, agg: avg, expr: teams.rating, better: higher, description: Average OpenDota rating over ranked teams; null ratings are skipped.}

@@ -3,7 +3,7 @@ description: Hero with hero on the same side in the public sample, per patch and
   Both orderings are present, so start from either hero.
 grain: one row per hero, ally hero, patch and game type
 use_cases:
-  - When ranking by a rate, keep rows with at least 20 games (the minimum_games term) and report the game count with every rate.
+  - duo_win_rate is null under 20 games (the minimum_games term), so a ranking lists only pairs past the floor; report the game count with every rate.
   - Use for which heroes win together — lane partners, synergies.
   - Avoid for opponents; that is pub_matchups.
 common_questions:
@@ -35,8 +35,7 @@ metrics:
   - {name: duo_wins, agg: sum, expr: pub_duos.wins}
   - name: duo_win_rate
     better: higher
-    type: ratio
-    numerator: duo_wins
-    denominator: duo_games
+    type: derived
+    expr: "CASE WHEN {duo_games} >= 20 THEN {duo_wins} * 1.0 / NULLIF({duo_games}, 0) END"
     format: percent
-    description: Share of games the pair won together.
+    description: Share of games the pair won together; null under 20 games (the minimum_games term), so a rare pair cannot rank first.

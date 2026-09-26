@@ -3,7 +3,7 @@ description: Hero against hero in the public sample, per patch and game type. Bo
   orderings are present, so start from either hero.
 grain: one row per hero, opponent hero, patch and game type
 use_cases:
-  - When ranking by a rate, keep rows with at least 20 games (the minimum_games term) and report the game count with every rate.
+  - matchup_win_rate is null under 20 games (the minimum_games term), so a ranking lists only matchups past the floor; report the game count with every rate.
   - Use for counters and matchups — how a hero does against a specific opponent.
   - Avoid for allies; that is pub_duos.
 common_questions:
@@ -35,8 +35,7 @@ metrics:
   - {name: matchup_wins, agg: sum, expr: pub_matchups.wins}
   - name: matchup_win_rate
     better: higher
-    type: ratio
-    numerator: matchup_wins
-    denominator: matchup_games
+    type: derived
+    expr: "CASE WHEN {matchup_games} >= 20 THEN {matchup_wins} * 1.0 / NULLIF({matchup_games}, 0) END"
     format: percent
-    description: Share of games hero_name's side won against opponent_hero_name.
+    description: Share of games hero_name's side won against opponent_hero_name; null under 20 games (the minimum_games term), so a rare matchup cannot rank first.

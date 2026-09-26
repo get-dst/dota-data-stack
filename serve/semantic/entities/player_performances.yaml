@@ -1,13 +1,18 @@
 name: player_performances
-description: One player's performance in one professional match; ten rows per match.
+description: One player's performance in one professional match; ten rows per match. Every
+  rate and average here carries the minimum-games floor inside it, so a hero or player seen
+  in a handful of games shows no rate instead of a perfect one.
 grain: one row per player per match, so counting rows counts player-games, not matches
 use_cases:
-  - Use for hero win rates and pick counts, player and team stats, GPM, XPM, KDA.
-  - Avoid for match-level facts (duration, winner) — those repeat ten times here; use pro_matches.
+  - Use for hero win rates and pick counts, player stats (GPM, XPM, KDA, kills), and rankings of players or heroes over a period or a patch.
+  - Filter position_name (carry, mid, offlane, soft support, hard support) for questions about the players of one role.
+  - Win rate is null under 20 player-games and the averages are null under 10 (the minimum_games term), so a ranking lists only rows past the floor; report the games beside every rate.
+  - Avoid for a team's matches, wins or win rate; those are team_matches. Avoid for match-level facts (duration, winner) — those repeat ten times here; use pro_matches.
 common_questions:
   - Which hero has the highest win rate on the current patch?
   - Who has the highest average GPM this month?
-  - How many games has each team played?
+  - Who is the best mid player on the current patch?
+  - Which heroes does Yatoro play most?
 source:
   connection: warehouse
   table: marts.fact_player_match
@@ -52,6 +57,7 @@ fields:
   - {name: lane_role, type: integer, description: "Lane relative to the player's side: 1 safe lane, 2 mid, 3 off lane, 4 jungle; null when not parsed."}
   - {name: is_roaming, type: boolean}
   - {name: position, type: integer, description: "1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support — derived from lane and farm rank inside the side (the position definition)."}
+  - {name: position_name, type: string, description: "The position as a word: carry, mid, offlane, soft support or hard support; the filter for questions about carries, mids, offlaners or supports. Null when no position could be derived."}
   - {name: item_0, type: integer}
   - {name: item_1, type: integer}
   - {name: item_2, type: integer}
@@ -79,23 +85,73 @@ dimensions:
   - {name: match_date, type: date}
   - {name: is_radiant, type: boolean}
   - {name: position, type: integer}
+  - {name: position_name, type: string}
 metrics:
-  - {name: games, agg: count, expr: player_performances.match_id, description: "Player-games, i.e. rows."}
+  - {name: games, agg: count, expr: player_performances.match_id, description: "Player-games, i.e. rows; the sample size to state beside every rate."}
   - {name: wins, agg: sum, expr: "CASE WHEN player_performances.is_win THEN 1 ELSE 0 END"}
   - name: win_rate
     better: higher
-    type: ratio
-    numerator: wins
-    denominator: games
+    type: derived
+    expr: "CASE WHEN {games} >= 20 THEN {wins} * 1.0 / NULLIF({games}, 0) END"
     format: percent
-    description: Wins divided by games, at whatever grouping the question asks (hero, team, player).
-  - {name: avg_gpm, agg: avg, expr: player_performances.gold_per_min, better: higher}
-  - {name: avg_xpm, agg: avg, expr: player_performances.xp_per_min, better: higher}
-  - {name: avg_kills, agg: avg, expr: player_performances.kills, better: higher}
-  - {name: avg_deaths, agg: avg, expr: player_performances.deaths, better: lower}
-  - {name: avg_assists, agg: avg, expr: player_performances.assists, better: higher}
-  - {name: avg_kda, agg: avg, expr: player_performances.kda, better: higher}
-  - {name: avg_last_hits, agg: avg, expr: player_performances.last_hits, better: higher}
-  - {name: avg_hero_damage, agg: avg, expr: player_performances.hero_damage, better: higher}
-  - {name: avg_tower_damage, agg: avg, expr: player_performances.tower_damage, better: higher}
-  - {name: avg_net_worth, agg: avg, expr: player_performances.net_worth, better: higher}
+    description: Wins divided by games at whatever grouping the question asks (hero, player); null under 20 games (the minimum_games term), so a small sample cannot rank first.
+  - {name: total_kills, agg: sum, expr: player_performances.kills}
+  - {name: total_deaths, agg: sum, expr: player_performances.deaths}
+  - {name: total_assists, agg: sum, expr: player_performances.assists}
+  - {name: total_kda, agg: sum, expr: player_performances.kda, description: Sum of per-game KDA; divide by games for the average.}
+  - {name: total_gpm, agg: sum, expr: player_performances.gold_per_min, description: Sum of per-game GPM; divide by games for the average.}
+  - {name: total_xpm, agg: sum, expr: player_performances.xp_per_min, description: Sum of per-game XPM; divide by games for the average.}
+  - {name: total_last_hits, agg: sum, expr: player_performances.last_hits}
+  - {name: total_hero_damage, agg: sum, expr: player_performances.hero_damage}
+  - {name: total_tower_damage, agg: sum, expr: player_performances.tower_damage}
+  - {name: total_net_worth, agg: sum, expr: player_performances.net_worth}
+  - name: avg_gpm
+    better: higher
+    type: derived
+    expr: "CASE WHEN {games} >= 10 THEN {total_gpm} * 1.0 / NULLIF({games}, 0) END"
+    description: Average gold per minute per game; null under 10 games.
+  - name: avg_xpm
+    better: higher
+    type: derived
+    expr: "CASE WHEN {games} >= 10 THEN {total_xpm} * 1.0 / NULLIF({games}, 0) END"
+    description: Average experience per minute per game; null under 10 games.
+  - name: avg_kills
+    better: higher
+    type: derived
+    expr: "CASE WHEN {games} >= 10 THEN {total_kills} * 1.0 / NULLIF({games}, 0) END"
+    description: Average kills per game; null under 10 games.
+  - name: avg_deaths
+    better: lower
+    type: derived
+    expr: "CASE WHEN {games} >= 10 THEN {total_deaths} * 1.0 / NULLIF({games}, 0) END"
+    description: Average deaths per game; null under 10 games.
+  - name: avg_assists
+    better: higher
+    type: derived
+    expr: "CASE WHEN {games} >= 10 THEN {total_assists} * 1.0 / NULLIF({games}, 0) END"
+    description: Average assists per game; null under 10 games.
+  - name: avg_kda
+    better: higher
+    type: derived
+    expr: "CASE WHEN {games} >= 10 THEN {total_kda} * 1.0 / NULLIF({games}, 0) END"
+    description: Average of the per-game KDA; null under 10 games, so a one-game player cannot rank first.
+  - name: avg_last_hits
+    better: higher
+    type: derived
+    expr: "CASE WHEN {games} >= 10 THEN {total_last_hits} * 1.0 / NULLIF({games}, 0) END"
+    description: Average last hits per game; null under 10 games.
+  - name: avg_hero_damage
+    better: higher
+    type: derived
+    expr: "CASE WHEN {games} >= 10 THEN {total_hero_damage} * 1.0 / NULLIF({games}, 0) END"
+    description: Average hero damage per game; null under 10 games.
+  - name: avg_tower_damage
+    better: higher
+    type: derived
+    expr: "CASE WHEN {games} >= 10 THEN {total_tower_damage} * 1.0 / NULLIF({games}, 0) END"
+    description: Average tower damage per game; null under 10 games.
+  - name: avg_net_worth
+    better: higher
+    type: derived
+    expr: "CASE WHEN {games} >= 10 THEN {total_net_worth} * 1.0 / NULLIF({games}, 0) END"
+    description: Average end-of-game net worth; null under 10 games.

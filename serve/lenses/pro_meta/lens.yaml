@@ -11,6 +11,7 @@ connections: [warehouse]
 select:
   entities:
     - pro_matches
+    - team_matches
     - player_performances
     - hero_daily_stats
     - heroes

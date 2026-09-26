@@ -33,7 +33,7 @@ metrics:
   - {name: daily_wins, agg: sum, expr: pub_hero_trends.wins}
   - name: daily_win_rate
     better: higher
-    type: ratio
-    numerator: daily_wins
-    denominator: daily_games
+    type: derived
+    expr: "CASE WHEN {daily_games} >= 20 THEN {daily_wins} * 1.0 / NULLIF({daily_games}, 0) END"
     format: percent
+    description: Wins divided by games over the selected days; null under 20 games (the minimum_games term), so a thin day or a rarely sampled hero cannot rank first.

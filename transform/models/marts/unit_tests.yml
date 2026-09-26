@@ -1,0 +1,85 @@
+version: 2
+
+# Unit tests pin the two derivations a reader has to take on trust: the position a
+# player is given, and the line between a won, drawn and lost lane. Both run on fixed
+# rows, so a change to the rule fails here before it reaches the warehouse.
+
+unit_tests:
+  - name: position_from_lane_and_farm
+    description: Mid is 2; of two safe-laners the richer is 1 and the poorer 5; of two
+      offlaners the richer is 3 and the poorer 4; jungle and unparsed lanes get no position.
+    model: fact_player_match
+    given:
+      - input: ref('stg_match_players')
+        rows:
+          - {match_id: 1, player_slot: 0, is_radiant: true, lane_role: 1, gold_per_min: 600}
+          - {match_id: 1, player_slot: 1, is_radiant: true, lane_role: 1, gold_per_min: 300}
+          - {match_id: 1, player_slot: 2, is_radiant: true, lane_role: 2, gold_per_min: 550}
+          - {match_id: 1, player_slot: 3, is_radiant: true, lane_role: 3, gold_per_min: 450}
+          - {match_id: 1, player_slot: 4, is_radiant: true, lane_role: 3, gold_per_min: 280}
+          - {match_id: 1, player_slot: 128, is_radiant: false, lane_role: 4, gold_per_min: 400}
+          - {match_id: 1, player_slot: 129, is_radiant: false, lane_role: null, gold_per_min: 400}
+      - input: ref('fact_match')
+        rows:
+          - {match_id: 1, radiant_team_id: 10, dire_team_id: 20}
+      - input: ref('stg_heroes')
+        rows: []
+      - input: ref('stg_pro_players')
+        rows: []
+    expect:
+      rows:
+        - {match_id: 1, player_slot: 0, position: 1, position_name: carry}
+        - {match_id: 1, player_slot: 1, position: 5, position_name: hard support}
+        - {match_id: 1, player_slot: 2, position: 2, position_name: mid}
+        - {match_id: 1, player_slot: 3, position: 3, position_name: offlane}
+        - {match_id: 1, player_slot: 4, position: 4, position_name: soft support}
+        - {match_id: 1, player_slot: 128, position: null, position_name: null}
+        - {match_id: 1, player_slot: 129, position: null, position_name: null}
+
+  - name: lane_result_band_is_400_gold
+    description: A lane is won when the side's laners average more than 400 gold ahead of
+      the enemy laners at minute 10, lost below -400, drawn in between; exactly 400 is a
+      draw; only minute 10 counts; jungle rows get no lane result.
+    model: lane_outcomes
+    given:
+      - input: ref('fact_player_match')
+        rows:
+          # match 1, bottom lane: two Radiant laners (avg 2800) against one Dire laner (2400)
+          - {match_id: 1, player_slot: 0, is_radiant: true, lane: 1}
+          - {match_id: 1, player_slot: 1, is_radiant: true, lane: 1}
+          - {match_id: 1, player_slot: 128, is_radiant: false, lane: 1}
+          # match 2, mid: 3100 against 2600
+          - {match_id: 2, player_slot: 2, is_radiant: true, lane: 2}
+          - {match_id: 2, player_slot: 130, is_radiant: false, lane: 2}
+          # match 3, top: 2000 against 2500
+          - {match_id: 3, player_slot: 3, is_radiant: true, lane: 3}
+          - {match_id: 3, player_slot: 131, is_radiant: false, lane: 3}
+          # match 4, mid: 2901 against 2500, one gold past the line
+          - {match_id: 4, player_slot: 2, is_radiant: true, lane: 2}
+          - {match_id: 4, player_slot: 130, is_radiant: false, lane: 2}
+          # match 4, a jungler: no lane result
+          - {match_id: 4, player_slot: 4, is_radiant: true, lane: 4}
+      - input: ref('stg_player_minutes')
+        rows:
+          - {match_id: 1, player_slot: 0, minute: 10, gold: 3000, last_hits: 40, xp: 3000}
+          - {match_id: 1, player_slot: 0, minute: 5, gold: 9999, last_hits: 99, xp: 9999}
+          - {match_id: 1, player_slot: 1, minute: 10, gold: 2600, last_hits: 20, xp: 2500}
+          - {match_id: 1, player_slot: 128, minute: 10, gold: 2400, last_hits: 25, xp: 2600}
+          - {match_id: 2, player_slot: 2, minute: 10, gold: 3100, last_hits: 60, xp: 4000}
+          - {match_id: 2, player_slot: 130, minute: 10, gold: 2600, last_hits: 45, xp: 3500}
+          - {match_id: 3, player_slot: 3, minute: 10, gold: 2000, last_hits: 20, xp: 2500}
+          - {match_id: 3, player_slot: 131, minute: 10, gold: 2500, last_hits: 30, xp: 3000}
+          - {match_id: 4, player_slot: 2, minute: 10, gold: 2901, last_hits: 50, xp: 3800}
+          - {match_id: 4, player_slot: 130, minute: 10, gold: 2500, last_hits: 40, xp: 3500}
+          - {match_id: 4, player_slot: 4, minute: 10, gold: 2000, last_hits: 30, xp: 2000}
+    expect:
+      rows:
+        - {match_id: 1, player_slot: 0, lane_gold_diff_10: 400, lane_result: drawn}
+        - {match_id: 1, player_slot: 1, lane_gold_diff_10: 400, lane_result: drawn}
+        - {match_id: 1, player_slot: 128, lane_gold_diff_10: -400, lane_result: drawn}
+        - {match_id: 2, player_slot: 2, lane_gold_diff_10: 500, lane_result: won}
+        - {match_id: 2, player_slot: 130, lane_gold_diff_10: -500, lane_result: lost}
+        - {match_id: 3, player_slot: 3, lane_gold_diff_10: -500, lane_result: lost}
+        - {match_id: 3, player_slot: 131, lane_gold_diff_10: 500, lane_result: won}
+        - {match_id: 4, player_slot: 2, lane_gold_diff_10: 401, lane_result: won}
+        - {match_id: 4, player_slot: 130, lane_gold_diff_10: -401, lane_result: lost}

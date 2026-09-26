@@ -9,4 +9,6 @@ sql: player_performances.position
 number is a convention derived, not recorded: OpenDota parses the lane each player took;
 mid is 2; of the two safe-laners the one with more gold per minute is 1 and the other 5; of
 the two offlaners the richer is 3 and the other 4. Roaming players and unparsed lanes get
-no position. Public matches carry no lane data, so positions exist for pro matches only.
+no position. position_name carries the same number as a word (carry, mid, offlane, soft
+support, hard support), so a question about mids filters position_name = 'mid'. Public
+matches carry no lane data, so positions exist for pro matches only.

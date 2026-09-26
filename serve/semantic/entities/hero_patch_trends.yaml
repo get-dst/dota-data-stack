@@ -4,6 +4,7 @@ description: Per hero and patch over professional matches — picks, bans, wins,
 grain: one row per hero per patch
 use_cases:
   - Use for a hero's pro pick, ban and win rate on a patch, and how they moved from the previous patch.
+  - patch_win_rate is null under 20 picks (the minimum_games term), so a ranking lists only heroes past the floor; report the picks beside every rate.
   - Avoid for day-by-day numbers; that is hero_daily_stats.
 common_questions:
   - What is Pudge's pick rate on the current patch?
@@ -52,11 +53,10 @@ metrics:
   - {name: patch_wins, agg: sum, expr: hero_patch_trends.wins}
   - name: patch_win_rate
     better: higher
-    type: ratio
-    numerator: patch_wins
-    denominator: patch_picks
+    type: derived
+    expr: "CASE WHEN {patch_picks} >= 20 THEN {patch_wins} * 1.0 / NULLIF({patch_picks}, 0) END"
     format: percent
-    description: Wins divided by picks for the hero on the patch.
+    description: Wins divided by picks for the hero on the patch; null under 20 picks (the minimum_games term), so a rarely picked hero cannot rank first.
   - {name: patch_pick_rate, agg: max, expr: hero_patch_trends.pick_rate, format: percent, description: "The hero's pick rate on one patch (one row per hero and patch; group by hero and patch)."}
   - {name: patch_ban_rate, agg: max, expr: hero_patch_trends.ban_rate, format: percent, description: "The hero's ban rate on one patch (group by hero and patch)."}
   - {name: pick_rate_change_vs_previous, agg: max, expr: hero_patch_trends.pick_rate_change, description: "Change in pick rate from the previous patch (group by hero and patch); null without previous-patch matches."}

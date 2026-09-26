@@ -3,12 +3,12 @@ description: One professional Dota 2 match, as OpenDota records it, with the win
   resolved to a team.
 grain: one row per match
 use_cases:
-  - Use for match counts, durations, kill totals, and who beat whom.
-  - Avoid for per-hero or per-player questions; those live on player_performances and drafts.
+  - Use for match counts, durations, kill totals, and the Radiant or Dire side's record.
+  - Avoid for a team's matches, wins or win rate; those are team_matches. Avoid for per-hero or per-player questions; those live on player_performances and drafts.
 common_questions:
   - How many pro matches were played this week?
   - What is the average match duration on the current patch?
-  - Which team has won the most matches this month?
+  - How often does the Radiant side win on the current patch?
 source:
   connection: warehouse
   table: marts.fact_match

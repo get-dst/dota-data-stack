@@ -1,7 +1,7 @@
 use_when:
   - questions about professional Dota 2 matches, heroes, drafts, teams, leagues or patches
   - hero pick, ban, contest and win rates in pro play
-  - team results and player performance stats such as GPM, XPM, KDA in pro matches
+  - team results — a team's matches, wins and win rate over a month, a patch or a league — and player performance stats such as GPM, XPM, KDA in pro matches
   - gold and XP leads by minute, comebacks and throws in pro matches
   - first blood, first tower, Roshan and Aegis in pro matches, and how often taking them wins
   - a hero's pick, ban and win rate per patch and per position in pro matches
@@ -23,16 +23,24 @@ sample_queries:
       LIMIT 10
   - question: Which hero has the highest win rate on the current patch with at least 10 games?
     sql: |
-      SELECT hero_name,
-             COUNT(*) AS games,
-             SUM(CASE WHEN is_win THEN 1 ELSE 0 END) * 1.0 / COUNT(*) AS hero_win_rate
+      SELECT player_performances.hero_name,
+             COUNT(player_performances.match_id) AS games,
+             AVG(CASE WHEN player_performances.is_win THEN 1.0 ELSE 0.0 END) AS hero_win_rate
       FROM marts.fact_player_match AS player_performances
       JOIN marts.dim_patch AS patches ON patches.patch_id = player_performances.patch_id
       WHERE patches.is_current = TRUE
-      GROUP BY hero_name
-      HAVING COUNT(*) >= 10
+      GROUP BY player_performances.hero_name
+      HAVING COUNT(player_performances.match_id) >= 10
       ORDER BY hero_win_rate DESC
       LIMIT 1
+  - question: How many matches did Team Liquid play in August 2026, and how many did it win?
+    sql: |
+      SELECT COUNT(*) AS matches,
+             SUM(CASE WHEN is_win THEN 1 ELSE 0 END) AS wins
+      FROM marts.fact_team_match AS team_matches
+      WHERE team_matches.team_name = 'Team Liquid'
+        AND team_matches.match_date >= DATE '2026-08-01'
+        AND team_matches.match_date < DATE '2026-09-01'
   - question: What is the average match duration in minutes this month?
     sql: |
       SELECT AVG(duration_min) AS avg_duration_min

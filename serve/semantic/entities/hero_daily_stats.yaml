@@ -3,8 +3,8 @@ description: Per hero, per day, per patch — picks, bans, wins and losses acros
   The rollup for meta questions.
 grain: one row per hero per match date per patch
 use_cases:
-  - Use for hero pick, ban and win totals over a period or a patch.
-  - Avoid for anything about a specific player or team.
+  - Use for hero pick, ban and win totals, and the day-by-day series behind them, over a period or a patch.
+  - Avoid for a hero's win rate; that is player_performances (the hero_win_rate definition, null under 20 games) or, per patch, hero_patch_trends. Avoid for anything about a specific player or team.
 common_questions:
   - Which heroes were picked most on the current patch?
   - How many times was Windranger banned this week?
@@ -35,10 +35,3 @@ metrics:
   - {name: total_bans, agg: sum, expr: hero_daily_stats.bans}
   - {name: total_wins, agg: sum, expr: hero_daily_stats.wins}
   - {name: total_losses, agg: sum, expr: hero_daily_stats.losses}
-  - name: hero_win_rate
-    better: higher
-    type: ratio
-    numerator: total_wins
-    denominator: total_picks
-    format: percent
-    description: Wins divided by picks for the hero.

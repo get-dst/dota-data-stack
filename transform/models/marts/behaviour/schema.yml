@@ -11,7 +11,9 @@ models:
     columns:
       - name: match_id
         description: "OpenDota match id; joins fact_match.match_id."
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships: {arguments: {to: ref('fact_match'), field: match_id}}
       - name: player_slot
         description: "0-4 Radiant, 128-132 Dire; with match_id the primary key."
         tests: [not_null]
@@ -19,6 +21,8 @@ models:
         description: "True on the Radiant side."
       - name: team_id
         description: "The team this player played for in the match; joins dim_team.team_id."
+        tests:
+          - relationships: {arguments: {to: ref('dim_team'), field: team_id}}
       - name: team_name
         description: "Team name as the match record carries it."
       - name: account_id
@@ -27,6 +31,8 @@ models:
         description: "The pro's competitive name when OpenDota knows it, else the Steam persona name."
       - name: hero_id
         description: "Hero played; joins dim_hero.hero_id."
+        tests:
+          - relationships: {arguments: {to: ref('dim_hero'), field: hero_id}}
       - name: hero_name
         description: "Display name of the hero."
       - name: position
@@ -65,10 +71,14 @@ models:
         description: "UTC calendar date of started_at."
       - name: patch_id
         description: "Game version id; joins dim_patch.patch_id."
+        tests:
+          - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: patch_name
         description: "Game version the match was played on, e.g. 7.41."
       - name: league_id
         description: "League or tournament id; joins dim_league.league_id."
+        tests:
+          - relationships: {arguments: {to: ref('dim_league'), field: league_id}}
       - name: league_name
         description: "League or tournament name as the match record carries it."
       - name: duration_min
@@ -79,7 +89,9 @@ models:
     columns:
       - name: match_id
         description: "OpenDota match id; joins fact_match.match_id."
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships: {arguments: {to: ref('fact_match'), field: match_id}}
       - name: player_slot
         description: "0-4 Radiant, 128-132 Dire; with match_id the primary key."
         tests: [not_null]
@@ -87,6 +99,8 @@ models:
         description: "True on the Radiant side."
       - name: team_id
         description: "The team this player played for in the match; joins dim_team.team_id."
+        tests:
+          - relationships: {arguments: {to: ref('dim_team'), field: team_id}}
       - name: team_name
         description: "Team name as the match record carries it."
       - name: account_id
@@ -95,6 +109,8 @@ models:
         description: "The pro's competitive name when OpenDota knows it, else the Steam persona name."
       - name: hero_id
         description: "Hero played; joins dim_hero.hero_id."
+        tests:
+          - relationships: {arguments: {to: ref('dim_hero'), field: hero_id}}
       - name: hero_name
         description: "Display name of the hero."
       - name: position
@@ -131,10 +147,14 @@ models:
         description: "UTC calendar date of started_at."
       - name: patch_id
         description: "Game version id; joins dim_patch.patch_id."
+        tests:
+          - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: patch_name
         description: "Game version the match was played on, e.g. 7.41."
       - name: league_id
         description: "League or tournament id; joins dim_league.league_id."
+        tests:
+          - relationships: {arguments: {to: ref('dim_league'), field: league_id}}
       - name: league_name
         description: "League or tournament name as the match record carries it."
       - name: duration_min
@@ -145,7 +165,9 @@ models:
     columns:
       - name: match_id
         description: "OpenDota match id; joins fact_match.match_id."
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships: {arguments: {to: ref('fact_match'), field: match_id}}
       - name: player_slot
         description: "0-4 Radiant, 128-132 Dire; with match_id the primary key."
         tests: [not_null]
@@ -153,6 +175,8 @@ models:
         description: "True on the Radiant side."
       - name: team_id
         description: "The team this player played for in the match; joins dim_team.team_id."
+        tests:
+          - relationships: {arguments: {to: ref('dim_team'), field: team_id}}
       - name: team_name
         description: "Team name as the match record carries it."
       - name: account_id
@@ -161,6 +185,8 @@ models:
         description: "The pro's competitive name when OpenDota knows it, else the Steam persona name."
       - name: hero_id
         description: "Hero played; joins dim_hero.hero_id."
+        tests:
+          - relationships: {arguments: {to: ref('dim_hero'), field: hero_id}}
       - name: hero_name
         description: "Display name of the hero."
       - name: position
@@ -203,10 +229,14 @@ models:
         description: "UTC calendar date of started_at."
       - name: patch_id
         description: "Game version id; joins dim_patch.patch_id."
+        tests:
+          - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: patch_name
         description: "Game version the match was played on, e.g. 7.41."
       - name: league_id
         description: "League or tournament id; joins dim_league.league_id."
+        tests:
+          - relationships: {arguments: {to: ref('dim_league'), field: league_id}}
       - name: league_name
         description: "League or tournament name as the match record carries it."
 
@@ -215,7 +245,9 @@ models:
     columns:
       - name: match_id
         description: "OpenDota match id; joins fact_match.match_id."
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships: {arguments: {to: ref('fact_match'), field: match_id}}
       - name: player_slot
         description: "0-4 Radiant, 128-132 Dire; with match_id the primary key."
         tests: [not_null]
@@ -223,6 +255,8 @@ models:
         description: "True on the Radiant side."
       - name: team_id
         description: "The team this player played for in the match; joins dim_team.team_id."
+        tests:
+          - relationships: {arguments: {to: ref('dim_team'), field: team_id}}
       - name: team_name
         description: "Team name as the match record carries it."
       - name: account_id
@@ -231,6 +265,8 @@ models:
         description: "The pro's competitive name when OpenDota knows it, else the Steam persona name."
       - name: hero_id
         description: "Hero played; joins dim_hero.hero_id."
+        tests:
+          - relationships: {arguments: {to: ref('dim_hero'), field: hero_id}}
       - name: hero_name
         description: "Display name of the hero."
       - name: position
@@ -259,10 +295,14 @@ models:
         description: "UTC calendar date of started_at."
       - name: patch_id
         description: "Game version id; joins dim_patch.patch_id."
+        tests:
+          - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: patch_name
         description: "Game version the match was played on, e.g. 7.41."
       - name: league_id
         description: "League or tournament id; joins dim_league.league_id."
+        tests:
+          - relationships: {arguments: {to: ref('dim_league'), field: league_id}}
       - name: league_name
         description: "League or tournament name as the match record carries it."
 
@@ -271,7 +311,9 @@ models:
     columns:
       - name: match_id
         description: "OpenDota match id; joins fact_match.match_id."
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships: {arguments: {to: ref('fact_match'), field: match_id}}
       - name: player_slot
         description: "0-4 Radiant, 128-132 Dire; with match_id the primary key."
         tests: [not_null]
@@ -279,6 +321,8 @@ models:
         description: "True on the Radiant side."
       - name: team_id
         description: "The team this player played for in the match; joins dim_team.team_id."
+        tests:
+          - relationships: {arguments: {to: ref('dim_team'), field: team_id}}
       - name: team_name
         description: "Team name as the match record carries it."
       - name: account_id
@@ -287,6 +331,8 @@ models:
         description: "The pro's competitive name when OpenDota knows it, else the Steam persona name."
       - name: hero_id
         description: "Hero played; joins dim_hero.hero_id."
+        tests:
+          - relationships: {arguments: {to: ref('dim_hero'), field: hero_id}}
       - name: hero_name
         description: "Display name of the hero."
       - name: position
@@ -339,10 +385,14 @@ models:
         description: "UTC calendar date of started_at."
       - name: patch_id
         description: "Game version id; joins dim_patch.patch_id."
+        tests:
+          - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: patch_name
         description: "Game version the match was played on, e.g. 7.41."
       - name: league_id
         description: "League or tournament id; joins dim_league.league_id."
+        tests:
+          - relationships: {arguments: {to: ref('dim_league'), field: league_id}}
       - name: league_name
         description: "League or tournament name as the match record carries it."
 
@@ -351,12 +401,16 @@ models:
     columns:
       - name: patch_id
         description: "Game version id; joins dim_patch.patch_id; with hero_id and position the primary key."
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: patch_name
         description: "Game version, e.g. 7.41."
       - name: hero_id
         description: "Hero; joins dim_hero.hero_id."
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_hero'), field: hero_id}}
       - name: hero_name
         description: "Display name of the hero."
       - name: position
@@ -442,7 +496,9 @@ models:
     columns:
       - name: patch_id
         description: "Game version id; joins dim_patch.patch_id; with account_id the primary key."
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: patch_name
         description: "Game version, e.g. 7.41."
       - name: account_id
