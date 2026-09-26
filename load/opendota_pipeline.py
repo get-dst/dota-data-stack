@@ -574,7 +574,10 @@ def main() -> None:
         table_name="api_usage",
         write_disposition="append",
     )
-    print(f"this run: {CALLS['paid']} paid calls, {CALLS['free']} free calls")
+    print(
+        f"this run: {CALLS['paid']} paid calls, {CALLS['free']} free calls, "
+        f"{_SPENT['calls']} match details"
+    )
 
     cutoff = int(time.time() - keep_days * 86400)
     with pipeline.sql_client() as c:

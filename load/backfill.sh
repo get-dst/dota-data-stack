@@ -11,8 +11,9 @@ MAX=${2:-10}
 for i in $(seq 1 "$MAX"); do
   echo "== backfill run $i (chunk $CHUNK)"
   out=$(DOTA_MAX_DETAIL_CALLS="$CHUNK" DOTA_PUBLIC_PAGES=0 uv run python load/opendota_pipeline.py 2>&1 | tee /dev/stderr | grep -E '^this run:' || true)
-  paid=$(echo "$out" | sed -E 's/.* ([0-9]+) paid calls.*/\1/')
-  if [ -z "$paid" ] || [ "$paid" = "0" ]; then
+  # Stop on a run that bought no match detail; with a key the match list is paid too.
+  details=$(echo "$out" | sed -E 's/.* ([0-9]+) match details.*/\1/')
+  if [ -z "$details" ] || [ "$details" = "0" ]; then
     echo "== backfill complete: nothing new to fetch"
     exit 0
   fi
