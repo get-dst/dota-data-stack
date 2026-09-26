@@ -2,6 +2,7 @@
 -- from the lane OpenDota parsed and the player's farm rank inside the side: mid is 2;
 -- the richer safe-laner is the carry (1) and the poorer the hard support (5); the
 -- richer offlaner is 3 and the poorer is 4. A convention, stated in the entity file.
+-- position_name is the same number as the word people use for it.
 with ranked as (
     select
         pm.*,
@@ -10,6 +11,20 @@ with ranked as (
             order by pm.gold_per_min desc
         ) as farm_rank_in_lane
     from {{ ref('stg_match_players') }} as pm
+),
+
+positioned as (
+    select
+        *,
+        case
+            when lane_role = 2 then 2
+            when lane_role = 1 and farm_rank_in_lane = 1 then 1
+            when lane_role = 1 then 5
+            when lane_role = 3 and farm_rank_in_lane = 1 then 3
+            when lane_role = 3 then 4
+            else null
+        end as position
+    from ranked
 )
 
 select
@@ -58,14 +73,8 @@ select
     pm.lane,
     pm.lane_role,
     pm.is_roaming,
-    case
-        when pm.lane_role = 2 then 2
-        when pm.lane_role = 1 and pm.farm_rank_in_lane = 1 then 1
-        when pm.lane_role = 1 then 5
-        when pm.lane_role = 3 and pm.farm_rank_in_lane = 1 then 3
-        when pm.lane_role = 3 then 4
-        else null
-    end as position,
+    pm.position,
+    {{ position_name('pm.position') }} as position_name,
     pm.leaver_status,
     pm.abandons,
     m.started_at,
@@ -75,7 +84,7 @@ select
     m.league_id,
     m.league_name,
     m.duration_min
-from ranked as pm
+from positioned as pm
 inner join {{ ref('fact_match') }} as m on m.match_id = pm.match_id
 left join {{ ref('stg_heroes') }} as h on h.hero_id = pm.hero_id
 left join {{ ref('stg_pro_players') }} as pp on pp.account_id = pm.account_id

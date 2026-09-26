@@ -43,10 +43,14 @@ models:
     columns:
       - name: patch_id
         description: Game version id; joins dim_patch.patch_id.
+        tests:
+          - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: patch_name
         description: Game version, e.g. 7.41.
       - name: hero_id
         description: Hero; joins dim_hero.hero_id.
+        tests:
+          - relationships: {arguments: {to: ref('dim_hero'), field: hero_id}}
       - name: hero_name
         description: Display name of the hero.
       - name: item_slot
@@ -55,6 +59,8 @@ models:
         description: item_slot in words - first, second or third.
       - name: item_id
         description: Item id; joins dim_item.item_id.
+        tests:
+          - relationships: {arguments: {to: ref('dim_item'), field: item_id}}
       - name: item_name
         description: Item display name, e.g. Black King Bar.
       - name: item_cost
@@ -77,14 +83,20 @@ models:
     columns:
       - name: patch_id
         description: Game version id; joins dim_patch.patch_id.
+        tests:
+          - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: patch_name
         description: Game version, e.g. 7.41.
       - name: hero_id
         description: Hero; joins dim_hero.hero_id.
+        tests:
+          - relationships: {arguments: {to: ref('dim_hero'), field: hero_id}}
       - name: hero_name
         description: Display name of the hero.
       - name: item_id
         description: Item id of a major item; joins dim_item.item_id.
+        tests:
+          - relationships: {arguments: {to: ref('dim_item'), field: item_id}}
       - name: item_name
         description: Item display name, e.g. Black King Bar.
       - name: item_cost
@@ -107,14 +119,20 @@ models:
     columns:
       - name: patch_id
         description: Game version id; joins dim_patch.patch_id.
+        tests:
+          - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: patch_name
         description: Game version, e.g. 7.41.
       - name: hero_id
         description: Hero; joins dim_hero.hero_id.
+        tests:
+          - relationships: {arguments: {to: ref('dim_hero'), field: hero_id}}
       - name: hero_name
         description: Display name of the hero.
       - name: item_id
         description: Item id; joins dim_item.item_id.
+        tests:
+          - relationships: {arguments: {to: ref('dim_item'), field: item_id}}
       - name: item_name
         description: Item display name, e.g. Iron Branch.
       - name: item_cost
@@ -135,10 +153,14 @@ models:
     columns:
       - name: patch_id
         description: Game version id; joins dim_patch.patch_id.
+        tests:
+          - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: patch_name
         description: Game version, e.g. 7.41.
       - name: hero_id
         description: Hero; joins dim_hero.hero_id.
+        tests:
+          - relationships: {arguments: {to: ref('dim_hero'), field: hero_id}}
       - name: hero_name
         description: Display name of the hero.
       - name: starting_build
@@ -159,16 +181,22 @@ models:
     columns:
       - name: patch_id
         description: Game version id; joins dim_patch.patch_id.
+        tests:
+          - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: patch_name
         description: Game version, e.g. 7.41.
       - name: hero_id
         description: Hero; joins dim_hero.hero_id.
+        tests:
+          - relationships: {arguments: {to: ref('dim_hero'), field: hero_id}}
       - name: hero_name
         description: Display name of the hero.
       - name: slot_group
         description: "main, backpack, neutral, enchantment or consumed. A held Aghanim's Scepter is in main or backpack; consumed holds the Blessing, whether bought or dropped by Roshan, and the Shard, whether bought or taken from a Tormentor."
       - name: item_id
         description: Item id; joins dim_item.item_id.
+        tests:
+          - relationships: {arguments: {to: ref('dim_item'), field: item_id}}
       - name: item_name
         description: Item display name, e.g. Black King Bar or Conjurer's Catalyst.
       - name: item_cost

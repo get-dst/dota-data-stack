@@ -15,7 +15,9 @@ models:
     columns:
       - name: match_id
         description: OpenDota match id; with draft_order the primary key; joins fact_match.match_id.
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships: {arguments: {to: ref('fact_match'), field: match_id}}
       - name: draft_order
         description: Position in the draft sequence, 0-based (0-23, or 0-22 when a ban was skipped).
         tests: [not_null]
@@ -54,6 +56,8 @@ models:
         description: True when the side that made this pick or ban also made the match's first pick.
       - name: hero_id
         description: Hero picked or banned; joins dim_hero.hero_id.
+        tests:
+          - relationships: {arguments: {to: ref('dim_hero'), field: hero_id}}
       - name: hero_name
         description: Display name of the hero picked or banned.
       - name: is_radiant
@@ -62,6 +66,8 @@ models:
         description: "'radiant' or 'dire', the side that made this pick or ban."
       - name: team_id
         description: Team id of the side that made the pick or ban; null when not identified.
+        tests:
+          - relationships: {arguments: {to: ref('dim_team'), field: team_id}}
       - name: team_name
         description: Team name of the side that made the pick or ban; null when not identified.
       - name: opponent_team_name
@@ -74,10 +80,14 @@ models:
         description: UTC calendar date of started_at.
       - name: patch_id
         description: Game version id the match was played on; joins dim_patch.patch_id.
+        tests:
+          - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: patch_name
         description: Game version the match was played on, e.g. 7.41.
       - name: league_id
         description: League or tournament id; joins dim_league.league_id.
+        tests:
+          - relationships: {arguments: {to: ref('dim_league'), field: league_id}}
       - name: league_name
         description: League or tournament name as the match record carries it.
 
@@ -89,12 +99,16 @@ models:
     columns:
       - name: patch_id
         description: Game version id; with hero_id the primary key; joins dim_patch.patch_id.
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: patch_name
         description: Game version, e.g. 7.41.
       - name: hero_id
         description: Hero; joins dim_hero.hero_id.
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_hero'), field: hero_id}}
       - name: hero_name
         description: Display name of the hero.
       - name: drafted_matches
@@ -133,17 +147,23 @@ models:
     columns:
       - name: patch_id
         description: Game version id; with hero_id and opponent_hero_id the primary key; joins dim_patch.patch_id.
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: patch_name
         description: Game version, e.g. 7.41.
       - name: hero_id
         description: The hero the counts are measured for; joins dim_hero.hero_id.
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_hero'), field: hero_id}}
       - name: hero_name
         description: Display name of the hero the counts are measured for.
       - name: opponent_hero_id
         description: The hero picked by the other side; joins dim_hero.hero_id.
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_hero'), field: hero_id}}
       - name: opponent_hero_name
         description: Display name of the hero picked by the other side.
       - name: games
@@ -158,7 +178,9 @@ models:
     columns:
       - name: patch_id
         description: Game version id; with lane_role, hero_id, position, partner_hero_id and partner_position the primary key; joins dim_patch.patch_id.
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: patch_name
         description: Game version, e.g. 7.41.
       - name: lane_role
@@ -168,12 +190,16 @@ models:
         description: "lane_role spelled out: safe lane, mid, off lane or jungle."
       - name: hero_id
         description: The hero the counts are measured for; joins dim_hero.hero_id.
+        tests:
+          - relationships: {arguments: {to: ref('dim_hero'), field: hero_id}}
       - name: hero_name
         description: Display name of the hero the counts are measured for.
       - name: position
         description: Derived position of hero_id in those games, 1-5 (see fact_player_match.position); in a safe lane 1 is the carry and 5 the hard support, in the off lane 3 is the offlaner and 4 the soft support.
       - name: partner_hero_id
         description: The hero that shared the lane; joins dim_hero.hero_id.
+        tests:
+          - relationships: {arguments: {to: ref('dim_hero'), field: hero_id}}
       - name: partner_hero_name
         description: Display name of the hero that shared the lane.
       - name: partner_position
@@ -189,14 +215,18 @@ models:
     columns:
       - name: match_id
         description: OpenDota match id; with is_radiant the primary key; joins fact_match.match_id.
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships: {arguments: {to: ref('fact_match'), field: match_id}}
       - name: is_radiant
         description: True when the team played the Radiant side.
       - name: side
         description: "'radiant' or 'dire'."
       - name: team_id
         description: The team; joins dim_team.team_id.
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_team'), field: team_id}}
       - name: team_name
         description: The team's name.
       - name: opponent_team_name
@@ -222,10 +252,14 @@ models:
         description: UTC calendar date of started_at.
       - name: patch_id
         description: Game version id; joins dim_patch.patch_id.
+        tests:
+          - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: patch_name
         description: Game version, e.g. 7.41.
       - name: league_id
         description: League or tournament id; joins dim_league.league_id.
+        tests:
+          - relationships: {arguments: {to: ref('dim_league'), field: league_id}}
       - name: league_name
         description: League or tournament name as the match record carries it.
 
@@ -236,17 +270,23 @@ models:
     columns:
       - name: team_id
         description: The team; with patch_id and hero_id the primary key; joins dim_team.team_id.
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_team'), field: team_id}}
       - name: team_name
         description: The team's name.
       - name: patch_id
         description: Game version id; joins dim_patch.patch_id.
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: patch_name
         description: Game version, e.g. 7.41.
       - name: hero_id
         description: The hero; joins dim_hero.hero_id.
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_hero'), field: hero_id}}
       - name: hero_name
         description: Display name of the hero.
       - name: games

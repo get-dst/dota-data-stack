@@ -11,35 +11,20 @@
 --     components sold whole, such as Demon Edge, Hyperstone, Mystic Staff, Ultimate Orb,
 --     Eaglesong, Reaver and Sacred Relic;
 --   * it is not a recipe, a consumable (Moon Shard counts as one) or a neutral item.
-with components as (
-    select _dlt_parent_id, count(*) as component_count
-    from {{ source('raw', 'items__components') }}
-    group by 1
-),
-
-actives as (
-    select distinct _dlt_parent_id
-    from {{ source('raw', 'items__abilities') }}
-    where type = 'active'
-),
-
-items as (
+with items as (
     select
-        i.id as item_id,
-        i.name as item_key,
-        i.dname as item_name,
-        coalesce(i.cost, 0) as item_cost,
-        i.qual as quality,
-        i.tier as neutral_tier,
-        coalesce(c.component_count, 0) as component_count,
-        a._dlt_parent_id is not null as has_active_ability,
-        i.name like 'recipe%' as is_recipe,
-        coalesce(i.qual, '') like 'consumable%' as is_consumable,
-        i.tier is not null or i.name like 'enhancement%' as is_neutral
-    from {{ source('raw', 'items') }} as i
-    left join components as c on c._dlt_parent_id = i._dlt_id
-    left join actives as a on a._dlt_parent_id = i._dlt_id
-    where i.id is not null
+        item_id,
+        item_key,
+        item_name,
+        coalesce(cost, 0) as item_cost,
+        quality,
+        neutral_tier,
+        component_count,
+        has_active_ability,
+        item_key like 'recipe%' as is_recipe,
+        coalesce(quality, '') like 'consumable%' as is_consumable,
+        neutral_tier is not null or item_key like 'enhancement%' as is_neutral
+    from {{ ref('stg_items') }}
 )
 
 select

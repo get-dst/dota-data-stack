@@ -23,6 +23,8 @@ models:
       - {name: cost, description: Shop price in gold; 0 or null when the item has no price.}
       - {name: quality, description: "OpenDota item quality: component, rare, epic, consumable, artifact, common, secret_shop; null for many items."}
       - {name: neutral_tier, description: Neutral item tier 1-5; null for shop items.}
+      - {name: component_count, description: Components the item is assembled from in OpenDota's constants; 0 when sold whole.}
+      - {name: has_active_ability, description: True when the item has an ability of type active in OpenDota's constants.}
 
   - name: stg_leagues
     description: One row per league from raw.leagues.

@@ -13,7 +13,9 @@ models:
     columns:
       - name: match_id
         description: OpenDota match id; joins fact_match.match_id; with minute the primary key.
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships: {arguments: {to: ref('fact_match'), field: match_id}}
       - name: minute
         description: Game minute, 0 = the horn; the last minute is the one the match ended in.
         tests: [not_null]
@@ -33,10 +35,14 @@ models:
         description: UTC calendar date of started_at.
       - name: patch_id
         description: Game version id; joins dim_patch.patch_id.
+        tests:
+          - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: patch_name
         description: Game version the match was played on, e.g. 7.41.
       - name: league_id
         description: League or tournament id; joins dim_league.league_id.
+        tests:
+          - relationships: {arguments: {to: ref('dim_league'), field: league_id}}
       - name: league_name
         description: League or tournament name as the match record carries it.
 
@@ -47,17 +53,24 @@ models:
     columns:
       - name: match_id
         description: OpenDota match id; primary key; joins fact_match.match_id.
-        tests: [unique, not_null]
+        tests:
+          - unique
+          - not_null
+          - relationships: {arguments: {to: ref('fact_match'), field: match_id}}
       - name: started_at
         description: Match start time (timestamp with time zone).
       - name: match_date
         description: UTC calendar date of started_at.
       - name: patch_id
         description: Game version id; joins dim_patch.patch_id.
+        tests:
+          - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: patch_name
         description: Game version the match was played on, e.g. 7.41.
       - name: league_id
         description: League or tournament id; joins dim_league.league_id.
+        tests:
+          - relationships: {arguments: {to: ref('dim_league'), field: league_id}}
       - name: league_name
         description: League or tournament name as the match record carries it.
       - name: duration_min
@@ -126,17 +139,24 @@ models:
     columns:
       - name: match_id
         description: OpenDota match id; primary key; joins fact_match.match_id.
-        tests: [unique, not_null]
+        tests:
+          - unique
+          - not_null
+          - relationships: {arguments: {to: ref('fact_match'), field: match_id}}
       - name: started_at
         description: Match start time (timestamp with time zone).
       - name: match_date
         description: UTC calendar date of started_at.
       - name: patch_id
         description: Game version id; joins dim_patch.patch_id.
+        tests:
+          - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: patch_name
         description: Game version the match was played on, e.g. 7.41.
       - name: league_id
         description: League or tournament id; joins dim_league.league_id.
+        tests:
+          - relationships: {arguments: {to: ref('dim_league'), field: league_id}}
       - name: league_name
         description: League or tournament name as the match record carries it.
       - name: radiant_win
@@ -194,7 +214,9 @@ models:
     columns:
       - name: patch_id
         description: Game version id; joins dim_patch.patch_id; with objective the primary key.
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: patch_name
         description: Game version, e.g. 7.41.
       - name: objective
@@ -216,7 +238,9 @@ models:
     columns:
       - name: patch_id
         description: Game version id; joins dim_patch.patch_id; with hero_id the primary key.
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: patch_name
         description: Game version, e.g. 7.41.
       - name: patch_started_at
@@ -225,7 +249,9 @@ models:
         description: True for the patch in play now (dim_patch.is_current).
       - name: hero_id
         description: Hero; joins dim_hero.hero_id.
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_hero'), field: hero_id}}
       - name: hero_name
         description: Display name of the hero.
       - name: matches_on_patch
@@ -246,6 +272,8 @@ models:
         description: bans / matches_on_patch, 0-1.
       - name: previous_patch_id
         description: The patch released before this one (dim_patch order); null for the first patch.
+        tests:
+          - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: previous_patch_name
         description: Name of the previous patch, e.g. 7.40.
       - name: previous_matches
@@ -274,12 +302,16 @@ models:
     columns:
       - name: patch_id
         description: Game version id; joins dim_patch.patch_id; with hero_id and position the primary key.
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: patch_name
         description: Game version, e.g. 7.41.
       - name: hero_id
         description: Hero; joins dim_hero.hero_id.
-        tests: [not_null]
+        tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_hero'), field: hero_id}}
       - name: hero_name
         description: Display name of the hero.
       - name: position
