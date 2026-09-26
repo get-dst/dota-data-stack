@@ -60,7 +60,7 @@ metrics:
   - name: team_win_rate
     better: higher
     type: derived
-    expr: "CASE WHEN {matches_played} >= 10 THEN {team_wins} * 1.0 / NULLIF({matches_played}, 0) END"
+    expr: "CASE WHEN {matches_played} >= 20 THEN {team_wins} * 1.0 / NULLIF({matches_played}, 0) END"
     format: percent
-    description: Wins divided by matches for the team (the team_win_rate definition); null under 10 matches, so a team seen twice cannot top a ranking. State the match count beside it.
+    description: Wins divided by matches for the team (the team_win_rate definition); null under 20 matches, so a team seen twice cannot top a ranking. State the match count beside it.
   - {name: team_avg_kills, agg: avg, expr: team_matches.kills, description: Average hero kills by the team per match.}

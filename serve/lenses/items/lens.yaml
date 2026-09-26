@@ -46,7 +46,7 @@ not_computable:
     reason: professional matches carry no matchmaking rating
   # Here "tier 3" is also a neutral-item tier, so only the league forms of it refuse.
   - measure: tier-3 leagues
-    aliases: [tier 3 league, tier 3 leagues, tier three leagues, tier-3 league, excluded leagues, amateur leagues, Destiny League, Ultras Dota Pro League, Dota 2 Space League, SIVVIT League]
+    aliases: [tier 3 league, tier 3 leagues, tier three leagues, tier-3 league, excluded leagues, amateur leagues, Destiny League, Dota 2 Space League]
     reason: professional matches here are those in leagues OpenDota rates premium or professional; matches in leagues it rates excluded, its tier-3 leagues such as Destiny League, Dota 2 Space League and Ultras Dota Pro League 2025-26, stay in the raw tables and reach no table in this lens
 access:
   allow:
