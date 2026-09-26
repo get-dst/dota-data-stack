@@ -8,7 +8,7 @@
 # which bakes the embedding weights in.
 steps:
   - name: gcr.io/cloud-builders/git
-    args: [clone, --depth=1, --branch=v${_DST_VERSION}, https://github.com/get-dst/dst, dst]
+    args: [clone, --depth=1, "--branch=v${_DST_VERSION}", https://github.com/get-dst/dst, dst]
   - name: gcr.io/cloud-builders/docker
     args: [build, -t, dst-base, --build-arg, UV_EXTRA=local-embed, dst]
   - name: gcr.io/cloud-builders/docker
