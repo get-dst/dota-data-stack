@@ -9,6 +9,7 @@ select
     f.hero_id,
     f.hero_name,
     f.position,
+    f.position_name,
     count(*) as games,
     count(case when f.is_win then 1 end) as wins,
     sum(f.duration_min) as game_minutes,
@@ -50,4 +51,4 @@ left join {{ ref('lane_outcomes') }} as lo on lo.match_id = f.match_id and lo.pl
 left join {{ ref('space_created') }} as s on s.match_id = f.match_id and s.player_slot = f.player_slot
 left join {{ ref('vision_and_runes') }} as v on v.match_id = f.match_id and v.player_slot = f.player_slot
 where f.position is not null
-group by 1, 2, 3, 4, 5
+group by 1, 2, 3, 4, 5, 6

@@ -86,6 +86,7 @@ select
     p.hero_id,
     p.hero_name,
     p.position,
+    {{ position_name('p.position') }} as position_name,
     p.is_win,
     p.duration_min,
     coalesce(ed.enemy_hero_damage_taken, 0) as enemy_hero_damage_taken,

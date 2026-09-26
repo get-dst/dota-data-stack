@@ -31,6 +31,7 @@ select
     f.account_id,
     max(n.player_name) as player_name,
     max(p.position) as main_position,
+    {{ position_name('max(p.position)') }} as main_position_name,
     count(*) as games,
     count(case when f.is_win then 1 end) as wins,
     sum(f.duration_min) as game_minutes,

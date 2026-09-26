@@ -35,6 +35,7 @@ select
     pm.hero_id,
     pm.hero_name,
     pm.position,
+    {{ position_name('pm.position') }} as position_name,
     pm.is_win,
     coalesce(f.match_fights, 0) as match_fights,
     coalesce(f.fights_present, 0) as fights_present,

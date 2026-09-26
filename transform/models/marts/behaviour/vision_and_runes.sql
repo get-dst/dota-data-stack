@@ -59,6 +59,7 @@ select
     p.hero_id,
     p.hero_name,
     p.position,
+    {{ position_name('p.position') }} as position_name,
     p.is_win,
     coalesce(w.observers_placed, 0) as observers_placed,
     coalesce(w.sentries_placed, 0) as sentries_placed,

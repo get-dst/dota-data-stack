@@ -37,6 +37,7 @@ select
     hero_id,
     hero_name,
     position,
+    {{ position_name('position') }} as position_name,
     is_win,
     gold_10,
     sum(gold_10) over (partition by match_id, is_radiant) as team_gold_10,

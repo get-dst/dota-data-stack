@@ -80,6 +80,7 @@ select
     hero_id,
     hero_name,
     position,
+    {{ position_name('position') }} as position_name,
     is_win,
     lane,
     lane_role,

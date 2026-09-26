@@ -31,6 +31,8 @@ models:
         description: "Display name of the hero."
       - name: position
         description: "Derived role 1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support (fact_player_match.position); null for jungle, roaming or unparsed lanes."
+      - name: position_name
+        description: "The position as a word: carry, mid, offlane, soft support or hard support; null when position is null."
       - name: is_win
         description: "True when the player's side won."
       - name: match_fights
@@ -97,6 +99,8 @@ models:
         description: "Display name of the hero."
       - name: position
         description: "Derived role 1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support (fact_player_match.position); null for jungle, roaming or unparsed lanes."
+      - name: position_name
+        description: "The position as a word: carry, mid, offlane, soft support or hard support; null when position is null."
       - name: is_win
         description: "True when the player's side won."
       - name: gold_10
@@ -161,6 +165,8 @@ models:
         description: "Display name of the hero."
       - name: position
         description: "Derived role 1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support (fact_player_match.position); null for jungle, roaming or unparsed lanes."
+      - name: position_name
+        description: "The position as a word: carry, mid, offlane, soft support or hard support; null when position is null."
       - name: is_win
         description: "True when the player's side won."
       - name: lane
@@ -190,7 +196,7 @@ models:
       - name: lane_result
         tests:
           - accepted_values: {arguments: {values: [won, drawn, lost]}}
-        description: "won, drawn or lost: won when lane_gold_diff_10 is above DRAWBAND gold, lost when below minus DRAWBAND, drawn in between. DRAWJUST"
+        description: "won, drawn or lost: won when lane_gold_diff_10 is above 400 gold, lost when below -400, drawn in between. 400 gold at minute 10 is about one kill bounty or two creep waves of last hits, and roughly an eighth of a laner's gold by then; a smaller gap is two even lanes trading, so it is drawn. The line is declared, not derived: a lane is decided by more than gold."
       - name: started_at
         description: "Match start time (timestamp with time zone)."
       - name: match_date
@@ -229,6 +235,8 @@ models:
         description: "Display name of the hero."
       - name: position
         description: "Derived role 1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support (fact_player_match.position); null for jungle, roaming or unparsed lanes."
+      - name: position_name
+        description: "The position as a word: carry, mid, offlane, soft support or hard support; null when position is null."
       - name: is_win
         description: "True when the player's side won."
       - name: duration_min
@@ -240,7 +248,7 @@ models:
       - name: total_deaths
         description: "All deaths of the player in the match."
       - name: hero_kill_deaths
-        description: "Deaths to an enemy hero, timed from the killer's kills log; total_deaths minus these are deaths to creeps, towers, Roshan or denies."
+        description: "Deaths to an enemy hero, timed from the killer's kills log; total_deaths minus these are deaths to creeps, towers, Roshan or denies. In a few rows the log holds one kill more than the hero's death count."
       - name: trade_deaths
         description: "Of hero_kill_deaths, those followed within 60 seconds (after the death, up to 60 s) by the player's side taking an enemy tower or killing Roshan."
       - name: trade_death_share
@@ -283,6 +291,8 @@ models:
         description: "Display name of the hero."
       - name: position
         description: "Derived role 1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support (fact_player_match.position); null for jungle, roaming or unparsed lanes."
+      - name: position_name
+        description: "The position as a word: carry, mid, offlane, soft support or hard support; null when position is null."
       - name: is_win
         description: "True when the player's side won."
       - name: observers_placed
@@ -294,7 +304,7 @@ models:
       - name: sentries_before_10
         description: "Sentry wards placed before minute 10 (pre-horn wards included)."
       - name: runes_taken
-        description: "Runes taken, every type."
+        description: "Runes taken, every type in the rune log, water and wisdom runes included. OpenDota's rune_pickups on the match summary (fact_player_match) counts bounty and power runes only."
       - name: bounty_runes
         description: "Bounty runes taken."
       - name: power_runes
@@ -352,6 +362,10 @@ models:
       - name: position
         description: "Derived role 1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support."
         tests: [not_null]
+      - name: position_name
+        description: "The position as a word: carry, mid, offlane, soft support or hard support."
+        tests:
+          - accepted_values: {arguments: {values: [carry, mid, offlane, soft support, hard support]}}
       - name: games
         description: "Player-games in the group: the sample size. Rankings keep only rows with at least 10 (the playstyle_minimum_games definition)."
       - name: wins
@@ -438,6 +452,8 @@ models:
         description: "Name on the player's latest match of the patch: the pro name when OpenDota lists the account as a pro, else the Steam persona."
       - name: main_position
         description: "The position (1-5) the player played most on the patch; null when no game had a derived position."
+      - name: main_position_name
+        description: "main_position as a word: carry, mid, offlane, soft support or hard support."
       - name: games
         description: "Player-games in the group: the sample size. Rankings keep only rows with at least 10 (the playstyle_minimum_games definition)."
       - name: wins
