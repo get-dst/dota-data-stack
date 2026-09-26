@@ -7,17 +7,20 @@ a receipt on every answer.
 
 ![OpenDota → dlt → MotherDuck (raw → dbt → marts) → dst → your AI](docs/architecture.svg)
 
-On 26 September 2026 the warehouse held 22,890 professional matches, a full year back to
-26 September 2025, each with its complete detail: 9.2 million item purchases, every pick
-and ban, every objective, the per-minute gold and experience curves, and what happened
-inside the match (166,677 teamfights, with the damage, wards, runes and buybacks around
-them). That is 228,900 player rows, next to 41,859 public matchmaking games with their
-rank bracket. A GitHub Actions job adds whatever is new every hour.
+On 26 September 2026 the warehouse held a full year of OpenDota's professional feed,
+22,896 matches back to 26 September 2025, each with its complete detail: every pick and
+ban, every objective, the per-minute gold and experience curves, the item purchases, and
+what happened inside the match (teamfights, with the damage, wards, runes and buybacks
+around them). The pro lenses count the 9,269 of those matches played in leagues OpenDota
+rates premium or professional: 92,690 player rows, 58,454 teamfights, 4.2 million item
+purchases. Tier-3 leagues, which OpenDota rates excluded, stay in the raw tables. Next to
+them sit 52,263 public matchmaking games with their rank bracket. A scheduled job adds
+whatever is new.
 
 ## Ask it
 
-Real questions against the live warehouse, answered by the lenses in `serve/`, verbatim
-except where cut with `…`.
+Real questions against the live warehouse, answered by the lenses in `serve/` on dst
+0.5.8, verbatim except where cut with `…`.
 
 **A typed answer.** Every slot of the query (metric, filters, bracket) was picked from the
 declared semantic layer, so the SQL is compiled, not written by a model.
@@ -25,21 +28,23 @@ declared semantic layer, so the SQL is compiled, not written by a model.
 ```
 pub_meta › What is Anti-Mage's win rate at Divine?
 
-Anti-Mage's hero win rate in the Divine bracket is 0.47085201793721976 (wins divided by
-games, ranked All Pick only, per the hero_win_rate definition). This covers only a sample
-of public matchmaking games, ranked All Pick — Turbo and unranked games are excluded.
+Anti-Mage's win rate in the Divine bracket is 48.9% (per the hero_win_rate definition:
+wins ÷ games, shown only where games ≥ 20). This covers ranked All Pick only, from a
+sample of public matchmaking games (the newest matches OpenDota lists at each load); Turbo
+and unranked games are excluded.
 
 status ok · typed · tag declared · confidence verified · data as of 2026-09-26
-SELECT pub_hero_stats.bracket_name AS bracket_name,
-       CAST(SUM(pub_hero_stats.wins) AS DOUBLE) / NULLIF(SUM(pub_hero_stats.games), 0) AS hero_win_rate
+SELECT CASE WHEN (SUM(pub_hero_stats.games)) >= 20
+            THEN (SUM(pub_hero_stats.wins)) * 1.0 / NULLIF((SUM(pub_hero_stats.games)), 0)
+       END AS hero_win_rate
 FROM marts.pub_hero_stats AS pub_hero_stats
 WHERE pub_hero_stats.bracket_name = 'Divine' AND pub_hero_stats.hero_name = 'Anti-Mage'
   AND (pub_hero_stats.game_type = 'ranked_all_pick')
-GROUP BY pub_hero_stats.bracket_name
 ```
 
-The `game_type = 'ranked_all_pick'` line is not in the question. The table declares that
-population, so every query over it carries the filter.
+Two lines of that SQL are not in the question. The table declares its population, so every
+query over it carries the `game_type` filter, and the metric carries its own games floor,
+so a rate over a handful of games comes back empty instead of topping a ranking.
 
 **A ranking over a governed term.** "The current patch" is a declared fact from the
 patches table, not a guess from match dates.
@@ -47,10 +52,9 @@ patches table, not a guess from match dates.
 ```
 drafts › Which hero is contested most on the current patch?
 
-Pangolier is the most-contested hero on the current patch, with 4,451 contests, ahead of
-Rubick (4,433) … These figures cover only Captains Mode professional matches whose draft
-OpenDota recorded, so they exclude pro matches in other game modes or without a recorded
-draft.
+Puck is contested most on the current patch, with 2,068 contests … This covers only
+Captains Mode professional matches in leagues OpenDota rates premium or professional whose
+draft OpenDota recorded, so it does not represent all matches.
 
 status ok · typed · tag declared · confidence verified · data as of 2026-09-26
 ```
@@ -61,57 +65,80 @@ ran as written.
 ```
 pro_meta › How often does the side that kills Roshan first win on the current patch?
 
-On the current patch, the side that takes the first Roshan wins 0.7788990825688074 of the
-time. This covers only Professional matches in the loaded window in which a side actually
-took the objective; matches with no Roshan kill or no objective log are excluded.
+On the current patch, the side that takes the first Roshan wins 75.7% of the time … This
+covers professional matches only (leagues OpenDota rates premium or professional, within
+the loaded window), and only matches in which a side actually took that objective.
 
-status ok · typed · tag certified · confidence verified · data as of 2026-09-25
+status ok · typed · tag certified · confidence verified · data as of 2026-09-26
 ```
 
-**A question that does not type, answered and disclosed.** No declared metric counts a
-team's matches, so the lens falls back to model-written SQL and tags the answer inferred,
-with the inferred expression on the receipt.
+**The team grain.** A team's record is counted on a table with one row per team per match,
+not on the player rows, where every match appears five times.
 
 ```
 pro_meta › How many matches did Team Spirit play?
 
-Team Spirit played 275 matches, counting distinct match IDs in the loaded window — which
-covers only every player in every professional match in that window, so this is not a
-complete career total.
+Team Spirit played 275 matches, counting only both sides of professional matches in the
+loaded window in leagues OpenDota rates premium or professional …
 
-status ok · untyped · tag inferred · data as of 2026-09-25
-SELECT COUNT(DISTINCT player_performances.match_id) AS matches
-FROM marts.fact_player_match AS player_performances
-WHERE player_performances.team_name = 'Team Spirit'
-resolution: inferred (inferred: COUNT(DISTINCT player_performances.match_id))
+status ok · typed · tag declared · confidence verified · data as of 2026-09-26
+SELECT COUNT(team_matches.match_id) AS matches_played
+FROM marts.fact_team_match AS team_matches
+WHERE team_matches.team_name = 'Team Spirit'
 ```
 
 **A concept with no column.** "Wins the lane" is a governed term (400 gold ahead at minute
-10, laners matched by map lane), so the answer carries the rule, the position filter and
-the games floor.
+10, laners matched by map lane), "offlaner" maps to a stored position, and the answer
+carries the rule, the filter and the games floor.
 
 ```
-playstyle › Which carry heroes win their lane most often on the current patch?
+playstyle › Which offlaners absorb the most damage from enemy heroes per minute?
 
-Kunkka wins his lane most often among carry heroes on the current patch, with a lane win
-rate of 0.5789473684210527 (lanes won divided by lane games), ahead of Leshrac
-(0.5384615384615384), Marci (0.52) and Void Spirit (0.5). These figures cover only
-Player-games in parsed professional matches in the loaded window, filtered to the carry
-position and to heroes with at least 10 games …
+Among offlane heroes meeting the 10-game threshold … Wraith King leads at 886.1, followed
+by Undying (847), Ogre Magi (808.1), Timbersaw (732.1) and Tiny (726.2) … These figures
+cover only Player-games in parsed professional matches in leagues OpenDota rates premium
+or professional …
 
-status ok · typed · tag declared · confidence partial · data as of 2026-09-25
+status ok · typed · tag declared · confidence verified · data as of 2026-09-26
 ```
 
-**A refusal.** The public sample is ranked All Pick only. A question about Turbo is
-refused before any query runs, with the reason, instead of returning an empty ranking.
+**A question that does not type, answered and disclosed.** Two counts side by side for
+one hero is a shape the typed path does not build, so the lens falls back to model-written
+SQL and says so on the answer.
+
+```
+drafts › Is Pangolier picked or banned more?
+
+For Pangolier, bans outnumber picks: 1,780 bans versus 1,382 picks. This covers only
+Captains Mode professional matches in leagues OpenDota rates premium or professional whose
+draft OpenDota recorded.
+
+status ok · untyped · confidence partial · data as of 2026-09-26
+UNTYPED: served by raw-SQL generation — the question did not type: Ranked by which end —
+highest or lowest first?
+```
+
+**Refusals.** The public sample is ranked All Pick only, and the pro lenses leave out
+tier-3 leagues. A question about either is refused before any query runs, with the reason,
+instead of returning an empty ranking or a blended one.
 
 ```
 pub_meta › What is the best hero in Turbo?
 
-I can't answer this from this lens's data: Turbo games are not covered by this model — the
-public hero tables (pub_hero_stats, pub_matchups, pub_duos) are restricted to ranked All
-Pick only (required filter game_type = 'ranked_all_pick'), so hero performance data for
-Turbo does not exist here.
+I can't answer this from this lens's data: Turbo hero data is outside this model's scope —
+every public-sample table is governed to ranked All Pick only (required filter game_type =
+'ranked_all_pick'; the population text states Turbo and unranked games are excluded) …
+
+status refused
+```
+
+```
+pro_meta › How did teams do in Destiny League?
+
+this lens cannot compute tier-3 leagues — professional matches here are those in leagues
+OpenDota rates premium or professional; matches in leagues it rates excluded, its tier-3
+leagues such as Destiny League, Dota 2 Space League and Ultras Dota Pro League 2025-26,
+stay in the raw tables and reach no table in this lens …
 
 status refused
 ```
@@ -125,15 +152,23 @@ Rows merge on their keys, so a re-run changes nothing it already loaded. Only th
 match-detail calls need an OpenDota key. Before buying details, each run reads which
 matches the warehouse already holds and skips them; every paid call is counted in an
 `api_usage` table and a monthly ceiling (`DOTA_PAID_CALLS_MONTH`) stops the run when
-reached. `.github/workflows/load.yml` runs load and transform every hour.
+reached. List calls stay on the free tier and stop at the first page the warehouse already
+holds, so a routine run pays for new matches only. If OpenDota is down, a run loads what it
+fetched, leaves the dimension tables as they were, and fails. The scheduled run is a
+Cloud Run job (`deploy/loader/`); `.github/workflows/load.yml` does the same load and
+transform on demand.
 
-**dbt** (`transform/`) turns the raw tables into 22 staging views and 47 marts, in five
+**dbt** (`transform/`) turns the raw tables into 22 staging views and 48 marts, in five
 areas:
 
-- **Matches and heroes**: one row per pro match, one per player per match with a derived
-  position, heroes per patch and per position, patch-over-patch trends, team head-to-head,
-  league standings, patch notes; and over the public sample, hero stats by rank bracket,
-  matchups, duos, daily trends, and win rate by game length.
+Every pro model reads the same matches: one filter in `stg_leagues` keeps the leagues
+OpenDota rates premium or professional, and a test fails if a tier-3 match reaches a pro
+mart.
+
+- **Matches and heroes**: one row per pro match, one per team per match, one per player per
+  match with a derived position, heroes per patch and per position, patch-over-patch
+  trends, team head-to-head, league standings, patch notes; and over the public sample,
+  hero stats by rank bracket, matchups, duos, daily trends, and win rate by game length.
 - **Itemization** (`marts/items/`): a major-item definition (a completed item of at least
   2,000 gold, or one with its own active), the first, second and third major item per hero
   with their timings, win rate by purchase-minute window, starting items and whole starting
@@ -151,8 +186,10 @@ areas:
   Roshan, kept as two numbers), wards, runes and buybacks, rolled up per hero and
   position and per player, by patch.
 
-88 tests pin the grains, the draft shape and the behaviour sums. Every model and all 785
-mart columns are documented, and `persist_docs` writes those descriptions into the warehouse as comments.
+232 tests pin the grains, every fact-to-dimension reference, the league tier, the draft
+shape and the behaviour sums, and two unit tests pin the position derivation and the
+400-gold lane band on fixed inputs. Every model and all 811 mart columns are documented,
+and `persist_docs` writes those descriptions into the warehouse as comments.
 Match dates are the UTC date, pinned in SQL, whoever runs dbt.
 
 **MotherDuck** holds both the raw tables and the marts in one database, `md:dota`. dlt and
@@ -161,11 +198,12 @@ so nothing served can write. Switching dlt and dbt between MotherDuck, a local D
 file and Postgres is one variable, `DSTACK_TARGET`; dst's side is the `warehouse` block in
 `serve/dst.yaml`.
 
-**dst** (`serve/`) declares what the marts mean: 46 entities with their metrics, the 97
+**dst** (`serve/`) declares what the marts mean: 47 entities with their metrics, the 101
 joins between them, 34 governed terms (bracket, position, major item, first pick, counter,
 comeback, lane outcome, farm share, fight participation, space created as a declared
 proxy, the current patch, the minimum-games rule), what each lens must refuse (MMR, prize
-money, personal match history, items in pubs, what players said or intended), and which
+money, personal match history, items in pubs, tier-3 leagues, what players said or
+intended), and which
 end of a metric is the better one. Six lenses, each the one home for its kind of question:
 
 | lens | answers |
@@ -186,7 +224,7 @@ dimensions (127 heroes, every team), and each table's freshness.
 
 `.github/workflows/dst-test.yml` runs on every pull request that touches `serve/` or
 `transform/`: it starts a throwaway dst server, applies the semantic layer, and runs
-every lens's test suite against the live warehouse (123 checks across the six lenses).
+every lens's test suite against the live warehouse (131 checks across the six lenses).
 What an enthusiast asks must answer;
 what the data cannot carry must refuse by name. A failing case fails the pull request, and
 an empty suite fails it too, since a suite that ran nothing proved nothing.
@@ -221,15 +259,20 @@ suite got worse than the version it would replace.
 
 The data has the traps a semantic layer exists for. "Win rate" needs a denominator: a
 hero's games, a team's matches, or the Radiant side of every match, and the terms in
-`serve/semantic/definitions/` say which. "The current patch" is a declared fact from the
-patches table, not a guess from match dates. The public numbers come from a sample, and
-every answer over them says so. A rate over three games is noise, so the lenses carry a
-minimum-games rule and report rates with their counts. Turbo is a different game and never
-blends into the ranked meta. Pro matches carry no MMR and no prize money, and the public
-feed carries no items and no player identities, so each lens refuses those questions
-instead of approximating them. "Space" has no column anywhere, so the playstyle lens
-declares a proxy in two parts, never adds them, and says so on every answer. Each of those is a file in `serve/`, and each is a place
-where the answer would otherwise have been plausible and wrong.
+`serve/semantic/definitions/` say which. A team's record counted on player rows comes out
+five times too many matches, so team questions read a table with one row per team per
+match. "The current patch" is a declared fact from the patches table, not a guess from
+match dates. More than half of OpenDota's pro feed is tier-3 leagues, which would decide
+every "pro meta" answer if they blended in, so the pro lenses count premium and
+professional leagues only and say so. The public numbers come from a sample, and every
+answer over them says so. A rate over three games is noise, so every rate metric carries
+its games floor inside the SQL (20 games for a hero or a team, 10 for a position or a
+player). Turbo is a different game and never blends into the ranked meta. Pro matches
+carry no MMR and no prize money, and the public feed carries no items and no player
+identities, so each lens refuses those questions instead of approximating them. "Space"
+has no column anywhere, so the playstyle lens declares a proxy in two parts, never adds
+them, and says so on every answer. Each of those is a file in `serve/` or `transform/`, and
+each is a place where the answer would otherwise have been plausible and wrong.
 
 ## Layout
 
@@ -237,7 +280,8 @@ where the answer would otherwise have been plausible and wrong.
 load/opendota_pipeline.py        dlt: OpenDota → raw
 transform/                       dbt: raw → staging → marts, documented and tested
 serve/                           dst: dst.yaml, semantic/, lenses/, profiles/
-.github/workflows/load.yml       hourly load + transform
+.github/workflows/load.yml       load + transform on demand
+deploy/loader/                   the scheduled load, a Cloud Run job
 .github/workflows/dst-test.yml   dst tests on every pull request
 docs/architecture.svg            the diagram above
 ```
