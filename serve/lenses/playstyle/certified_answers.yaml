@@ -1,5 +1,5 @@
 # Certified answers: scalar shapes only, re-verified on every apply and by `dst test`.
-- question: What share of the side's gold has a carry earned at 10 minutes, on average?
+- question: What share of the side's gold has a position 1 player earned at 10 minutes, on average?
   sql: |
     SELECT SUM(farm_share_10_total) / SUM(farm_games_10) AS farm_share_10
     FROM marts.hero_playstyle AS hero_playstyle

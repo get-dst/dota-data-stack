@@ -42,3 +42,6 @@
 - question: Which support has the best vision score?
   expect: refuse
   status: approved
+- question: What share of the side's gold has a carry earned at 10 minutes, on average?
+  expect: answer
+  status: approved
