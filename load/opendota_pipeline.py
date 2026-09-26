@@ -208,7 +208,14 @@ def pro_matches(since_days: int) -> Iterator[list[dict[str, Any]]]:
     cutoff = time.time() - since_days * 86400
     before: int | None = None
     while True:
-        page = get("proMatches", **({"less_than_match_id": before} if before else {}))
+        try:
+            page = get("proMatches", **({"less_than_match_id": before} if before else {}))
+        except Unavailable as exc:
+            # OpenDota down mid-listing: keep what was listed (the next run lists again)
+            # and let the run finish loading, then fail it loud at the end.
+            _SHORT.append(f"match list cut short: {exc}")
+            print(f"pro_matches: {_SHORT[-1]}", file=sys.stderr, flush=True)
+            return
         if not page:
             return
         keep = [m for m in page if m["start_time"] >= cutoff]
@@ -217,6 +224,10 @@ def pro_matches(since_days: int) -> Iterator[list[dict[str, Any]]]:
         if len(keep) < len(page) or len(page) < 100:
             return
         before = page[-1]["match_id"]
+
+
+# Listing failures in this run: the run still lands what it fetched, then exits non-zero.
+_SHORT: list[str] = []
 
 
 # Detail calls spent in THIS process — the per-run budget. The fetched-id set is
@@ -235,7 +246,12 @@ def public_matches(pages: int) -> Iterator[list[dict[str, Any]]]:
     "a sample", never "all public matches"."""
     before: int | None = None
     for _ in range(pages):
-        page = get("publicMatches", **({"less_than_match_id": before} if before else {}))
+        try:
+            page = get("publicMatches", **({"less_than_match_id": before} if before else {}))
+        except Unavailable as exc:
+            _SHORT.append(f"public match list cut short: {exc}")
+            print(f"public_matches: {_SHORT[-1]}", file=sys.stderr, flush=True)
+            return
         if not page:
             return
         done = [
@@ -430,25 +446,30 @@ def _missing_adv(pipeline: Any) -> list[int]:
 
 
 def _dimension(name: str, path: str, *, key: str) -> Any:
+    """A replaced dimension, fetched when the source is built. If OpenDota does not
+    answer, the table is left out of the run: a `replace` with no rows would empty it."""
+    try:
+        data = get(path)
+    except Unavailable as exc:
+        _SHORT.append(f"{name} not refreshed: {exc}")
+        print(f"{name}: {_SHORT[-1]}", file=sys.stderr, flush=True)
+        return None
+    if isinstance(data, dict):  # constants come keyed by id
+        data = [{key: k, **(v if isinstance(v, dict) else {"value": v})} for k, v in data.items()]
+
     @dlt.resource(name=name, primary_key=key, write_disposition="replace")
     def rows() -> Iterator[list[dict[str, Any]]]:
-        data = get(path)
-        if isinstance(data, dict):  # constants come keyed by id
-            data = [
-                {key: k, **(v if isinstance(v, dict) else {"value": v})} for k, v in data.items()
-            ]
         yield data
 
     return rows
 
 
 @dlt.resource(name="patch_notes", write_disposition="replace")
-def patch_notes() -> Iterator[list[dict[str, Any]]]:
+def patch_notes(data: dict[str, Any]) -> Iterator[list[dict[str, Any]]]:
     """OpenDota's patch notes, one row per line: patch, section (general | items |
     heroes), subject (a hero or item key, or 'general'), the ability or heading the
     line sits under when there is one, and the note. Hero notes nest one level
     (hero -> ability -> lines); the flattening keeps that as ``heading``."""
-    data = get("constants/patchnotes")
     rows: list[dict[str, Any]] = []
 
     def lines(node: Any, heading: str | None) -> Iterator[tuple[str | None, str]]:
@@ -491,7 +512,7 @@ def opendota(
     if refetch is not None:  # the one-off backfill fetches nothing else
         return [refetch_missing_adv(refetch, max_calls)]
     matches = pro_matches(since_days)
-    return [
+    resources = [
         matches,
         matches | match_details(max_calls),
         public_matches(public_pages),
@@ -501,10 +522,21 @@ def opendota(
         _dimension("leagues", "leagues", key="leagueid"),
         _dimension("teams", "teams", key="team_id"),
         _dimension("pro_players", "proPlayers", key="account_id"),
-        patch_notes(),
+        _patch_notes(),
         _dimension("game_modes", "constants/game_mode", key="id"),
         _dimension("lobby_types", "constants/lobby_type", key="id"),
     ]
+    return [r for r in resources if r is not None]
+
+
+def _patch_notes() -> Any:
+    """Patch notes are replaced like a dimension, so a failed fetch leaves them out."""
+    try:
+        return patch_notes(get("constants/patchnotes"))
+    except Unavailable as exc:
+        _SHORT.append(f"patch_notes not refreshed: {exc}")
+        print(f"patch_notes: {_SHORT[-1]}", file=sys.stderr, flush=True)
+        return None
 
 
 def destination() -> Any:
@@ -598,6 +630,10 @@ def main() -> None:
                 print(f"{t}: {n}")
             except Exception as exc:  # table absent on a first partial run
                 print(f"{t}: - ({str(exc)[:60]})")
+    if _SHORT:
+        # What was fetched is loaded; the run still fails, so an outage is never green.
+        print("run incomplete: " + "; ".join(_SHORT))
+        sys.exit(1)
 
 
 if __name__ == "__main__":
