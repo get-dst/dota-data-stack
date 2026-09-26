@@ -1,6 +1,6 @@
 -- One row per player per minute of a parsed pro match: gold earned, experience and last
 -- hits so far. OpenDota ships each as an array with one value a minute (list index =
--- minute, 0 = the horn; the times array is index × 60); the starting gold is not in it.
+-- minute, 0 = the horn); the starting gold is not in it.
 select
     m.match_id,
     p.player_slot,

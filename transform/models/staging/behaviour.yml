@@ -23,8 +23,6 @@ sources:
         description: A player's experience at each minute (value; _dlt_list_idx = minute).
       - name: match_details__players__lh_t
         description: A player's last hits so far at each minute (value; _dlt_list_idx = minute).
-      - name: match_details__players__times
-        description: The game second of each per-minute sample (value = _dlt_list_idx × 60).
       - name: match_details__players__kills_log
         description: Each hero kill by the player (time in game seconds, key = the victim's hero key, smoke).
       - name: match_details__players__damage_taken
