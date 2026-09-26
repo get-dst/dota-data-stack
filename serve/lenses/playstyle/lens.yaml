@@ -1,0 +1,62 @@
+name: playstyle
+display_name: Dota 2 pro playstyle
+description: How pros play — fights, farm, lanes, space, vision — from OpenDota's parsed pro
+  matches.
+owner: dota-data-stack
+# Match times are UTC epochs; the business day is UTC.
+timezone: UTC
+# The loader runs hourly; two days without new matches is stale.
+stale_after_days: 2
+connections: [warehouse]
+select:
+  entities:
+    - hero_playstyle
+    - player_playstyle
+    - fights_per_match
+    - farm_per_match
+    - lanes_per_match
+    - space_per_match
+    - vision_per_match
+    - heroes
+    - patches
+    - teams
+    - pro_players
+    - pro_matches
+  definitions:
+    - playstyle_minimum_games
+    - player_minimum_games
+    - space_created
+    - fight_participation
+    - farm_share
+    - lane_outcome
+    - playstyle_position
+    - current_patch
+    - pro_match
+not_computable:
+  - measure: communication and shotcalling
+    aliases: [shotcalling, shot caller, shotcaller, captain calls, comms, voice comms, communication, leadership, in-game leader, who makes the calls, drafting captain]
+    reason: the match record holds what happened in the game, not what players said or who led
+  - measure: intent and decision quality
+    aliases: [intent, intention, decision making, decision quality, game sense, why did they, mistakes, misplays, good decisions, bad decisions, mindset, tilt]
+    reason: replays record actions, not the reasons behind them; no column can say whether a play was a good decision
+  - measure: public matchmaking playstyle
+    aliases: [public matches, pubs, ranked games, matchmaking, my games, my bracket, Divine pubs, Immortal pubs, Turbo]
+    reason: the parsed per-match detail here comes only from professional matches; the public sample carries no fights, lanes, wards or runes
+  - measure: MMR
+    aliases: [rank, medal, skill bracket, matchmaking rating]
+    reason: professional matches carry no matchmaking rating
+  - measure: vision coverage and dewards
+    aliases: [vision score, ward coverage, map vision, wards destroyed, dewards, dewarding, ward lifetime, how long wards lived]
+    reason: the loaded ward logs record where and when a ward was placed, not how long it lived, what it saw, or which enemy wards were destroyed
+access:
+  allow:
+    - {group: demo}
+    - {group: everyone}
+rate_limit:
+  per_caller_rpm: 60
+  per_caller_rpd: 50
+
+eval_gate: block
+
+# Typed first; a question that does not type falls to raw SQL, disclosed UNTYPED.
+untyped_fallback: true

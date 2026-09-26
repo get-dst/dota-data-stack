@@ -1,0 +1,17 @@
+# Certified answers: scalar shapes only, re-verified on every apply and by `dst test`.
+- question: What share of the side's gold has a carry earned at 10 minutes, on average?
+  sql: |
+    SELECT SUM(farm_share_10_total) / SUM(farm_games_10) AS farm_share_10
+    FROM marts.hero_playstyle AS hero_playstyle
+    WHERE position_name = 'carry'
+  status: active
+- question: How many teamfights does a parsed pro match have on average?
+  sql: |
+    SELECT AVG(match_fights) AS avg_teamfights
+    FROM marts.player_fight_stats AS fights_per_match
+  status: active
+- question: What share of lanes are drawn at 10 minutes?
+  sql: |
+    SELECT SUM(lanes_drawn) * 1.0 / SUM(lane_games) AS lane_draw_rate
+    FROM marts.hero_playstyle AS hero_playstyle
+  status: active
