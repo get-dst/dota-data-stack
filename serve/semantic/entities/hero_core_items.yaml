@@ -17,8 +17,9 @@ source:
   connection: warehouse
   table: marts.hero_core_items
 primary_key: [patch_id, hero_id, item_slot, item_id]
-population: Professional matches in the loaded window that have a purchase log (unparsed
-  matches carry none and are left out); major items only.
+population: Professional matches in leagues OpenDota rates premium or professional, in the
+  loaded window, that have a purchase log (unparsed matches carry none and are left out);
+  major items only. Leagues it rates below professional are not counted.
 fields:
   - {name: patch_id, type: integer}
   - {name: patch_name, type: string}

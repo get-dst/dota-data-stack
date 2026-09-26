@@ -15,9 +15,10 @@ source:
   table: marts.draft_phases
 default_time_field: started_at
 primary_key: [match_id, draft_order]
-population: Picks and bans of professional matches played in Captains Mode whose draft
-  OpenDota recorded. Pro matches in other game modes (All Pick) and matches with no
-  recorded draft have no rows.
+population: Picks and bans of professional matches in leagues OpenDota rates premium or
+  professional, played in Captains Mode, whose draft OpenDota recorded. Pro matches in
+  other game modes (All Pick) and matches with no recorded draft have no rows. Leagues it
+  rates below professional are not counted.
 fields:
   - {name: match_id, type: integer}
   - {name: draft_order, type: integer, description: "Position in the draft sequence, 0-based."}

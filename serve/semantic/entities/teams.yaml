@@ -10,9 +10,12 @@ source:
   connection: warehouse
   table: marts.dim_team
 primary_key: [team_id]
-population: Teams in OpenDota's ranking (the top thousand by rating) and teams identified on a
-  loaded professional match. Most teams that play in the window are outside the ranking; for
-  them rating, tag and the all-time records are null and is_ranked is false.
+population: Teams in OpenDota's ranking (the top thousand by rating) and teams identified
+  on a loaded professional match in a league OpenDota rates premium or professional. Most
+  teams that play in the window are outside the ranking; for them rating, tag and the
+  all-time records are null and is_ranked is false. A team that is not ranked and played
+  only in leagues OpenDota rates below professional is not listed, and matches in those
+  leagues are not counted.
 fields:
   - {name: team_id, type: integer}
   - {name: team_name, type: string}

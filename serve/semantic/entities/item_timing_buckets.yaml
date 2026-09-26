@@ -16,8 +16,9 @@ source:
   connection: warehouse
   table: marts.item_timing_buckets
 primary_key: [patch_id, hero_id, item_id, bucket_order]
-population: First completions of major items in professional matches in the loaded window
-  that have a purchase log.
+population: First completions of major items in professional matches in leagues OpenDota
+  rates premium or professional, in the loaded window, that have a purchase log. Leagues
+  it rates below professional are not counted.
 fields:
   - {name: patch_id, type: integer}
   - {name: patch_name, type: string}

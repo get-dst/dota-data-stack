@@ -51,6 +51,14 @@
 - question: Which team has the best record in PGL Wallachia?
   expect: answer
   status: approved
+# Pro matches are those in leagues OpenDota rates premium or professional; the tier is a
+# dimension, and a league it rates excluded refuses by name.
+- question: What is Team Spirit's win rate in premium tournaments?
+  expect: answer
+  status: approved
+- question: How did teams do in Destiny League?
+  expect: refuse
+  status: approved
 - question: What changed for Pudge in the latest patch?
   expect: answer
   status: approved

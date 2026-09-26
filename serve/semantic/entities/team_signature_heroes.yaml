@@ -14,8 +14,9 @@ source:
   connection: warehouse
   table: marts.team_signature_heroes
 primary_key: [team_id, patch_id, hero_id]
-population: Professional matches in which OpenDota tied the side to a team; only heroes
-  the team played at least once on the patch have a row.
+population: Professional matches in leagues OpenDota rates premium or professional in
+  which OpenDota tied the side to a team; only heroes the team played at least once on the
+  patch have a row. Leagues it rates below professional are not counted.
 fields:
   - {name: team_id, type: integer}
   - {name: team_name, type: string}

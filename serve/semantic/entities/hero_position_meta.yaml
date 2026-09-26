@@ -14,8 +14,9 @@ source:
   connection: warehouse
   table: marts.hero_position_meta
 primary_key: [patch_id, hero_id, position]
-population: Professional player-games in the loaded window with a derived position (the
-  position definition); roaming and unparsed lanes are left out.
+population: Professional player-games in the loaded window, in leagues OpenDota rates
+  premium or professional, with a derived position (the position definition); roaming and
+  unparsed lanes are left out. Leagues it rates below professional are not counted.
 fields:
   - {name: patch_id, type: integer}
   - {name: patch_name, type: string}

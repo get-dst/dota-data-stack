@@ -13,8 +13,9 @@ source:
   connection: warehouse
   table: marts.hero_item_timings
 primary_key: [patch_id, hero_id, item_id]
-population: First purchases in professional matches in the loaded window, items of 1 000
-  gold or more, timed from the horn; pre-game purchases are excluded.
+population: First purchases in professional matches in leagues OpenDota rates premium or
+  professional, in the loaded window, items of 1 000 gold or more, timed from the horn;
+  pre-game purchases are excluded. Leagues it rates below professional are not counted.
 fields:
   - {name: patch_id, type: integer}
   - {name: patch_name, type: string}

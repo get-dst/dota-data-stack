@@ -12,8 +12,10 @@ source:
   connection: warehouse
   table: marts.objective_win_rates
 primary_key: [patch_id, objective]
-population: Professional matches in the loaded window in which a side took the objective;
-  matches without a Roshan kill, or without an objective log, are not counted for it.
+population: Professional matches in leagues OpenDota rates premium or professional, in the
+  loaded window, in which a side took the objective; matches without a Roshan kill, or
+  without an objective log, are not counted for it. Leagues it rates below professional
+  are not counted.
 fields:
   - {name: patch_id, type: integer}
   - {name: patch_name, type: string}

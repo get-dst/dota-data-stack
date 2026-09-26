@@ -13,8 +13,9 @@ source:
   table: marts.fact_draft
 default_time_field: started_at
 primary_key: [match_id, draft_order]
-population: Picks and bans of professional matches in the loaded window. Matches whose
-  draft OpenDota has not recorded contribute no rows.
+population: Picks and bans of professional matches in leagues OpenDota rates premium or
+  professional, in the loaded window. Matches whose draft OpenDota has not recorded
+  contribute no rows. Leagues it rates below professional are not counted.
 fields:
   - {name: match_id, type: integer}
   - {name: draft_order, type: integer, description: "Position in the draft sequence, 0-based."}

@@ -14,8 +14,9 @@ source:
   table: marts.fact_match
 default_time_field: started_at
 primary_key: [match_id]
-population: Professional matches only, as listed by OpenDota's pro-match feed, for the
-  loaded window. No public matchmaking games.
+population: Professional matches only, in leagues OpenDota rates premium or professional,
+  as listed by OpenDota's pro-match feed, for the loaded window. Leagues it rates below
+  professional are not counted. No public matchmaking games.
 fields:
   - {name: match_id, type: integer, description: OpenDota match id.}
   - {name: started_at, type: timestamp, description: "Match start, UTC."}
@@ -34,7 +35,7 @@ fields:
   - {name: total_kills, type: integer, description: Kills by both sides combined.}
   - {name: league_id, type: integer}
   - {name: league_name, type: string}
-  - {name: league_tier, type: string, description: "OpenDota tier: professional, premium, amateur, excluded."}
+  - {name: league_tier, type: string, description: "OpenDota tier of the league: premium or professional (premium is the top tier)."}
   - {name: patch_id, type: integer}
   - {name: patch_name, type: string, description: "Game version the match was played on, e.g. 7.41."}
   - {name: game_mode_id, type: integer}

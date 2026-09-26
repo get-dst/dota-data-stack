@@ -16,9 +16,10 @@ source:
   connection: warehouse
   table: marts.hero_draft_stats
 primary_key: [patch_id, hero_id]
-population: Captains Mode professional matches whose draft OpenDota recorded. A pro match
-  in another game mode, or without a recorded draft, counts in neither a hero's picks nor
-  drafted_matches.
+population: Captains Mode professional matches in leagues OpenDota rates premium or
+  professional whose draft OpenDota recorded. A pro match in another game mode, or without
+  a recorded draft, counts in neither a hero's picks nor drafted_matches. Leagues it rates
+  below professional are not counted.
 fields:
   - {name: patch_id, type: integer}
   - {name: patch_name, type: string}
