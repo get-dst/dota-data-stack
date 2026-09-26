@@ -5,9 +5,6 @@
 - question: Which carries have the best win rate in pro matches this patch?
   expect: answer
   status: approved
-- question: Which supports place the most wards per game?
-  expect: answer
-  status: approved
 - question: Which pro players have the highest KDA this patch?
   expect: answer
   status: approved
@@ -20,3 +17,8 @@
 - question: How much prize money has Yatoro earned?
   expect: refuse
   status: approved
+# Wards, runes and the rest of how a player plays live in the playstyle lens now (absence
+# never deletes a stored case; retiring it takes it out of this lens's gate).
+- question: Which supports place the most wards per game?
+  expect: answer
+  status: retired

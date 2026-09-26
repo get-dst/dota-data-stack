@@ -1,0 +1,47 @@
+# Behavioral expectations: what an enthusiast asks about how pros play must answer; what
+# the data cannot carry must refuse, by name.
+- question: Which heroes have the highest fight participation as a position 4?
+  expect: answer
+  status: approved
+- question: Which carry heroes win their lane most often on the current patch?
+  expect: answer
+  status: approved
+- question: Which heroes create the most space?
+  expect: answer
+  status: approved
+- question: What share of the team's gold does each position take at 10 minutes?
+  expect: answer
+  status: approved
+- question: Which hard supports place the most observer wards per game?
+  expect: answer
+  status: approved
+- question: Which pro player has the best lane win rate on the current patch?
+  expect: answer
+  status: approved
+- question: Which offlaners absorb the most damage from enemy heroes per minute?
+  expect: answer
+  status: approved
+- question: Which team places the most observer wards per game?
+  expect: answer
+  status: approved
+- question: Which carries die least outside of teamfights?
+  expect: answer
+  status: approved
+- question: How many power runes do mid players take per game?
+  expect: answer
+  status: approved
+- question: How often does Anti-Mage win his lane?
+  expect: answer
+  status: approved
+- question: Who is the best shotcaller in professional Dota?
+  expect: refuse
+  status: approved
+- question: Which carry wins the lane most often in Divine pubs?
+  expect: refuse
+  status: approved
+- question: Which support has the best vision score?
+  expect: refuse
+  status: approved
+- question: What share of the side's gold has a carry earned at 10 minutes, on average?
+  expect: answer
+  status: approved

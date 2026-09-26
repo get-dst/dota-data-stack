@@ -1,0 +1,4 @@
+left: fights_per_match
+right: teams
+on: fights_per_match.team_id = teams.team_id
+relationship: many_to_one

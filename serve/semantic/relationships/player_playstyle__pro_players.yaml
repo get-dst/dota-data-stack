@@ -1,0 +1,4 @@
+left: player_playstyle
+right: pro_players
+on: player_playstyle.account_id = pro_players.account_id
+relationship: many_to_one

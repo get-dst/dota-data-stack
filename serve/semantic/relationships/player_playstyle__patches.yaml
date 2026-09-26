@@ -1,0 +1,4 @@
+left: player_playstyle
+right: patches
+on: player_playstyle.patch_id = patches.patch_id
+relationship: many_to_one

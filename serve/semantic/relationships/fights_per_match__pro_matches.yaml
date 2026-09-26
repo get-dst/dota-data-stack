@@ -1,0 +1,4 @@
+left: fights_per_match
+right: pro_matches
+on: fights_per_match.match_id = pro_matches.match_id
+relationship: many_to_one

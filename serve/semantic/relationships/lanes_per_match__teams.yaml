@@ -1,0 +1,4 @@
+left: lanes_per_match
+right: teams
+on: lanes_per_match.team_id = teams.team_id
+relationship: many_to_one

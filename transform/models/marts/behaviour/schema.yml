@@ -1,0 +1,526 @@
+version: 2
+
+# Behaviour inside professional matches: fights, farm priority, laning, the space-created
+# proxy, vision and runes. Only parsed matches (OpenDota's per-minute curves and logs) have
+# rows. Same conventions as marts/schema.yml: every model and column described, match_date
+# is the UTC date, sides are Radiant (slots 0-4) and Dire (128-132).
+
+models:
+  - name: player_fight_stats
+    description: "One row per player per parsed pro match (a match with OpenDota's per-minute curves): how the player took part in the match's teamfights as OpenDota's parser finds them — a window in which several heroes die close together. A player is present in a fight when, inside its window, they damaged or healed a hero, died, or got a kill; the window is the parser's, so a hero hit anywhere on the map during it counts. Deaths are split into those inside a fight window and the rest."
+    columns:
+      - name: match_id
+        description: "OpenDota match id; joins fact_match.match_id."
+        tests: [not_null]
+      - name: player_slot
+        description: "0-4 Radiant, 128-132 Dire; with match_id the primary key."
+        tests: [not_null]
+      - name: is_radiant
+        description: "True on the Radiant side."
+      - name: team_id
+        description: "The team this player played for in the match; joins dim_team.team_id."
+      - name: team_name
+        description: "Team name as the match record carries it."
+      - name: account_id
+        description: "Steam account id (32-bit); joins dim_pro_player.account_id."
+      - name: player_name
+        description: "The pro's competitive name when OpenDota knows it, else the Steam persona name."
+      - name: hero_id
+        description: "Hero played; joins dim_hero.hero_id."
+      - name: hero_name
+        description: "Display name of the hero."
+      - name: position
+        description: "Derived role 1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support (fact_player_match.position); null for jungle, roaming or unparsed lanes."
+      - name: position_name
+        description: "The position as a word: carry, mid, offlane, soft support or hard support; null when position is null."
+      - name: is_win
+        description: "True when the player's side won."
+      - name: match_fights
+        description: "Teamfights OpenDota found in the match; 0 when it found none."
+      - name: fights_present
+        description: "Of those, fights in which the player damaged or healed a hero, died or got a kill."
+      - name: fight_participation
+        description: "fights_present / match_fights, 0-1; null when the match had no teamfight. Not OpenDota's teamfight_participation (kills plus assists over team kills), which is on fact_player_match."
+      - name: fight_kills
+        description: "Heroes the player killed inside fight windows."
+      - name: fight_deaths
+        description: "Player deaths inside fight windows."
+      - name: total_deaths
+        description: "All deaths of the player in the match."
+      - name: deaths_outside_fights
+        description: "total_deaths minus fight_deaths (not below 0): pick-offs, ganks and deaths to creeps or towers outside any fight."
+      - name: fight_buybacks
+        description: "Buybacks the player used inside fight windows."
+      - name: fight_damage
+        description: "Damage the player dealt to heroes inside fight windows, summed over the fights."
+      - name: fight_healing
+        description: "Healing the player did to heroes inside fight windows, summed."
+      - name: fight_gold_delta
+        description: "Gold the player gained over the fights' windows, summed (passive income included; negative = gold lost on death)."
+      - name: fight_xp_delta
+        description: "Experience the player gained over the fights' windows, summed."
+      - name: started_at
+        description: "Match start time (timestamp with time zone)."
+      - name: match_date
+        description: "UTC calendar date of started_at."
+      - name: patch_id
+        description: "Game version id; joins dim_patch.patch_id."
+      - name: patch_name
+        description: "Game version the match was played on, e.g. 7.41."
+      - name: league_id
+        description: "League or tournament id; joins dim_league.league_id."
+      - name: league_name
+        description: "League or tournament name as the match record carries it."
+      - name: duration_min
+        description: "Game length in minutes."
+
+  - name: farm_priority
+    description: "One row per player per parsed pro match that reached minute 10: the player's share of the side's farm — gold earned since the horn at minutes 10 and 20 (OpenDota's per-minute gold, starting gold not included) over the five players' total — last hits at 10 and 20, and the player's rank within the side by gold at 10 and by net worth at game end. A position's farm priority made measurable."
+    columns:
+      - name: match_id
+        description: "OpenDota match id; joins fact_match.match_id."
+        tests: [not_null]
+      - name: player_slot
+        description: "0-4 Radiant, 128-132 Dire; with match_id the primary key."
+        tests: [not_null]
+      - name: is_radiant
+        description: "True on the Radiant side."
+      - name: team_id
+        description: "The team this player played for in the match; joins dim_team.team_id."
+      - name: team_name
+        description: "Team name as the match record carries it."
+      - name: account_id
+        description: "Steam account id (32-bit); joins dim_pro_player.account_id."
+      - name: player_name
+        description: "The pro's competitive name when OpenDota knows it, else the Steam persona name."
+      - name: hero_id
+        description: "Hero played; joins dim_hero.hero_id."
+      - name: hero_name
+        description: "Display name of the hero."
+      - name: position
+        description: "Derived role 1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support (fact_player_match.position); null for jungle, roaming or unparsed lanes."
+      - name: position_name
+        description: "The position as a word: carry, mid, offlane, soft support or hard support; null when position is null."
+      - name: is_win
+        description: "True when the player's side won."
+      - name: gold_10
+        description: "Gold earned since the horn at minute 10."
+      - name: team_gold_10
+        description: "The side's five players' gold earned at minute 10."
+      - name: farm_share_10
+        description: "gold_10 / team_gold_10, 0-1; the five players of a side sum to 1."
+      - name: gold_20
+        description: "Gold earned since the horn at minute 20; null when the match ended before minute 20."
+      - name: team_gold_20
+        description: "The side's gold earned at minute 20; null when the match ended before minute 20."
+      - name: farm_share_20
+        description: "gold_20 / team_gold_20, 0-1; null when the match ended before minute 20."
+      - name: last_hits_10
+        description: "Last hits at minute 10."
+      - name: last_hits_20
+        description: "Last hits at minute 20; null when the match ended before minute 20."
+      - name: farm_rank_10
+        description: "Rank within the side by gold at minute 10, 1 = most (ties share a rank)."
+      - name: net_worth
+        description: "Net worth in gold at game end."
+      - name: networth_rank
+        description: "Rank within the side by net worth at game end, 1 = richest (ties share a rank)."
+      - name: started_at
+        description: "Match start time (timestamp with time zone)."
+      - name: match_date
+        description: "UTC calendar date of started_at."
+      - name: patch_id
+        description: "Game version id; joins dim_patch.patch_id."
+      - name: patch_name
+        description: "Game version the match was played on, e.g. 7.41."
+      - name: league_id
+        description: "League or tournament id; joins dim_league.league_id."
+      - name: league_name
+        description: "League or tournament name as the match record carries it."
+      - name: duration_min
+        description: "Game length in minutes."
+
+  - name: lane_outcomes
+    description: "One row per laning player per parsed pro match that reached minute 10: the lane at 10 minutes against the enemy heroes on the same stretch of map. `lane` is the map lane (1 bottom, 2 middle, 3 top), so Radiant's safe lane meets Dire's off lane in lane 1 and the reverse in lane 3; lane_role only names it relative to the side. Jungle and unparsed lanes, and a lane with no enemy hero in it, are left out. The lane result belongs to the side: both laners of a side share it."
+    columns:
+      - name: match_id
+        description: "OpenDota match id; joins fact_match.match_id."
+        tests: [not_null]
+      - name: player_slot
+        description: "0-4 Radiant, 128-132 Dire; with match_id the primary key."
+        tests: [not_null]
+      - name: is_radiant
+        description: "True on the Radiant side."
+      - name: team_id
+        description: "The team this player played for in the match; joins dim_team.team_id."
+      - name: team_name
+        description: "Team name as the match record carries it."
+      - name: account_id
+        description: "Steam account id (32-bit); joins dim_pro_player.account_id."
+      - name: player_name
+        description: "The pro's competitive name when OpenDota knows it, else the Steam persona name."
+      - name: hero_id
+        description: "Hero played; joins dim_hero.hero_id."
+      - name: hero_name
+        description: "Display name of the hero."
+      - name: position
+        description: "Derived role 1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support (fact_player_match.position); null for jungle, roaming or unparsed lanes."
+      - name: position_name
+        description: "The position as a word: carry, mid, offlane, soft support or hard support; null when position is null."
+      - name: is_win
+        description: "True when the player's side won."
+      - name: lane
+        description: "Map lane OpenDota parsed: 1 bottom, 2 middle, 3 top (bottom is Radiant's safe lane and Dire's off lane)."
+      - name: lane_role
+        description: "The lane relative to the player's side: 1 safe lane, 2 mid, 3 off lane."
+      - name: own_laners
+        description: "Heroes of the player's side in the lane, the player included."
+      - name: enemy_laners
+        description: "Enemy heroes in the same map lane."
+      - name: gold_10
+        description: "Gold earned since the horn at minute 10."
+      - name: last_hits_10
+        description: "Last hits at minute 10."
+      - name: xp_10
+        description: "Experience at minute 10."
+      - name: gold_diff_10
+        description: "The player's gold at 10 minus the enemy laners' average; positive = ahead."
+      - name: last_hits_diff_10
+        description: "The player's last hits at 10 minus the enemy laners' average."
+      - name: xp_diff_10
+        description: "The player's experience at 10 minus the enemy laners' average."
+      - name: lane_gold_diff_10
+        description: "The side's laners' average gold at 10 minus the enemy laners' average — averages, so a 2v1 lane compares heroes to heroes; positive = the side is ahead."
+      - name: lane_last_hits_diff_10
+        description: "The side's laners' average last hits at 10 minus the enemy laners' average."
+      - name: lane_result
+        tests:
+          - accepted_values: {arguments: {values: [won, drawn, lost]}}
+        description: "won, drawn or lost: won when lane_gold_diff_10 is above 400 gold, lost when below -400, drawn in between. 400 gold at minute 10 is about one kill bounty or two creep waves of last hits, and roughly an eighth of a laner's gold by then; a smaller gap is two even lanes trading, so it is drawn. The line is declared, not derived: a lane is decided by more than gold."
+      - name: started_at
+        description: "Match start time (timestamp with time zone)."
+      - name: match_date
+        description: "UTC calendar date of started_at."
+      - name: patch_id
+        description: "Game version id; joins dim_patch.patch_id."
+      - name: patch_name
+        description: "Game version the match was played on, e.g. 7.41."
+      - name: league_id
+        description: "League or tournament id; joins dim_league.league_id."
+      - name: league_name
+        description: "League or tournament name as the match record carries it."
+
+  - name: space_created
+    description: "One row per player per parsed pro match: a declared PROXY for space created, not a measure of it — space is what a hero's pressure lets the team do elsewhere, and the replay summary cannot see intent or map pressure. Two parts, kept separate because they measure different things. Attention absorbed: damage the hero took from the five enemy heroes, per game minute (self-damage, creeps, towers, Roshan, illusions and summons excluded). Trade deaths: the hero's deaths to an enemy hero after which the hero's side took an enemy tower or killed Roshan within 60 seconds. Deaths to creeps, towers or Roshan carry no time and are in neither count."
+    columns:
+      - name: match_id
+        description: "OpenDota match id; joins fact_match.match_id."
+        tests: [not_null]
+      - name: player_slot
+        description: "0-4 Radiant, 128-132 Dire; with match_id the primary key."
+        tests: [not_null]
+      - name: is_radiant
+        description: "True on the Radiant side."
+      - name: team_id
+        description: "The team this player played for in the match; joins dim_team.team_id."
+      - name: team_name
+        description: "Team name as the match record carries it."
+      - name: account_id
+        description: "Steam account id (32-bit); joins dim_pro_player.account_id."
+      - name: player_name
+        description: "The pro's competitive name when OpenDota knows it, else the Steam persona name."
+      - name: hero_id
+        description: "Hero played; joins dim_hero.hero_id."
+      - name: hero_name
+        description: "Display name of the hero."
+      - name: position
+        description: "Derived role 1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support (fact_player_match.position); null for jungle, roaming or unparsed lanes."
+      - name: position_name
+        description: "The position as a word: carry, mid, offlane, soft support or hard support; null when position is null."
+      - name: is_win
+        description: "True when the player's side won."
+      - name: duration_min
+        description: "Game length in minutes."
+      - name: enemy_hero_damage_taken
+        description: "Damage the hero took over the match from the five enemy heroes' own units (by hero key)."
+      - name: enemy_hero_damage_taken_per_min
+        description: "enemy_hero_damage_taken / duration_min: attention absorbed per game minute (per game minute, not per minute alive — death times from creeps or towers are not recorded)."
+      - name: total_deaths
+        description: "All deaths of the player in the match."
+      - name: hero_kill_deaths
+        description: "Deaths to an enemy hero, timed from the killer's kills log; total_deaths minus these are deaths to creeps, towers, Roshan or denies. In a few rows the log holds one kill more than the hero's death count."
+      - name: trade_deaths
+        description: "Of hero_kill_deaths, those followed within 60 seconds (after the death, up to 60 s) by the player's side taking an enemy tower or killing Roshan."
+      - name: trade_death_share
+        description: "trade_deaths / hero_kill_deaths, 0-1; null when the hero was never killed by a hero."
+      - name: started_at
+        description: "Match start time (timestamp with time zone)."
+      - name: match_date
+        description: "UTC calendar date of started_at."
+      - name: patch_id
+        description: "Game version id; joins dim_patch.patch_id."
+      - name: patch_name
+        description: "Game version the match was played on, e.g. 7.41."
+      - name: league_id
+        description: "League or tournament id; joins dim_league.league_id."
+      - name: league_name
+        description: "League or tournament name as the match record carries it."
+
+  - name: vision_and_runes
+    description: "One row per player per parsed pro match: observer and sentry wards placed (from the ward logs), runes taken by type (picked up or bottled, from the rune log), and buybacks with the first one's minute."
+    columns:
+      - name: match_id
+        description: "OpenDota match id; joins fact_match.match_id."
+        tests: [not_null]
+      - name: player_slot
+        description: "0-4 Radiant, 128-132 Dire; with match_id the primary key."
+        tests: [not_null]
+      - name: is_radiant
+        description: "True on the Radiant side."
+      - name: team_id
+        description: "The team this player played for in the match; joins dim_team.team_id."
+      - name: team_name
+        description: "Team name as the match record carries it."
+      - name: account_id
+        description: "Steam account id (32-bit); joins dim_pro_player.account_id."
+      - name: player_name
+        description: "The pro's competitive name when OpenDota knows it, else the Steam persona name."
+      - name: hero_id
+        description: "Hero played; joins dim_hero.hero_id."
+      - name: hero_name
+        description: "Display name of the hero."
+      - name: position
+        description: "Derived role 1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support (fact_player_match.position); null for jungle, roaming or unparsed lanes."
+      - name: position_name
+        description: "The position as a word: carry, mid, offlane, soft support or hard support; null when position is null."
+      - name: is_win
+        description: "True when the player's side won."
+      - name: observers_placed
+        description: "Observer wards placed."
+      - name: sentries_placed
+        description: "Sentry wards placed."
+      - name: observers_before_10
+        description: "Observer wards placed before minute 10 (pre-horn wards included)."
+      - name: sentries_before_10
+        description: "Sentry wards placed before minute 10 (pre-horn wards included)."
+      - name: runes_taken
+        description: "Runes taken, every type in the rune log, water and wisdom runes included. OpenDota's rune_pickups on the match summary (fact_player_match) counts bounty and power runes only."
+      - name: bounty_runes
+        description: "Bounty runes taken."
+      - name: power_runes
+        description: "Power runes taken: double damage, haste, illusion, invisibility, regeneration, arcane and shield."
+      - name: water_runes
+        description: "Water runes taken (the 2:00 and 4:00 river runes)."
+      - name: wisdom_runes
+        description: "Wisdom runes taken."
+      - name: double_damage_runes
+        description: "Double damage runes taken."
+      - name: haste_runes
+        description: "Haste runes taken."
+      - name: illusion_runes
+        description: "Illusion runes taken."
+      - name: invisibility_runes
+        description: "Invisibility runes taken."
+      - name: regeneration_runes
+        description: "Regeneration runes taken."
+      - name: arcane_runes
+        description: "Arcane runes taken."
+      - name: shield_runes
+        description: "Shield runes taken."
+      - name: buybacks
+        description: "Buybacks used."
+      - name: first_buyback_min
+        description: "Game minute of the first buyback; null without a buyback."
+      - name: duration_min
+        description: "Game length in minutes."
+      - name: started_at
+        description: "Match start time (timestamp with time zone)."
+      - name: match_date
+        description: "UTC calendar date of started_at."
+      - name: patch_id
+        description: "Game version id; joins dim_patch.patch_id."
+      - name: patch_name
+        description: "Game version the match was played on, e.g. 7.41."
+      - name: league_id
+        description: "League or tournament id; joins dim_league.league_id."
+      - name: league_name
+        description: "League or tournament name as the match record carries it."
+
+  - name: hero_playstyle
+    description: "Per patch, hero and position (1-5) over parsed pro matches: how the hero is played there — fight participation, farm share, lane results, the space_created proxy, vision — with sums and counts beside the rates so a rate can be re-derived across patches. Player-games without a derived position are left out. `games` is the sample; a ranking keeps rows with games >= 10."
+    columns:
+      - name: patch_id
+        description: "Game version id; joins dim_patch.patch_id; with hero_id and position the primary key."
+        tests: [not_null]
+      - name: patch_name
+        description: "Game version, e.g. 7.41."
+      - name: hero_id
+        description: "Hero; joins dim_hero.hero_id."
+        tests: [not_null]
+      - name: hero_name
+        description: "Display name of the hero."
+      - name: position
+        description: "Derived role 1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support."
+        tests: [not_null]
+      - name: position_name
+        description: "The position as a word: carry, mid, offlane, soft support or hard support."
+        tests:
+          - accepted_values: {arguments: {values: [carry, mid, offlane, soft support, hard support]}}
+      - name: games
+        description: "Player-games in the group: the sample size. Rankings keep only rows with at least 10 (the playstyle_minimum_games definition)."
+      - name: wins
+        description: "Of those, games won."
+      - name: game_minutes
+        description: "Minutes played, summed; the denominator of the per-minute rates."
+      - name: match_fights
+        description: "Teamfights in those games, summed."
+      - name: fights_present
+        description: "Teamfights the player was present in, summed."
+      - name: fight_participation
+        description: "fights_present / match_fights, 0-1."
+      - name: fight_kills
+        description: "Kills inside fight windows, summed."
+      - name: fight_deaths
+        description: "Deaths inside fight windows, summed."
+      - name: deaths_outside_fights
+        description: "Deaths outside fight windows, summed."
+      - name: fight_damage
+        description: "Hero damage dealt inside fight windows, summed."
+      - name: fight_gold_delta
+        description: "Gold gained over fight windows, summed."
+      - name: avg_fight_gold_delta
+        description: "fight_gold_delta per game."
+      - name: farm_games_10
+        description: "Games that reached minute 10 (the farm share at 10 denominator)."
+      - name: farm_share_10_total
+        description: "farm_share_10 summed over those games; divide by farm_games_10 for the average."
+      - name: avg_farm_share_10
+        description: "Average share of the side's gold at minute 10, 0-1."
+      - name: farm_games_20
+        description: "Games that reached minute 20."
+      - name: farm_share_20_total
+        description: "farm_share_20 summed; divide by farm_games_20 for the average."
+      - name: avg_farm_share_20
+        description: "Average share of the side's gold at minute 20, 0-1."
+      - name: last_hits_10_total
+        description: "Last hits at minute 10, summed."
+      - name: avg_last_hits_10
+        description: "Average last hits at minute 10."
+      - name: lane_games
+        description: "Games with a lane result (laned in lanes 1-3 against at least one enemy hero)."
+      - name: lanes_won
+        description: "Games whose lane was won (lane_outcomes.lane_result)."
+      - name: lanes_drawn
+        description: "Games whose lane was drawn."
+      - name: lanes_lost
+        description: "Games whose lane was lost."
+      - name: lane_win_rate
+        description: "lanes_won / lane_games, 0-1."
+      - name: avg_lane_gold_diff_10
+        description: "Average lane gold difference at minute 10 (the side's laners' average minus the enemy laners')."
+      - name: enemy_hero_damage_taken
+        description: "Damage taken from enemy heroes, summed (space_created)."
+      - name: enemy_hero_damage_taken_per_min
+        description: "enemy_hero_damage_taken / game_minutes: attention absorbed per game minute, the space_created proxy's first part."
+      - name: hero_kill_deaths
+        description: "Deaths to enemy heroes, summed."
+      - name: trade_deaths
+        description: "Deaths followed within 60 s by the side taking a tower or Roshan, summed."
+      - name: trade_death_share
+        description: "trade_deaths / hero_kill_deaths, 0-1: the space_created proxy's second part."
+      - name: observers_placed
+        description: "Observer wards placed, summed."
+      - name: sentries_placed
+        description: "Sentry wards placed, summed."
+      - name: runes_taken
+        description: "Runes taken, summed."
+      - name: buybacks
+        description: "Buybacks used, summed."
+
+  - name: player_playstyle
+    description: "Per patch and player (Steam account) over parsed pro matches: the same fight, farm, lane, space and vision measures as hero_playstyle, for questions about named players. `games` is the sample; a ranking keeps rows with games >= 10."
+    columns:
+      - name: patch_id
+        description: "Game version id; joins dim_patch.patch_id; with account_id the primary key."
+        tests: [not_null]
+      - name: patch_name
+        description: "Game version, e.g. 7.41."
+      - name: account_id
+        description: "Steam account id; joins dim_pro_player.account_id."
+        tests: [not_null]
+      - name: player_name
+        description: "Name on the player's latest match of the patch: the pro name when OpenDota lists the account as a pro, else the Steam persona."
+      - name: main_position
+        description: "The position (1-5) the player played most on the patch; null when no game had a derived position."
+      - name: main_position_name
+        description: "main_position as a word: carry, mid, offlane, soft support or hard support."
+      - name: games
+        description: "Player-games in the group: the sample size. Rankings keep only rows with at least 10 (the playstyle_minimum_games definition)."
+      - name: wins
+        description: "Of those, games won."
+      - name: game_minutes
+        description: "Minutes played, summed; the denominator of the per-minute rates."
+      - name: match_fights
+        description: "Teamfights in those games, summed."
+      - name: fights_present
+        description: "Teamfights the player was present in, summed."
+      - name: fight_participation
+        description: "fights_present / match_fights, 0-1."
+      - name: fight_kills
+        description: "Kills inside fight windows, summed."
+      - name: fight_deaths
+        description: "Deaths inside fight windows, summed."
+      - name: deaths_outside_fights
+        description: "Deaths outside fight windows, summed."
+      - name: fight_damage
+        description: "Hero damage dealt inside fight windows, summed."
+      - name: fight_gold_delta
+        description: "Gold gained over fight windows, summed."
+      - name: avg_fight_gold_delta
+        description: "fight_gold_delta per game."
+      - name: farm_games_10
+        description: "Games that reached minute 10 (the farm share at 10 denominator)."
+      - name: farm_share_10_total
+        description: "farm_share_10 summed over those games; divide by farm_games_10 for the average."
+      - name: avg_farm_share_10
+        description: "Average share of the side's gold at minute 10, 0-1."
+      - name: farm_games_20
+        description: "Games that reached minute 20."
+      - name: farm_share_20_total
+        description: "farm_share_20 summed; divide by farm_games_20 for the average."
+      - name: avg_farm_share_20
+        description: "Average share of the side's gold at minute 20, 0-1."
+      - name: last_hits_10_total
+        description: "Last hits at minute 10, summed."
+      - name: avg_last_hits_10
+        description: "Average last hits at minute 10."
+      - name: lane_games
+        description: "Games with a lane result (laned in lanes 1-3 against at least one enemy hero)."
+      - name: lanes_won
+        description: "Games whose lane was won (lane_outcomes.lane_result)."
+      - name: lanes_drawn
+        description: "Games whose lane was drawn."
+      - name: lanes_lost
+        description: "Games whose lane was lost."
+      - name: lane_win_rate
+        description: "lanes_won / lane_games, 0-1."
+      - name: avg_lane_gold_diff_10
+        description: "Average lane gold difference at minute 10 (the side's laners' average minus the enemy laners')."
+      - name: enemy_hero_damage_taken
+        description: "Damage taken from enemy heroes, summed (space_created)."
+      - name: enemy_hero_damage_taken_per_min
+        description: "enemy_hero_damage_taken / game_minutes: attention absorbed per game minute, the space_created proxy's first part."
+      - name: hero_kill_deaths
+        description: "Deaths to enemy heroes, summed."
+      - name: trade_deaths
+        description: "Deaths followed within 60 s by the side taking a tower or Roshan, summed."
+      - name: trade_death_share
+        description: "trade_deaths / hero_kill_deaths, 0-1: the space_created proxy's second part."
+      - name: observers_placed
+        description: "Observer wards placed, summed."
+      - name: sentries_placed
+        description: "Sentry wards placed, summed."
+      - name: runes_taken
+        description: "Runes taken, summed."
+      - name: buybacks
+        description: "Buybacks used, summed."

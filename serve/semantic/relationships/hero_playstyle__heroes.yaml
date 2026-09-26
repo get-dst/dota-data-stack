@@ -1,0 +1,4 @@
+left: hero_playstyle
+right: heroes
+on: hero_playstyle.hero_id = heroes.hero_id
+relationship: many_to_one
