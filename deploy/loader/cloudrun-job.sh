@@ -105,7 +105,7 @@ def at(s):
     return datetime.fromisoformat(s.replace("Z", "+00:00"))
 
 for e in json.load(sys.stdin):
-    s, meta = e["status"], e["metadata"]
+    s, meta = e.get("status", {}), e["metadata"]
     result = ("succeeded" if s.get("succeededCount") else "failed" if s.get("failedCount")
               else "cancelled" if s.get("cancelledCount") else "running")
     took = "-"
