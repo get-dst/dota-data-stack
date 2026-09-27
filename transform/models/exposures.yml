@@ -101,6 +101,7 @@ exposures:
       - ref('fact_match')
       - ref('farm_priority')
       - ref('hero_playstyle')
+      - ref('lane_matchups')
       - ref('lane_outcomes')
       - ref('player_fight_stats')
       - ref('player_playstyle')

@@ -20,3 +20,6 @@ from {{ ref('hero_playstyle') }} group by patch_id, hero_id, position having cou
 union all
 select 'player_playstyle', cast(patch_id as varchar) || ':' || cast(account_id as varchar)
 from {{ ref('player_playstyle') }} group by patch_id, account_id having count(*) > 1
+union all
+select 'lane_matchups', cast(patch_id as varchar) || ':' || cast(lane_role as varchar) || ':' || cast(hero_id as varchar) || ':' || cast(opponent_hero_id as varchar)
+from {{ ref('lane_matchups') }} group by patch_id, lane_role, hero_id, opponent_hero_id having count(*) > 1

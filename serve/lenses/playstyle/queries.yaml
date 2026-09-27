@@ -5,6 +5,8 @@ use_when:
     traded deaths), wards, runes and buybacks
   - "which hero or player wins its lane, who creates space, which position farms most, who
     wards most, how often a hero shows up to fights, which team wins its lanes"
+  - hero against hero in the same lane — how a hero does in lane against a named enemy
+    hero, which heroes win the lane against it
   - not for win rates, GPM, KDA, picks, bans or drafts — those have their own lenses
 sample_queries:
   - question: Which carry heroes win their lane most often on the current patch?

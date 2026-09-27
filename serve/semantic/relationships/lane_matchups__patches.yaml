@@ -1,0 +1,4 @@
+left: lane_matchups
+right: patches
+on: lane_matchups.patch_id = patches.patch_id
+relationship: many_to_one

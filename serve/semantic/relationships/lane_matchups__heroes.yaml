@@ -1,0 +1,4 @@
+left: lane_matchups
+right: heroes
+on: lane_matchups.hero_id = heroes.hero_id
+relationship: many_to_one

@@ -158,7 +158,7 @@ fetched, leaves the dimension tables as they were, and fails. The scheduled run 
 Cloud Run job (`deploy/loader/`); `.github/workflows/load.yml` does the same load and
 transform on demand.
 
-**dbt** (`transform/`) turns the raw tables into 22 staging views and 49 marts, in five
+**dbt** (`transform/`) turns the raw tables into 22 staging views and 50 marts, in five
 areas:
 
 Every pro model reads the same matches: one filter in `stg_leagues` keeps the leagues
@@ -186,9 +186,9 @@ mart.
   Roshan, kept as two numbers), wards, runes and buybacks, rolled up per hero and
   position and per player, by patch.
 
-244 tests pin the grains, every fact-to-dimension reference, the league tier, the draft
+252 tests pin the grains, every fact-to-dimension reference, the league tier, the draft
 shape and the behaviour sums, and three unit tests pin the position derivation, the
-400-gold lane band and the reading of a league's final on fixed inputs. Every model and all 831 mart columns are documented,
+400-gold lane band and the reading of a league's final on fixed inputs. Every model and all 844 mart columns are documented,
 and `persist_docs` writes those descriptions into the warehouse as comments.
 Match dates are the UTC date, pinned in SQL, whoever runs dbt.
 
@@ -198,8 +198,8 @@ so nothing served can write. Switching dlt and dbt between MotherDuck, a local D
 file and Postgres is one variable, `DSTACK_TARGET`; dst's side is the `warehouse` block in
 `serve/dst.yaml`.
 
-**dst** (`serve/`) declares what the marts mean: 46 entities with their metrics, the 101
-joins between them, 35 governed terms (bracket, position, major item, first pick, counter,
+**dst** (`serve/`) declares what the marts mean: 47 entities with their metrics, the 103
+joins between them, 36 governed terms (bracket, position, major item, first pick, counter,
 comeback, lane outcome, farm share, fight participation, space created as a declared
 proxy, the current patch, the minimum-games rule), what each lens must refuse (MMR, prize
 money, personal match history, items in pubs, tier-3 leagues, what players said or
@@ -224,7 +224,7 @@ dimensions (127 heroes, every team), and each table's freshness.
 
 `.github/workflows/dst-test.yml` runs on every pull request that touches `serve/` or
 `transform/`: it starts a throwaway dst server, applies the semantic layer, and runs
-every lens's test suite against the live warehouse (158 checks across the six lenses).
+every lens's test suite against the live warehouse (161 checks across the six lenses).
 What an enthusiast asks must answer;
 what the data cannot carry must refuse by name. A failing case fails the pull request, and
 an empty suite fails it too, since a suite that ran nothing proved nothing.

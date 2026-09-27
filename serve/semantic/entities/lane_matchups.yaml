@@ -1,0 +1,53 @@
+name: lane_matchups
+description: Hero against the enemy hero in the same map lane in parsed professional
+  matches, per patch — the lanes the two played against each other, how those lanes stood
+  at 10 minutes and how many of the matches the hero's side won. Both orderings are
+  present, so start from either hero.
+grain: one row per patch, the hero's lane, hero and opponent hero
+use_cases:
+  - Use for lane matchups in pro play — how a hero does in lane against a named enemy hero, which heroes win the lane against a given hero.
+  - lane_name is the hero's own lane, relative to its side; the opponent stood in the mirror lane of the same stretch of map, so a safe-lane hero's opponents are off-lane heroes and mid meets mid. "Offlane heroes against X" is lane_name 'off lane' with opponent_hero_name X.
+  - A lane win is the lane_outcome term, the hero's side more than 400 gold ahead of the enemy laners at minute 10; the result belongs to the side, so a 2v2 lane gives a hero one row per opponent with the same result.
+  - When ranking by a rate, keep rows with at least 20 games (the minimum_games term) and report the game count with every rate; a named matchup under the floor gets its counts and the note that the rate is withheld.
+  - Avoid for a hero's lane record over all opponents (hero_playstyle), for heroes on the same side (lane pairs, on the drafts lens) and for whole-match counters (pro_draft_matchups there).
+common_questions:
+  - Which offlane heroes win the lane most often against Juggernaut this patch?
+  - How does Sven do in lane against Tiny?
+source:
+  connection: warehouse
+  table: marts.lane_matchups
+primary_key: [patch_id, lane_role, hero_id, opponent_hero_id]
+population: Laning players in parsed professional matches in leagues OpenDota rates premium
+  or professional that reached minute 10, in lanes 1-3 against at least one enemy hero.
+  Jungle, roaming and unparsed lanes have no row, so a hero's games here are fewer than its
+  picks. Leagues it rates below professional are not counted.
+fields:
+  - {name: patch_id, type: integer}
+  - {name: patch_name, type: string}
+  - {name: lane_role, type: integer, description: "The hero's lane relative to its side: 1 safe lane, 2 mid, 3 off lane; the opponent's is the mirror."}
+  - {name: lane_name, type: string, description: "The hero's own lane: safe lane, mid or off lane."}
+  - {name: hero_id, type: integer}
+  - {name: hero_name, type: string, description: The hero the counts are measured for.}
+  - {name: opponent_hero_id, type: integer}
+  - {name: opponent_hero_name, type: string, description: The enemy hero in the same map lane.}
+  - {name: games, type: integer, description: Parsed pro matches in which the two laned against each other.}
+  - {name: lanes_won, type: integer, description: "Of those, lanes the hero's side had won at 10 minutes (the lane_outcome term)."}
+  - {name: lanes_drawn, type: integer, description: "Of those, lanes drawn at 10 minutes, within 400 gold either way."}
+  - {name: lanes_lost, type: integer, description: "Of those, lanes the hero's side had lost at 10 minutes."}
+  - {name: wins, type: integer, description: "Of those matches, the ones the hero's side won."}
+dimensions:
+  - {name: hero_name, type: string, description: "The hero."}
+  - {name: opponent_hero_name, type: string, description: "The enemy hero in the same map lane: the filter for 'against X', the grouping for a hero's lane opponents."}
+  - {name: lane_name, type: string, description: "The hero's own lane, safe lane, mid or off lane: the filter for offlane heroes, safe-lane heroes or mids against someone."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
+metrics:
+  - {name: lane_matchup_games, agg: sum, expr: lane_matchups.games, description: "Parsed pro matches in which the two heroes laned against each other (the lane_matchup term); the sample size beside every rate, and what to rank by for a hero's most common lane opponents."}
+  - {name: lane_matchup_lanes_won, agg: sum, expr: lane_matchups.lanes_won, description: "Of those, lanes the hero's side had won at 10 minutes (the lane_outcome term)."}
+  - {name: lane_matchup_lanes_lost, agg: sum, expr: lane_matchups.lanes_lost, description: "Of those, lanes the hero's side had lost at 10 minutes."}
+  - {name: lane_matchup_wins, agg: sum, expr: lane_matchups.wins, description: "Of those matches, the ones the hero's side won: a match win, not a lane win."}
+  - name: lane_matchup_win_rate
+    better: higher
+    type: derived
+    expr: "CASE WHEN {lane_matchup_games} >= 20 THEN {lane_matchup_lanes_won} * 1.0 / NULLIF({lane_matchup_games}, 0) END"
+    format: percent
+    description: "Share of the lanes against opponent_hero_name that hero_name's side had won at 10 minutes (the lane_outcome term); null under 20 games (the minimum_games term). Filter opponent_hero_name to the hero asked about and rank hero_name highest first for the heroes that win the lane against it."
