@@ -9,7 +9,7 @@ common_questions:
 source:
   connection: warehouse
   table: marts.farm_priority
-default_time_field: started_at
+default_time_field: match_date
 primary_key: [match_id, player_slot]
 population: Players in parsed professional matches in leagues OpenDota rates premium or
   professional that reached minute 10; minute-20 columns are null in shorter games.
@@ -38,7 +38,6 @@ fields:
   - {name: farm_rank_10, type: integer, description: "1 = most gold on the side at minute 10."}
   - {name: net_worth, type: integer}
   - {name: networth_rank, type: integer, description: "1 = richest on the side at game end."}
-  - {name: started_at, type: timestamp}
   - {name: match_date, type: date}
   - {name: patch_id, type: integer}
   - {name: patch_name, type: string}
@@ -46,13 +45,19 @@ fields:
   - {name: league_name, type: string}
   - {name: duration_min, type: number}
 dimensions:
-  - {name: team_name, type: string}
-  - {name: patch_name, type: string}
-  - {name: league_name, type: string}
-  - {name: position, type: integer}
-  - {name: position_name, type: string}
-  - {name: match_date, type: date}
+  - {name: team_name, type: string, description: "The team."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
+  - {name: league_name, type: string, description: "League or tournament."}
+  - {name: position_name, type: string, description: "The position as a word: carry, mid, offlane, soft support or hard support; the filter for questions about carries, mids, offlaners or supports."}
+  - {name: match_date, type: date, description: "Match date, UTC."}
 metrics:
-  - {name: farm_player_games, agg: count, expr: "farm_per_match.match_id"}
-  - {name: avg_gold_at_10, agg: avg, expr: "farm_per_match.gold_10", better: higher}
-  - {name: avg_lh_at_10, agg: avg, expr: "farm_per_match.last_hits_10", better: higher}
+  - {name: farm_player_games, agg: count, expr: "farm_per_match.match_id", description: "Player-games (rows) that reached minute 10."}
+  - {name: avg_gold_at_10, agg: avg, expr: "farm_per_match.gold_10", better: higher, description: "Average gold earned by minute 10, per player-game."}
+  - {name: avg_lh_at_10, agg: avg, expr: "farm_per_match.last_hits_10", better: higher, description: "Average last hits at minute 10, per player-game."}
+  - {name: farm_matches, agg: count_distinct, expr: "farm_per_match.match_id", description: "Distinct matches in scope; a team's games. The team farm share is null under 20 of them."}
+  - {name: farm_share_10_sum, agg: sum, expr: "farm_per_match.farm_share_10", description: "Share of the side's gold at minute 10, summed over player-games; divide by farm_player_games."}
+  - name: team_farm_share_10
+    type: derived
+    expr: "CASE WHEN {farm_matches} >= 20 THEN {farm_share_10_sum} * 1.0 / NULLIF({farm_player_games}, 0) END"
+    format: percent
+    description: "Average share of the side's gold at minute 10 per player-game, for a team, league or date, usually filtered to one position (the farm_share term): how much of a team's farm its carry takes. Null under 20 matches. A hero, position or player share is hero_playstyle.farm_share_10 or player_playstyle."

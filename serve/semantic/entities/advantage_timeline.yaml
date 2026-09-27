@@ -11,7 +11,7 @@ common_questions:
 source:
   connection: warehouse
   table: marts.gold_advantage_timeline
-default_time_field: started_at
+default_time_field: match_date
 primary_key: [match_id, minute]
 population: Professional matches in leagues OpenDota rates premium or professional, in the
   loaded window, whose per-minute advantage OpenDota supplies; a match without it has no
@@ -31,11 +31,11 @@ fields:
   - {name: league_id, type: integer}
   - {name: league_name, type: string}
 dimensions:
-  - {name: minute, type: integer}
-  - {name: match_id, type: integer}
-  - {name: patch_name, type: string}
-  - {name: league_name, type: string}
-  - {name: match_date, type: date}
+  - {name: minute, type: integer, description: "Game minute, 0 = the horn."}
+  - {name: match_id, type: integer, description: "OpenDota match id, for one match."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
+  - {name: league_name, type: string, description: "League or tournament."}
+  - {name: match_date, type: date, description: "Match date, UTC."}
 metrics:
   - {name: match_minutes, agg: count, expr: advantage_timeline.minute, description: "Match-minutes, i.e. rows."}
   - {name: matches, agg: count_distinct, expr: advantage_timeline.match_id, description: Distinct matches.}

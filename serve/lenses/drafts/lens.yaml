@@ -3,9 +3,9 @@ display_name: Dota 2 pro drafts
 description: Picks, bans, draft phases, matchups, lane pairs and team lineups in
   professional Dota 2 matches from OpenDota.
 owner: dota-data-stack
-# Match times are UTC epochs; the business day is UTC.
+# Match dates are UTC dates; the business day is UTC.
 timezone: UTC
-# The loader runs hourly; two days without new matches is stale.
+# The loader runs every four hours; two days without new matches is stale.
 stale_after_days: 2
 connections: [warehouse]
 select:
@@ -31,6 +31,12 @@ select:
     - pro_match
     - minimum_games
 not_computable:
+  - measure: draft reasoning
+    aliases: [why did, why do, why does, why would, reason for, reasoning, intent, intention, strategy behind, mindset]
+    reason: the draft log records which hero was picked or banned and in what order, not why; how often a hero is picked, banned or wins is answerable, the reason behind a choice is not
+  - measure: predictions
+    aliases: [prediction, predictions, predict, who will win, will win, going to win, odds, forecast, next patch]
+    reason: the warehouse holds drafts already made; it cannot say what teams will pick or who will win
   - measure: MMR
     aliases: [rank, skill bracket, rating of players, medal]
     reason: professional matches carry no matchmaking rating; only teams have an OpenDota rating
@@ -39,9 +45,10 @@ not_computable:
     reason: OpenDota's draft log records the order of picks and bans, not when each was made or how much reserve time was used
   - measure: public matchmaking
     aliases: [pubs, pub games, public matches, ranked matchmaking, pub bans, pub drafts, bans in public matchmaking, turbo]
+    route_to: pub_meta
     reason: this lens holds professional matches only; public games carry no draft or bans, and pub hero stats live on the pub_meta lens
   - measure: personal match history
-    aliases: [my matches, my win rate, my account, my games, my drafts, steam id, dotabuff profile]
+    aliases: [my matches, my win rate, my account, my games, my drafts, steam id, steam account, account id, dotabuff profile]
     reason: this lens holds professional matches, not any individual player's public history
   - measure: tier-3 leagues
     aliases: [tier 3, tier-3, tier three, excluded leagues, amateur leagues, Destiny League, Dota 2 Space League]

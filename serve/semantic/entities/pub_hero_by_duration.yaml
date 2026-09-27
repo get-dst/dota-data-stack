@@ -28,13 +28,13 @@ fields:
   - {name: games, type: integer}
   - {name: wins, type: integer}
 dimensions:
-  - {name: hero_name, type: string}
-  - {name: duration_bucket, type: string}
-  - {name: bracket_name, type: string}
-  - {name: patch_name, type: string}
+  - {name: hero_name, type: string, description: "The hero."}
+  - {name: duration_bucket, type: string, description: "under 25 min, 25-35 min, 35-45 min, 45 min and over."}
+  - {name: bracket_name, type: string, description: "Rank bracket, Herald to Immortal."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
 metrics:
-  - {name: bucket_games, agg: sum, expr: pub_hero_by_duration.games}
-  - {name: bucket_wins, agg: sum, expr: pub_hero_by_duration.wins}
+  - {name: bucket_games, agg: sum, expr: pub_hero_by_duration.games, description: "Sampled games of the hero in the duration bucket."}
+  - {name: bucket_wins, agg: sum, expr: pub_hero_by_duration.wins, description: "Of those, games won."}
   - name: bucket_win_rate
     better: higher
     type: derived

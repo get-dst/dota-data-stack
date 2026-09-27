@@ -1,6 +1,7 @@
 ---
 metric: contest_rate
 summary: Share of pro matches in which a hero was picked or banned.
+about: hero_draft_stats.contest_rate
 aliases: [contested, pick+ban rate, presence]
 grain: one value per hero, over a set of matches
 ---

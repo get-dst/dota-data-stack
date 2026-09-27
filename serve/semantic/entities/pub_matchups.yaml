@@ -27,12 +27,12 @@ fields:
   - {name: games, type: integer, description: Sampled games the two were on opposite sides.}
   - {name: wins, type: integer, description: Games hero_name's side won.}
 dimensions:
-  - {name: hero_name, type: string}
-  - {name: opponent_hero_name, type: string}
-  - {name: patch_name, type: string}
+  - {name: hero_name, type: string, description: "The hero."}
+  - {name: opponent_hero_name, type: string, description: "The hero on the other side: the grouping for a hero's counters and matchups (the counter term)."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
 metrics:
-  - {name: matchup_games, agg: sum, expr: pub_matchups.games}
-  - {name: matchup_wins, agg: sum, expr: pub_matchups.wins}
+  - {name: matchup_games, agg: sum, expr: pub_matchups.games, description: "Sampled games the two heroes were on opposite sides; the sample size beside the matchup rate."}
+  - {name: matchup_wins, agg: sum, expr: pub_matchups.wins, description: "Of those, games hero_name's side won."}
   - name: matchup_win_rate
     better: higher
     type: derived

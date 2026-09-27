@@ -1,11 +1,13 @@
 name: hero_patch_trends
 description: Per hero and patch over professional matches — picks, bans, wins, pick, ban and
-  win rate — beside the same numbers on the previous patch and the change between them.
+  win rate — beside the same numbers on the previous patch and the change between them. The
+  smallest table for a hero's numbers on the current patch ("this patch", "right now") or
+  any one patch, including the hero meta of a patch.
 grain: one row per hero per patch
 use_cases:
   - Use for a hero's pro pick, ban and win rate on a patch, and how they moved from the previous patch.
   - patch_win_rate is null under 20 picks (the minimum_games term), so a ranking lists only heroes past the floor; report the picks beside every rate.
-  - Avoid for day-by-day numbers; that is hero_daily_stats.
+  - Avoid for day-by-day numbers or a date range such as last month; that is hero_daily_stats. Avoid for a hero in one position; that is hero_position_meta.
 common_questions:
   - What is Pudge's pick rate on the current patch?
   - Which heroes gained the most pick rate since the previous patch?
@@ -45,20 +47,30 @@ fields:
   - {name: pick_rate_change, type: number, description: pick_rate minus previous_pick_rate.}
   - {name: ban_rate_change, type: number, description: ban_rate minus previous_ban_rate.}
 dimensions:
-  - {name: hero_name, type: string}
-  - {name: patch_name, type: string}
-  - {name: is_current_patch, type: boolean}
+  - {name: hero_name, type: string, description: "The hero."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
 metrics:
-  - {name: patch_picks, agg: sum, expr: hero_patch_trends.picks}
-  - {name: patch_bans, agg: sum, expr: hero_patch_trends.bans}
-  - {name: patch_wins, agg: sum, expr: hero_patch_trends.wins}
+  - {name: patch_picks, agg: sum, expr: hero_patch_trends.picks, description: "Times the hero was picked on the patch or patches in scope; rank by it for the most-picked heroes of a patch."}
+  - {name: patch_bans, agg: sum, expr: hero_patch_trends.bans, description: "Times the hero was banned on the patch or patches in scope; rank by it for the most-banned heroes of a patch."}
+  - {name: patch_wins, agg: sum, expr: hero_patch_trends.wins, description: "Picks of the hero whose side won, on the patch or patches in scope."}
   - name: patch_win_rate
     better: higher
     type: derived
     expr: "CASE WHEN {patch_picks} >= 20 THEN {patch_wins} * 1.0 / NULLIF({patch_picks}, 0) END"
     format: percent
     description: Wins divided by picks for the hero on the patch; null under 20 picks (the minimum_games term), so a rarely picked hero cannot rank first.
-  - {name: patch_pick_rate, agg: max, expr: hero_patch_trends.pick_rate, format: percent, description: "The hero's pick rate on one patch (one row per hero and patch; group by hero and patch)."}
-  - {name: patch_ban_rate, agg: max, expr: hero_patch_trends.ban_rate, format: percent, description: "The hero's ban rate on one patch (group by hero and patch)."}
-  - {name: pick_rate_change_vs_previous, agg: max, expr: hero_patch_trends.pick_rate_change, description: "Change in pick rate from the previous patch (group by hero and patch); null without previous-patch matches."}
-  - {name: win_rate_change_vs_previous, agg: max, expr: hero_patch_trends.win_rate_change, description: "Change in win rate from the previous patch (group by hero and patch); null without previous-patch picks."}
+  - {name: patch_matches, agg: sum, expr: hero_patch_trends.matches_on_patch, description: "Pro matches on the hero's patches: the denominator of its pick and ban rate. Summed over one hero's patch rows it is the match count of those patches; never read it summed over several heroes."}
+  - name: patch_pick_rate
+    type: ratio
+    numerator: patch_picks
+    denominator: patch_matches
+    format: percent
+    description: "Share of pro matches in which the hero was picked (the pick_rate term): picks over the matches of the patch or patches in scope. Group or filter by hero; report patch_picks beside it."
+  - name: patch_ban_rate
+    type: ratio
+    numerator: patch_bans
+    denominator: patch_matches
+    format: percent
+    description: "Share of pro matches in which the hero was banned (the ban_rate term): bans over the matches of the patch or patches in scope. Group or filter by hero; report patch_bans beside it."
+  - {name: pick_rate_change_vs_previous, agg: max, expr: hero_patch_trends.pick_rate_change, format: percent, description: "Change in pick rate from the previous patch (group by hero and patch); null without previous-patch matches."}
+  - {name: win_rate_change_vs_previous, agg: max, expr: hero_patch_trends.win_rate_change, format: percent, description: "Change in win rate from the previous patch (group by hero and patch); null without previous-patch picks."}

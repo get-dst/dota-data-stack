@@ -10,7 +10,7 @@ common_questions:
 source:
   connection: warehouse
   table: marts.space_created
-default_time_field: started_at
+default_time_field: match_date
 primary_key: [match_id, player_slot]
 population: Players in parsed professional matches in leagues OpenDota rates premium or
   professional, in the loaded window. Leagues it rates below professional are not counted.
@@ -34,28 +34,31 @@ fields:
   - {name: hero_kill_deaths, type: integer, description: "Deaths to enemy heroes."}
   - {name: trade_deaths, type: integer}
   - {name: trade_death_share, type: number, description: "0-1; null without a death to a hero."}
-  - {name: started_at, type: timestamp}
   - {name: match_date, type: date}
   - {name: patch_id, type: integer}
   - {name: patch_name, type: string}
   - {name: league_id, type: integer}
   - {name: league_name, type: string}
 dimensions:
-  - {name: team_name, type: string}
-  - {name: patch_name, type: string}
-  - {name: league_name, type: string}
-  - {name: position, type: integer}
-  - {name: position_name, type: string}
-  - {name: match_date, type: date}
+  - {name: team_name, type: string, description: "The team."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
+  - {name: league_name, type: string, description: "League or tournament."}
+  - {name: position_name, type: string, description: "The position as a word: carry, mid, offlane, soft support or hard support; the filter for questions about carries, mids, offlaners or supports."}
+  - {name: match_date, type: date, description: "Match date, UTC."}
 metrics:
-  - {name: space_player_games, agg: count, expr: "space_per_match.match_id"}
-  - {name: avg_damage_absorbed_per_min, agg: avg, expr: "space_per_match.enemy_hero_damage_taken_per_min", better: higher, description: "Damage taken from enemy heroes per game minute, averaged over player-games of a team, league, date or match. A hero, position or player rate is hero_playstyle.damage_absorbed_per_min or player_playstyle."}
-  - {name: traded_deaths, agg: sum, expr: "space_per_match.trade_deaths"}
-  - {name: deaths_to_heroes, agg: sum, expr: "space_per_match.hero_kill_deaths"}
-  - name: traded_death_share
+  - {name: space_player_games, agg: count, expr: "space_per_match.match_id", description: "Player-games (rows)."}
+  - {name: space_matches, agg: count_distinct, expr: "space_per_match.match_id", description: "Distinct matches in scope; a team's games. The team space rates are null under 20 of them."}
+  - {name: damage_absorbed_per_min_total, agg: sum, expr: "space_per_match.enemy_hero_damage_taken_per_min", description: "Per-game damage absorbed per minute, summed over player-games; divide by space_player_games."}
+  - name: team_damage_absorbed_per_min
     better: higher
-    type: ratio
-    numerator: traded_deaths
-    denominator: deaths_to_heroes
+    type: derived
+    expr: "CASE WHEN {space_matches} >= 20 THEN {damage_absorbed_per_min_total} * 1.0 / NULLIF({space_player_games}, 0) END"
+    description: "Damage taken from enemy heroes per game minute, averaged over player-games of a team, league or date (space_created part 1); null under 20 matches. A hero, position or player rate is hero_playstyle.damage_absorbed_per_min or player_playstyle."
+  - {name: traded_deaths, agg: sum, expr: "space_per_match.trade_deaths", description: "Deaths the side traded for a tower or Roshan within 60 s, summed."}
+  - {name: deaths_to_heroes, agg: sum, expr: "space_per_match.hero_kill_deaths", description: "Deaths to enemy heroes, summed."}
+  - name: team_traded_death_share
+    better: higher
+    type: derived
+    expr: "CASE WHEN {space_matches} >= 20 THEN {traded_deaths} * 1.0 / NULLIF({deaths_to_heroes}, 0) END"
     format: percent
-    description: "Share of deaths to heroes traded for a tower or Roshan within 60 s."
+    description: "Share of deaths to heroes traded for a tower or Roshan within 60 s (space_created part 2), for a team, league or date; null under 20 matches."

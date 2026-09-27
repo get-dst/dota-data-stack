@@ -1,5 +1,5 @@
 name: player_playstyle
-description: "How each professional player plays, per patch: teamfight participation, farm share, lane results, the space_created proxy, wards, runes and buybacks, with the position they played most."
+description: "How each professional player plays, per patch: teamfight participation, farm share, lane results, the space_created proxy, wards, runes and buybacks, with the position they played most. The table for questions about players — which players, which pros, who — rather than heroes."
 grain: "one row per player (Steam account) per patch"
 use_cases:
   - "Use for rankings and comparisons of named pro players by how they play."
@@ -8,6 +8,8 @@ use_cases:
   - "Avoid for heroes or positions in general; that is hero_playstyle."
 common_questions:
   - "Which pro player has the highest lane win rate on the current patch?"
+  - "Which hard support players place the most observer wards per game?"
+  - "Which offlane players absorb the most damage per minute?"
   - "Which position 5 player places the most wards per game?"
   - "Which player dies least outside teamfights?"
 source:
@@ -29,144 +31,136 @@ fields:
   - {name: game_minutes, type: number, description: "Minutes played, summed."}
   - {name: match_fights, type: integer, description: "Teamfights in those games."}
   - {name: fights_present, type: integer, description: "Teamfights the player was present in (damaged or healed a hero, died or got a kill inside the window)."}
-  - {name: fight_participation, type: number, description: "fights_present / match_fights, 0-1."}
   - {name: fight_kills, type: integer}
   - {name: fight_deaths, type: integer, description: "Deaths inside teamfight windows."}
   - {name: deaths_outside_fights, type: integer, description: "Deaths outside any teamfight window: pick-offs, ganks, deaths to creeps or towers."}
   - {name: fight_damage, type: integer, description: "Hero damage dealt inside teamfight windows."}
   - {name: fight_gold_delta, type: integer, description: "Gold gained over teamfight windows (passive income included)."}
-  - {name: avg_fight_gold_delta, type: number, description: "fight_gold_delta per game."}
   - {name: farm_games_10, type: integer, description: "Games that reached minute 10."}
   - {name: farm_share_10_total, type: number, description: "Share of the side's gold at minute 10, summed over games; divide by farm_games_10."}
-  - {name: avg_farm_share_10, type: number, description: "Average share of the side's gold earned at minute 10, 0-1."}
   - {name: farm_games_20, type: integer, description: "Games that reached minute 20."}
   - {name: farm_share_20_total, type: number}
-  - {name: avg_farm_share_20, type: number, description: "Average share of the side's gold earned at minute 20, 0-1."}
   - {name: last_hits_10_total, type: integer}
-  - {name: avg_last_hits_10, type: number, description: "Average last hits at minute 10."}
   - {name: lane_games, type: integer, description: "Games with a lane result (laned in a map lane against at least one enemy hero)."}
   - {name: lanes_won, type: integer}
   - {name: lanes_drawn, type: integer}
   - {name: lanes_lost, type: integer}
-  - {name: lane_win_rate, type: number, description: "lanes_won / lane_games, 0-1 (the lane_outcome term)."}
   - {name: avg_lane_gold_diff_10, type: number, description: "Average gold lead of the player's lane over the enemy laners at minute 10 (per-hero averages)."}
   - {name: enemy_hero_damage_taken, type: integer, description: "Damage taken from enemy heroes (space_created part 1)."}
-  - {name: enemy_hero_damage_taken_per_min, type: number, description: "Damage taken from enemy heroes per game minute: attention absorbed (space_created part 1)."}
   - {name: hero_kill_deaths, type: integer, description: "Deaths to enemy heroes."}
   - {name: trade_deaths, type: integer, description: "Deaths followed within 60 s by the side taking an enemy tower or Roshan (space_created part 2)."}
-  - {name: trade_death_share, type: number, description: "trade_deaths / hero_kill_deaths, 0-1 (space_created part 2)."}
   - {name: observers_placed, type: integer}
   - {name: sentries_placed, type: integer}
   - {name: runes_taken, type: integer, description: "Every rune in the log, water and wisdom included."}
   - {name: buybacks, type: integer}
 dimensions:
-  - {name: player_name, type: string}
-  - {name: patch_name, type: string}
-  - {name: main_position, type: integer}
-  - {name: main_position_name, type: string}
+  - {name: player_name, type: string, description: "The pro name when OpenDota lists the account, else the Steam persona, from the player's latest match on the patch."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
+  - {name: main_position, type: integer, description: "The position (1-5) the player played most on the patch."}
+  - {name: main_position_name, type: string, description: "main_position as a word: carry, mid, offlane, soft support or hard support; the filter for questions about carries, mids, offlaners or supports."}
 metrics:
   - {name: player_games, agg: sum, expr: "player_playstyle.games", description: "Player-games; the sample size to state beside every rate."}
   - {name: player_wins, agg: sum, expr: "player_playstyle.wins", description: "Games won, a count. Win rates belong to player_performances, which covers every pro match, not only the parsed ones."}
-  - {name: player_match_fights, agg: sum, expr: "player_playstyle.match_fights"}
-  - {name: player_fights_present, agg: sum, expr: "player_playstyle.fights_present"}
+  - {name: player_match_fights, agg: sum, expr: "player_playstyle.match_fights", description: "Teamfights in the player's games, summed."}
+  - {name: player_fights_present, agg: sum, expr: "player_playstyle.fights_present", description: "Teamfights the player was present in, summed."}
   - name: player_fight_participation
     better: higher
     type: derived
     expr: "CASE WHEN {player_games} >= 10 THEN {player_fights_present} * 1.0 / NULLIF({player_match_fights}, 0) END"
     format: percent
-    description: "Share of the teamfights in those games the player was present in (the fight_participation term)."
-  - {name: player_fight_deaths, agg: sum, expr: "player_playstyle.fight_deaths"}
-  - {name: player_deaths_outside_fights, agg: sum, expr: "player_playstyle.deaths_outside_fights"}
+    description: "Share of the teamfights in those games the player was present in (the fight_participation term). Per named player; rank players (who, which pros) by it."
+  - {name: player_fight_deaths, agg: sum, expr: "player_playstyle.fight_deaths", description: "Deaths inside teamfight windows, summed."}
+  - {name: player_deaths_outside_fights, agg: sum, expr: "player_playstyle.deaths_outside_fights", description: "Deaths outside any teamfight window, summed."}
   - name: player_fight_deaths_per_game
     better: lower
     type: derived
     expr: "CASE WHEN {player_games} >= 10 THEN {player_fight_deaths} * 1.0 / NULLIF({player_games}, 0) END"
-    description: "Deaths inside teamfights per game."
+    description: "Deaths inside teamfights per game. Per named player; rank players (who, which pros) by it."
   - name: player_deaths_outside_fights_per_game
     better: lower
     type: derived
     expr: "CASE WHEN {player_games} >= 10 THEN {player_deaths_outside_fights} * 1.0 / NULLIF({player_games}, 0) END"
-    description: "Deaths outside teamfights (pick-offs, ganks, creeps, towers) per game."
-  - {name: player_fight_gold_delta, agg: sum, expr: "player_playstyle.fight_gold_delta"}
+    description: "Deaths outside teamfights (pick-offs, ganks, creeps, towers) per game. Per named player; rank players (who, which pros) by it."
+  - {name: player_fight_gold_delta, agg: sum, expr: "player_playstyle.fight_gold_delta", description: "Gold gained over teamfight windows, summed."}
   - name: player_fight_gold_per_game
     better: higher
     type: derived
     expr: "CASE WHEN {player_games} >= 10 THEN {player_fight_gold_delta} * 1.0 / NULLIF({player_games}, 0) END"
-    description: "Gold gained over teamfight windows per game (the gold swing of fights; passive income included)."
-  - {name: player_farm_games_10, agg: sum, expr: "player_playstyle.farm_games_10"}
-  - {name: player_farm_share_10_total, agg: sum, expr: "player_playstyle.farm_share_10_total"}
+    description: "Gold gained over teamfight windows per game (the gold swing of fights; passive income included). Per named player; rank players (who, which pros) by it."
+  - {name: player_farm_games_10, agg: sum, expr: "player_playstyle.farm_games_10", description: "Games that reached minute 10."}
+  - {name: player_farm_share_10_total, agg: sum, expr: "player_playstyle.farm_share_10_total", description: "Share of the side's gold at minute 10, summed over games."}
   - name: player_farm_share_10
     type: derived
     expr: "CASE WHEN {player_games} >= 10 THEN {player_farm_share_10_total} * 1.0 / NULLIF({player_farm_games_10}, 0) END"
     format: percent
-    description: "Average share of the side's gold earned at minute 10 (the farm_share term)."
-  - {name: player_farm_games_20, agg: sum, expr: "player_playstyle.farm_games_20"}
-  - {name: player_farm_share_20_total, agg: sum, expr: "player_playstyle.farm_share_20_total"}
+    description: "Average share of the side's gold earned at minute 10 (the farm_share term). Per named player; rank players (who, which pros) by it."
+  - {name: player_farm_games_20, agg: sum, expr: "player_playstyle.farm_games_20", description: "Games that reached minute 20."}
+  - {name: player_farm_share_20_total, agg: sum, expr: "player_playstyle.farm_share_20_total", description: "Share of the side's gold at minute 20, summed over games."}
   - name: player_farm_share_20
     type: derived
     expr: "CASE WHEN {player_games} >= 10 THEN {player_farm_share_20_total} * 1.0 / NULLIF({player_farm_games_20}, 0) END"
     format: percent
-    description: "Average share of the side's gold earned at minute 20 (the farm_share term)."
-  - {name: player_last_hits_10_total, agg: sum, expr: "player_playstyle.last_hits_10_total"}
+    description: "Average share of the side's gold earned at minute 20 (the farm_share term). Per named player; rank players (who, which pros) by it."
+  - {name: player_last_hits_10_total, agg: sum, expr: "player_playstyle.last_hits_10_total", description: "Last hits at minute 10, summed over games."}
   - name: player_last_hits_at_10
     better: higher
     type: derived
     expr: "CASE WHEN {player_games} >= 10 THEN {player_last_hits_10_total} * 1.0 / NULLIF({player_farm_games_10}, 0) END"
-    description: "Average last hits at minute 10."
-  - {name: player_lane_games, agg: sum, expr: "player_playstyle.lane_games"}
-  - {name: player_lanes_won, agg: sum, expr: "player_playstyle.lanes_won"}
-  - {name: player_lanes_lost, agg: sum, expr: "player_playstyle.lanes_lost"}
-  - {name: player_lanes_drawn, agg: sum, expr: "player_playstyle.lanes_drawn"}
+    description: "Average last hits at minute 10. Per named player; rank players (who, which pros) by it."
+  - {name: player_lane_games, agg: sum, expr: "player_playstyle.lane_games", description: "Games with a lane result."}
+  - {name: player_lanes_won, agg: sum, expr: "player_playstyle.lanes_won", description: "Lanes won at 10 minutes."}
+  - {name: player_lanes_lost, agg: sum, expr: "player_playstyle.lanes_lost", description: "Lanes lost at 10 minutes."}
+  - {name: player_lanes_drawn, agg: sum, expr: "player_playstyle.lanes_drawn", description: "Lanes drawn at 10 minutes."}
   - name: player_lane_win_rate
     better: higher
     type: derived
     expr: "CASE WHEN {player_games} >= 10 THEN {player_lanes_won} * 1.0 / NULLIF({player_lane_games}, 0) END"
     format: percent
-    description: "Share of lanes won at 10 minutes (the lane_outcome term)."
+    description: "Share of lanes won at 10 minutes (the lane_outcome term). Per named player; rank players (who, which pros) by it."
   - name: player_lane_loss_rate
     better: lower
     type: derived
     expr: "CASE WHEN {player_games} >= 10 THEN {player_lanes_lost} * 1.0 / NULLIF({player_lane_games}, 0) END"
     format: percent
-    description: "Share of lanes lost at 10 minutes (the lane_outcome term)."
+    description: "Share of lanes lost at 10 minutes (the lane_outcome term). Per named player; rank players (who, which pros) by it."
   - name: player_lane_draw_rate
     type: ratio
     numerator: player_lanes_drawn
     denominator: player_lane_games
     format: percent
-    description: "Share of lanes drawn at 10 minutes, within 400 gold either way (the lane_outcome term)."
-  - {name: player_enemy_hero_damage_taken, agg: sum, expr: "player_playstyle.enemy_hero_damage_taken"}
-  - {name: player_game_minutes, agg: sum, expr: "player_playstyle.game_minutes"}
+    description: "Share of lanes drawn at 10 minutes, within 400 gold either way (the lane_outcome term); a share of all lanes, so it carries no games floor. Per named player; rank players (who, which pros) by it."
+  - {name: player_enemy_hero_damage_taken, agg: sum, expr: "player_playstyle.enemy_hero_damage_taken", description: "Damage taken from enemy heroes, summed."}
+  - {name: player_game_minutes, agg: sum, expr: "player_playstyle.game_minutes", description: "Minutes played, summed."}
   - name: player_damage_absorbed_per_min
     better: higher
     type: derived
     expr: "CASE WHEN {player_games} >= 10 THEN {player_enemy_hero_damage_taken} * 1.0 / NULLIF({player_game_minutes}, 0) END"
-    description: "Damage taken from enemy heroes per game minute: attention absorbed, part 1 of the space_created proxy."
-  - {name: player_hero_kill_deaths, agg: sum, expr: "player_playstyle.hero_kill_deaths"}
-  - {name: player_trade_deaths, agg: sum, expr: "player_playstyle.trade_deaths"}
+    description: "Damage taken from enemy heroes per game minute: attention absorbed, part 1 of the space_created proxy. Per named player; rank players (who, which pros) by it."
+  - {name: player_hero_kill_deaths, agg: sum, expr: "player_playstyle.hero_kill_deaths", description: "Deaths to enemy heroes, summed."}
+  - {name: player_trade_deaths, agg: sum, expr: "player_playstyle.trade_deaths", description: "Deaths the side traded for a tower or Roshan within 60 s, summed."}
   - name: player_trade_death_share
     better: higher
     type: derived
     expr: "CASE WHEN {player_games} >= 10 THEN {player_trade_deaths} * 1.0 / NULLIF({player_hero_kill_deaths}, 0) END"
     format: percent
-    description: "Share of deaths to heroes that the side traded for a tower or Roshan within 60 s: part 2 of the space_created proxy."
-  - {name: player_observers_placed, agg: sum, expr: "player_playstyle.observers_placed"}
-  - {name: player_sentries_placed, agg: sum, expr: "player_playstyle.sentries_placed"}
-  - {name: player_runes_taken, agg: sum, expr: "player_playstyle.runes_taken"}
-  - {name: player_buybacks, agg: sum, expr: "player_playstyle.buybacks"}
+    description: "Share of deaths to heroes that the side traded for a tower or Roshan within 60 s: part 2 of the space_created proxy. Per named player; rank players (who, which pros) by it."
+  - {name: player_observers_placed, agg: sum, expr: "player_playstyle.observers_placed", description: "Observer wards placed, summed."}
+  - {name: player_sentries_placed, agg: sum, expr: "player_playstyle.sentries_placed", description: "Sentry wards placed, summed."}
+  - {name: player_runes_taken, agg: sum, expr: "player_playstyle.runes_taken", description: "Runes taken, summed."}
+  - {name: player_buybacks, agg: sum, expr: "player_playstyle.buybacks", description: "Buybacks, summed."}
   - name: player_observers_per_game
     type: derived
     expr: "CASE WHEN {player_games} >= 10 THEN {player_observers_placed} * 1.0 / NULLIF({player_games}, 0) END"
-    description: "Observer wards placed per game."
+    description: "Observer wards placed per game. Per named player; rank players (who, which pros) by it."
   - name: player_sentries_per_game
     type: derived
     expr: "CASE WHEN {player_games} >= 10 THEN {player_sentries_placed} * 1.0 / NULLIF({player_games}, 0) END"
-    description: "Sentry wards placed per game."
+    description: "Sentry wards placed per game. Per named player; rank players (who, which pros) by it."
   - name: player_runes_per_game
     type: derived
     expr: "CASE WHEN {player_games} >= 10 THEN {player_runes_taken} * 1.0 / NULLIF({player_games}, 0) END"
-    description: "Runes taken per game."
+    description: "Runes taken per game. Per named player; rank players (who, which pros) by it."
   - name: player_buybacks_per_game
     type: derived
     expr: "CASE WHEN {player_games} >= 10 THEN {player_buybacks} * 1.0 / NULLIF({player_games}, 0) END"
-    description: "Buybacks per game."
+    description: "Buybacks per game. Per named player; rank players (who, which pros) by it."

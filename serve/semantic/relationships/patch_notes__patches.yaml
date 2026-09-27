@@ -1,0 +1,4 @@
+left: patch_notes
+right: patches
+on: patch_notes.patch_name = patches.patch_name
+relationship: many_to_one

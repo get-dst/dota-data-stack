@@ -1,6 +1,7 @@
 ---
 metric: farm_share
 summary: A player's share of the side's gold earned at minute 10 (and 20) — how much of the team's farm goes to that player or position.
+about: hero_playstyle.farm_share_10
 sql: SUM(hero_playstyle.farm_share_10_total) / SUM(hero_playstyle.farm_games_10)
 aliases: [farm priority, farm share, share of farm, share of gold, share of the team's gold, gold share, resources, who farms, farming priority, networth rank]
 ---

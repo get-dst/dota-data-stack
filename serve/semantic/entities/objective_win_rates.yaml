@@ -24,11 +24,11 @@ fields:
   - {name: taker_wins, type: integer, description: "Of those, matches the side that took it won."}
   - {name: taker_win_rate, type: number, description: "taker_wins / matches, 0-1, precomputed per row; aggregate with the objective_win_rate metric."}
 dimensions:
-  - {name: objective, type: string}
-  - {name: patch_name, type: string}
+  - {name: objective, type: string, description: "first_blood, first_tower or first_roshan."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
 metrics:
-  - {name: total_matches, agg: sum, expr: objective_win_rates.matches}
-  - {name: total_taker_wins, agg: sum, expr: objective_win_rates.taker_wins}
+  - {name: total_matches, agg: sum, expr: objective_win_rates.matches, description: "Matches in which a side took the objective."}
+  - {name: total_taker_wins, agg: sum, expr: objective_win_rates.taker_wins, description: "Of those, matches the side that took the objective won."}
   - name: objective_win_rate
     type: ratio
     numerator: total_taker_wins

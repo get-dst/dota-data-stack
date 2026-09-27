@@ -33,17 +33,16 @@ fields:
   - {name: games, type: integer, description: Pro games in which the hero first completed the item inside the window.}
   - {name: wins, type: integer}
 dimensions:
-  - {name: hero_name, type: string}
-  - {name: item_name, type: string}
-  - {name: patch_name, type: string}
-  - {name: timing_bucket, type: string}
+  - {name: hero_name, type: string, description: "The hero."}
+  - {name: item_name, type: string, description: "The item."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
+  - {name: timing_bucket, type: string, description: "<15, 15-20, 20-25, 25-30 or 30+ minutes; a window includes its first minute and excludes its last."}
 metrics:
-  - {name: timing_games, agg: sum, expr: item_timing_buckets.games}
-  - {name: timing_wins, agg: sum, expr: item_timing_buckets.wins}
+  - {name: timing_games, agg: sum, expr: item_timing_buckets.games, description: "Pro games in which the hero first finished the item inside the window."}
+  - {name: timing_wins, agg: sum, expr: item_timing_buckets.wins, description: "Of those games, those won."}
   - name: timing_win_rate
     better: higher
-    type: ratio
-    numerator: timing_wins
-    denominator: timing_games
+    type: derived
+    expr: "CASE WHEN {timing_games} >= 20 THEN {timing_wins} * 1.0 / NULLIF({timing_games}, 0) END"
     format: percent
-    description: Share of the games with the item finished in the window that were won.
+    description: "Share of the games with the item finished in the window that were won; null under 20 games (the minimum_games term), so compare windows only where both have a rate."

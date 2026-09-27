@@ -13,8 +13,8 @@
     SELECT AVG(match_fights) AS avg_teamfights
     FROM marts.player_fight_stats AS fights_per_match
   status: active
-- question: What share of lanes are drawn at 10 minutes?
+- question: What share of lanes are drawn at the ten-minute mark?
   sql: |
-    SELECT SUM(lanes_drawn) * 1.0 / SUM(lane_games) AS lane_draw_rate
+    SELECT SUM(hero_playstyle.lanes_drawn) * 1.0 / SUM(hero_playstyle.lane_games) AS lane_draw_rate
     FROM marts.hero_playstyle AS hero_playstyle
   status: active

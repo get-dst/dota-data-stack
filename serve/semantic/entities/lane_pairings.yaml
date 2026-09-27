@@ -33,17 +33,16 @@ fields:
   - {name: games, type: integer, description: Pro matches the two shared this lane on the same side.}
   - {name: wins, type: integer, description: "Of those, the ones their side won."}
 dimensions:
-  - {name: hero_name, type: string}
-  - {name: partner_hero_name, type: string}
-  - {name: lane_name, type: string}
-  - {name: patch_name, type: string}
+  - {name: hero_name, type: string, description: "The hero."}
+  - {name: partner_hero_name, type: string, description: "The hero that shared the lane."}
+  - {name: lane_name, type: string, description: "safe lane, mid, off lane or jungle."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
 metrics:
-  - {name: lane_pair_games, agg: sum, expr: lane_pairings.games}
-  - {name: lane_pair_wins, agg: sum, expr: lane_pairings.wins}
+  - {name: lane_pair_games, agg: sum, expr: lane_pairings.games, description: "Pro matches in which the two heroes shared the lane on the same side (the lane_pair term); rank by it for a hero's most common lane partners."}
+  - {name: lane_pair_wins, agg: sum, expr: lane_pairings.wins, description: "Of the pair's lane games, those their side won."}
   - name: lane_pair_win_rate
     better: higher
-    type: ratio
-    numerator: lane_pair_wins
-    denominator: lane_pair_games
+    type: derived
+    expr: "CASE WHEN {lane_pair_games} >= 20 THEN {lane_pair_wins} * 1.0 / NULLIF({lane_pair_games}, 0) END"
     format: percent
-    description: Share of the pair's lane games their side won.
+    description: "Share of the pair's lane games their side won; null under 20 games (the minimum_games term)."

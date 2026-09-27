@@ -5,7 +5,7 @@ description: Per team, hero and patch — how often the team played the hero and
 grain: one row per identified team, hero and patch
 use_cases:
   - Use for a team's most-played heroes (rank by team_hero_games) and its signature heroes (the signature_hero term).
-  - team_pick_rate, field_pick_rate and pick_rate_lift are per-row values for one patch; never sum them.
+  - team_pick_rate, field_pick_rate and pick_rate_lift are per-row values for one patch; the signature_lift metric reads them within a patch.
   - Avoid for heroes across all teams; that is hero_draft_stats.
 common_questions:
   - What are Team Spirit's most played heroes on the current patch?
@@ -31,17 +31,16 @@ fields:
   - {name: field_pick_rate, type: number, description: Share of all pro matches on the patch with the hero on either side.}
   - {name: pick_rate_lift, type: number, description: team_pick_rate minus field_pick_rate; how much more the team plays the hero than the field does.}
 dimensions:
-  - {name: team_name, type: string}
-  - {name: hero_name, type: string}
-  - {name: patch_name, type: string}
+  - {name: team_name, type: string, description: "The team."}
+  - {name: hero_name, type: string, description: "The hero."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
 metrics:
-  - {name: team_hero_games, agg: sum, expr: team_signature_heroes.games}
-  - {name: team_hero_wins, agg: sum, expr: team_signature_heroes.wins}
+  - {name: team_hero_games, agg: sum, expr: team_signature_heroes.games, description: "The team's matches with the hero; rank by it for a team's most-played heroes."}
+  - {name: team_hero_wins, agg: sum, expr: team_signature_heroes.wins, description: "Of those, matches the team won."}
   - name: team_hero_win_rate
     better: higher
-    type: ratio
-    numerator: team_hero_wins
-    denominator: team_hero_games
+    type: derived
+    expr: "CASE WHEN {team_hero_games} >= 20 THEN {team_hero_wins} * 1.0 / NULLIF({team_hero_games}, 0) END"
     format: percent
-    description: Share of the team's matches with the hero that it won.
+    description: "Share of the team's matches with the hero that it won; null under 20 games (the minimum_games term)."
   - {name: signature_lift, agg: max, expr: team_signature_heroes.pick_rate_lift, description: "pick_rate_lift of the row; read within one patch."}

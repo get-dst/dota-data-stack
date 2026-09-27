@@ -3,42 +3,49 @@ use_when:
     participation, deaths inside and outside fights, farm share and farm priority, lane
     results at 10 minutes, the space-created proxy (damage absorbed from enemy heroes,
     traded deaths), wards, runes and buybacks
-  - "which hero wins its lane, who creates space, which position farms most, who wards most,
-    how often a hero shows up to fights"
+  - "which hero or player wins its lane, who creates space, which position farms most, who
+    wards most, how often a hero shows up to fights, which team wins its lanes"
   - not for win rates, GPM, KDA, picks, bans or drafts — those have their own lenses
 sample_queries:
   - question: Which carry heroes win their lane most often on the current patch?
     sql: |
-      SELECT hero_name, SUM(games) AS games, SUM(lane_games) AS lane_games,
-             SUM(lanes_won) * 1.0 / SUM(lane_games) AS lane_win_rate
+      SELECT hero_playstyle.hero_name,
+             SUM(hero_playstyle.games) AS games,
+             CASE WHEN SUM(hero_playstyle.games) >= 10
+                  THEN SUM(hero_playstyle.lanes_won) * 1.0 / NULLIF(SUM(hero_playstyle.lane_games), 0) END AS lane_win_rate
       FROM marts.hero_playstyle AS hero_playstyle
       JOIN marts.dim_patch AS patches ON patches.patch_id = hero_playstyle.patch_id
-      WHERE patches.is_current = TRUE AND position_name = 'carry' AND games >= 10
-      GROUP BY hero_name
-      ORDER BY lane_win_rate DESC
+      WHERE patches.is_current = TRUE AND hero_playstyle.position = 1
+      GROUP BY hero_playstyle.hero_name
+      ORDER BY lane_win_rate DESC NULLS LAST
       LIMIT 10
   - question: What share of the side's gold does each position take at 10 minutes?
     sql: |
-      SELECT position_name, SUM(farm_games_10) AS games,
-             SUM(farm_share_10_total) / SUM(farm_games_10) AS farm_share_10
+      SELECT hero_playstyle.position,
+             SUM(hero_playstyle.farm_games_10) AS games,
+             SUM(hero_playstyle.farm_share_10_total) / SUM(hero_playstyle.farm_games_10) AS farm_share_10
       FROM marts.hero_playstyle AS hero_playstyle
-      GROUP BY position_name
-      ORDER BY farm_share_10 DESC
-  - question: Which offlaners absorb the most damage from enemy heroes per minute?
+      GROUP BY hero_playstyle.position
+      ORDER BY hero_playstyle.position
+  - question: Which hard support players place the most observer wards per game?
     sql: |
-      SELECT hero_name, SUM(games) AS games,
-             SUM(enemy_hero_damage_taken) / SUM(game_minutes) AS damage_absorbed_per_min
-      FROM marts.hero_playstyle AS hero_playstyle
-      WHERE position_name = 'offlane' AND games >= 10
-      GROUP BY hero_name
-      ORDER BY damage_absorbed_per_min DESC
+      SELECT player_playstyle.player_name,
+             SUM(player_playstyle.games) AS player_games,
+             CASE WHEN SUM(player_playstyle.games) >= 10
+                  THEN SUM(player_playstyle.observers_placed) * 1.0 / SUM(player_playstyle.games) END AS player_observers_per_game
+      FROM marts.player_playstyle AS player_playstyle
+      WHERE player_playstyle.main_position = 5
+      GROUP BY player_playstyle.player_name
+      ORDER BY player_observers_per_game DESC NULLS LAST
       LIMIT 10
   - question: Which team places the most observer wards per game?
     sql: |
-      SELECT team_name, COUNT(DISTINCT match_id) AS matches,
-             SUM(observers_placed) * 1.0 / COUNT(DISTINCT match_id) AS observers_per_match
+      SELECT vision_per_match.team_name,
+             COUNT(DISTINCT vision_per_match.match_id) AS matches,
+             CASE WHEN COUNT(DISTINCT vision_per_match.match_id) >= 20
+                  THEN SUM(vision_per_match.observers_placed) * 1.0 / COUNT(DISTINCT vision_per_match.match_id) END AS team_observers_per_match
       FROM marts.vision_and_runes AS vision_per_match
-      GROUP BY team_name
-      HAVING COUNT(DISTINCT match_id) >= 10
-      ORDER BY observers_per_match DESC
+      WHERE vision_per_match.team_name IS NOT NULL
+      GROUP BY vision_per_match.team_name
+      ORDER BY team_observers_per_match DESC NULLS LAST
       LIMIT 10

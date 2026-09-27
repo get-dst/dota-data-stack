@@ -25,12 +25,12 @@ fields:
   - {name: games, type: integer}
   - {name: wins, type: integer}
 dimensions:
-  - {name: hero_name, type: string}
-  - {name: match_date, type: date}
-  - {name: patch_name, type: string}
+  - {name: hero_name, type: string, description: "The hero."}
+  - {name: match_date, type: date, description: "Match date, UTC."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
 metrics:
-  - {name: daily_games, agg: sum, expr: pub_hero_trends.games}
-  - {name: daily_wins, agg: sum, expr: pub_hero_trends.wins}
+  - {name: daily_games, agg: sum, expr: pub_hero_trends.games, description: "Sampled games of the hero over the days in scope."}
+  - {name: daily_wins, agg: sum, expr: pub_hero_trends.wins, description: "Of those, games won."}
   - name: daily_win_rate
     better: higher
     type: derived

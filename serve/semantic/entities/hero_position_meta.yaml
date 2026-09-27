@@ -30,12 +30,12 @@ fields:
   - {name: hero_games, type: integer, description: The hero's positioned games on the patch; repeats on each of its position rows.}
   - {name: position_share, type: number, description: "games / hero_games, 0-1; a hero's five positions on a patch sum to 1."}
 dimensions:
-  - {name: hero_name, type: string}
-  - {name: patch_name, type: string}
-  - {name: position, type: integer}
+  - {name: hero_name, type: string, description: "The hero."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
+  - {name: position, type: integer, description: "1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support."}
 metrics:
-  - {name: position_games, agg: sum, expr: hero_position_meta.games, description: Games in the position.}
-  - {name: position_wins, agg: sum, expr: hero_position_meta.wins}
+  - {name: position_games, agg: sum, expr: hero_position_meta.games, description: "Games the hero was played in the position; with position = 1 to 5, the most-picked carries, mids, offlaners or supports."}
+  - {name: position_wins, agg: sum, expr: hero_position_meta.wins, description: "Games won by the hero in the position."}
   - {name: hero_total_games, agg: sum, expr: hero_position_meta.hero_games, description: "The hero's positioned games; only meaningful grouped or filtered by position."}
   - name: position_win_rate
     better: higher

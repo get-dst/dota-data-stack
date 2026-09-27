@@ -40,23 +40,23 @@ fields:
   - {name: picks_phase_3, type: integer, description: Picks in pick phase 3 (picks 9-10).}
   - {name: wins_phase_3, type: integer}
 dimensions:
-  - {name: hero_name, type: string}
-  - {name: patch_name, type: string}
+  - {name: hero_name, type: string, description: "The hero."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
 metrics:
-  - {name: hero_draft_picks, agg: sum, expr: hero_draft_stats.picks}
-  - {name: hero_draft_bans, agg: sum, expr: hero_draft_stats.bans}
+  - {name: hero_draft_picks, agg: sum, expr: hero_draft_stats.picks, description: "Times the hero was picked in drafted Captains Mode matches."}
+  - {name: hero_draft_bans, agg: sum, expr: hero_draft_stats.bans, description: "Times the hero was banned in drafted Captains Mode matches, by all teams together; rank by it for the most-banned heroes. The bans of one team are draft_phases.phase_bans filtered by team_name."}
   - {name: hero_contests, agg: sum, expr: hero_draft_stats.contests, description: Picks plus bans.}
-  - {name: hero_first_phase_bans, agg: sum, expr: hero_draft_stats.first_phase_bans}
-  - {name: hero_first_picks, agg: sum, expr: hero_draft_stats.first_picks}
-  - {name: hero_last_picks, agg: sum, expr: hero_draft_stats.last_picks}
-  - {name: hero_draft_wins, agg: sum, expr: hero_draft_stats.wins}
+  - {name: hero_first_phase_bans, agg: sum, expr: hero_draft_stats.first_phase_bans, description: "Times the hero was banned in the first ban phase (the first_phase term)."}
+  - {name: hero_first_picks, agg: sum, expr: hero_draft_stats.first_picks, description: "Times the hero was the first pick of the match (the first_pick term)."}
+  - {name: hero_last_picks, agg: sum, expr: hero_draft_stats.last_picks, description: "Times the hero was the last pick of the match (the last_pick term)."}
+  - {name: hero_draft_wins, agg: sum, expr: hero_draft_stats.wins, description: "Drafted picks of the hero whose side won."}
   - {name: drafted_matches_total, agg: sum, expr: hero_draft_stats.drafted_matches, description: "Drafted matches in scope, per hero: summed over one hero's patch rows it is the match count; summed over several heroes it is not."}
-  - {name: phase_1_picks, agg: sum, expr: hero_draft_stats.picks_phase_1}
-  - {name: phase_1_wins, agg: sum, expr: hero_draft_stats.wins_phase_1}
-  - {name: phase_2_picks, agg: sum, expr: hero_draft_stats.picks_phase_2}
-  - {name: phase_2_wins, agg: sum, expr: hero_draft_stats.wins_phase_2}
-  - {name: phase_3_picks, agg: sum, expr: hero_draft_stats.picks_phase_3}
-  - {name: phase_3_wins, agg: sum, expr: hero_draft_stats.wins_phase_3}
+  - {name: phase_1_picks, agg: sum, expr: hero_draft_stats.picks_phase_1, description: "Picks of the hero in pick phase 1 (picks 1-2 of the match)."}
+  - {name: phase_1_wins, agg: sum, expr: hero_draft_stats.wins_phase_1, description: "Of the phase-1 picks, those whose side won."}
+  - {name: phase_2_picks, agg: sum, expr: hero_draft_stats.picks_phase_2, description: "Picks of the hero in pick phase 2 (picks 3-8 of the match)."}
+  - {name: phase_2_wins, agg: sum, expr: hero_draft_stats.wins_phase_2, description: "Of the phase-2 picks, those whose side won."}
+  - {name: phase_3_picks, agg: sum, expr: hero_draft_stats.picks_phase_3, description: "Picks of the hero in pick phase 3 (picks 9-10 of the match)."}
+  - {name: phase_3_wins, agg: sum, expr: hero_draft_stats.wins_phase_3, description: "Of the phase-3 picks, those whose side won."}
   - name: contest_rate
     type: ratio
     numerator: hero_contests
@@ -95,29 +95,25 @@ metrics:
     description: Share of drafted matches in which the hero was the last pick.
   - name: draft_win_rate
     better: higher
-    type: ratio
-    numerator: hero_draft_wins
-    denominator: hero_draft_picks
+    type: derived
+    expr: "CASE WHEN {hero_draft_picks} >= 20 THEN {hero_draft_wins} * 1.0 / NULLIF({hero_draft_picks}, 0) END"
     format: percent
-    description: Share of the hero's drafted picks whose side won.
+    description: "Share of the hero's drafted picks whose side won; null under 20 picks (the minimum_games term)."
   - name: phase_1_win_rate
     better: higher
-    type: ratio
-    numerator: phase_1_wins
-    denominator: phase_1_picks
+    type: derived
+    expr: "CASE WHEN {phase_1_picks} >= 20 THEN {phase_1_wins} * 1.0 / NULLIF({phase_1_picks}, 0) END"
     format: percent
-    description: Win rate of the hero when picked in pick phase 1.
+    description: "Win rate of the hero when picked in pick phase 1; null under 20 such picks (the minimum_games term)."
   - name: phase_2_win_rate
     better: higher
-    type: ratio
-    numerator: phase_2_wins
-    denominator: phase_2_picks
+    type: derived
+    expr: "CASE WHEN {phase_2_picks} >= 20 THEN {phase_2_wins} * 1.0 / NULLIF({phase_2_picks}, 0) END"
     format: percent
-    description: Win rate of the hero when picked in pick phase 2.
+    description: "Win rate of the hero when picked in pick phase 2; null under 20 such picks (the minimum_games term)."
   - name: phase_3_win_rate
     better: higher
-    type: ratio
-    numerator: phase_3_wins
-    denominator: phase_3_picks
+    type: derived
+    expr: "CASE WHEN {phase_3_picks} >= 20 THEN {phase_3_wins} * 1.0 / NULLIF({phase_3_picks}, 0) END"
     format: percent
-    description: Win rate of the hero when picked in pick phase 3.
+    description: "Win rate of the hero when picked in pick phase 3; null under 20 such picks (the minimum_games term)."

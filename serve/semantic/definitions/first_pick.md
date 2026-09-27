@@ -1,6 +1,8 @@
 ---
 metric: first_pick
 summary: The first hero picked in a Captains Mode draft — one per match, made by the first-pick side.
+about: hero_draft_stats.first_pick_rate
+sql: SUM(hero_draft_stats.first_picks) * 1.0 / SUM(hero_draft_stats.drafted_matches)
 aliases: [first-pick, first picked, opening pick, first pick side, first-pick side]
 ---
 

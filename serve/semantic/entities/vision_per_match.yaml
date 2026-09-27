@@ -10,7 +10,7 @@ common_questions:
 source:
   connection: warehouse
   table: marts.vision_and_runes
-default_time_field: started_at
+default_time_field: match_date
 primary_key: [match_id, player_slot]
 population: Players in parsed professional matches in leagues OpenDota rates premium or
   professional, in the loaded window. Leagues it rates below professional are not counted.
@@ -46,42 +46,38 @@ fields:
   - {name: buybacks, type: integer}
   - {name: first_buyback_min, type: number, description: "Minute of the first buyback; null without one."}
   - {name: duration_min, type: number}
-  - {name: started_at, type: timestamp}
   - {name: match_date, type: date}
   - {name: patch_id, type: integer}
   - {name: patch_name, type: string}
   - {name: league_id, type: integer}
   - {name: league_name, type: string}
 dimensions:
-  - {name: team_name, type: string}
-  - {name: patch_name, type: string}
-  - {name: league_name, type: string}
-  - {name: position, type: integer}
-  - {name: position_name, type: string}
-  - {name: match_date, type: date}
+  - {name: team_name, type: string, description: "The team."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
+  - {name: league_name, type: string, description: "League or tournament."}
+  - {name: position_name, type: string, description: "The position as a word: carry, mid, offlane, soft support or hard support; the filter for questions about carries, mids, offlaners or supports."}
+  - {name: match_date, type: date, description: "Match date, UTC."}
 metrics:
   - {name: vision_player_games, agg: count, expr: "vision_per_match.match_id", description: "Player-games (rows)."}
   - {name: matches, agg: count_distinct, expr: "vision_per_match.match_id", description: "Distinct matches in scope; a team's games, not its player-games."}
   - {name: avg_observers, agg: avg, expr: "vision_per_match.observers_placed", description: "Observer wards per player-game, for a team, league, date or match. A hero, position or player rate is hero_playstyle.observers_per_game or player_playstyle."}
   - {name: avg_sentries, agg: avg, expr: "vision_per_match.sentries_placed", description: "Sentry wards per player-game."}
-  - {name: total_observers, agg: sum, expr: "vision_per_match.observers_placed"}
-  - {name: total_sentries, agg: sum, expr: "vision_per_match.sentries_placed"}
-  - {name: total_bounty_runes, agg: sum, expr: "vision_per_match.bounty_runes"}
-  - {name: total_power_runes, agg: sum, expr: "vision_per_match.power_runes"}
-  - {name: total_wisdom_runes, agg: sum, expr: "vision_per_match.wisdom_runes"}
-  - {name: total_water_runes, agg: sum, expr: "vision_per_match.water_runes"}
-  - {name: total_buybacks, agg: sum, expr: "vision_per_match.buybacks"}
+  - {name: total_observers, agg: sum, expr: "vision_per_match.observers_placed", description: "Observer wards placed, summed."}
+  - {name: total_sentries, agg: sum, expr: "vision_per_match.sentries_placed", description: "Sentry wards placed, summed."}
+  - {name: total_bounty_runes, agg: sum, expr: "vision_per_match.bounty_runes", description: "Bounty runes taken, summed."}
+  - {name: total_power_runes, agg: sum, expr: "vision_per_match.power_runes", description: "Power runes taken, summed."}
+  - {name: total_wisdom_runes, agg: sum, expr: "vision_per_match.wisdom_runes", description: "Wisdom runes taken, summed."}
+  - {name: total_water_runes, agg: sum, expr: "vision_per_match.water_runes", description: "Water runes taken, summed."}
+  - {name: total_buybacks, agg: sum, expr: "vision_per_match.buybacks", description: "Buybacks, summed."}
   - {name: avg_first_buyback_min, agg: avg, expr: "vision_per_match.first_buyback_min", description: "Average minute of the first buyback, over games with one."}
-  - name: observers_per_match
-    type: ratio
-    numerator: total_observers
-    denominator: matches
-    description: "Observer wards per match of the group: for a team, its five players together; for one hero or player it equals avg_observers. State the matches beside it."
-  - name: sentries_per_match
-    type: ratio
-    numerator: total_sentries
-    denominator: matches
-    description: "Sentry wards per match of the group: for a team, its five players together; for one hero or player it equals avg_sentries. State the matches beside it."
+  - name: team_observers_per_match
+    type: derived
+    expr: "CASE WHEN {matches} >= 20 THEN {total_observers} * 1.0 / NULLIF({matches}, 0) END"
+    description: "Observer wards per match of the group: for a team, its five players together; null under 20 matches. State the matches beside it."
+  - name: team_sentries_per_match
+    type: derived
+    expr: "CASE WHEN {matches} >= 20 THEN {total_sentries} * 1.0 / NULLIF({matches}, 0) END"
+    description: "Sentry wards per match of the group: for a team, its five players together; null under 20 matches. State the matches beside it."
   - name: power_runes_per_game
     type: ratio
     numerator: total_power_runes

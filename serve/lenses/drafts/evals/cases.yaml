@@ -45,3 +45,14 @@
 - question: Which hero is banned most in public matchmaking?
   expect: refuse
   status: approved
+# A counter is ranked by the matchup win rate, with its games floor.
+- question: Which heroes counter Faceless Void in pro play?
+  expect: answer
+  status: approved
+- question: What's the most contested hero right now?
+  expect: answer
+  status: approved
+# Why a hero was banned is not in the draft log.
+- question: Why did Team Spirit ban Pudge so much?
+  expect: refuse
+  status: approved

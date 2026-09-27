@@ -1,22 +1,25 @@
 name: player_performances
-description: One player's performance in one professional match; ten rows per match. Every
-  rate and average here carries the minimum-games floor inside it, so a hero or player seen
-  in a handful of games shows no rate instead of a perfect one.
+description: One player's performance in one professional match; ten rows per match, the
+  largest pro table. The table for named pro players (filter pro_name, e.g. Yatoro) and
+  their stats, and for heroes in one role (filter position_name). Every rate and average
+  here carries the minimum-games floor inside it, so a hero or player seen in a handful of
+  games shows no rate instead of a perfect one.
 grain: one row per player per match, so counting rows counts player-games, not matches
 use_cases:
-  - Use for hero win rates and pick counts, player stats (GPM, XPM, KDA, kills), and rankings of players or heroes over a period or a patch.
+  - Use for player stats (GPM, XPM, KDA, kills), a named pro's heroes and win rate, rankings of players, and heroes filtered to one role (carries, mids, pos 4).
+  - Avoid for a hero's numbers regardless of role; hero_patch_trends (per patch) and hero_daily_stats (per date) hold them in far smaller tables.
   - Filter position_name (carry, mid, offlane, soft support, hard support) for questions about the players of one role.
   - Win rate is null under 20 player-games and the averages are null under 10 (the minimum_games term), so a ranking lists only rows past the floor; report the games beside every rate.
   - Avoid for a team's matches, wins or win rate; those are team_matches. Avoid for match-level facts (duration, winner) — those repeat ten times here; use pro_matches.
 common_questions:
-  - Which hero has the highest win rate on the current patch?
+  - Which carry heroes have the highest win rate on the current patch?
   - Who has the highest average GPM this month?
   - Who is the best mid player on the current patch?
   - Which heroes does Yatoro play most?
 source:
   connection: warehouse
   table: marts.fact_player_match
-default_time_field: started_at
+default_time_field: match_date
 primary_key: [match_id, player_slot]
 population: Every player in every professional match in the loaded window in a league
   OpenDota rates premium or professional. Leagues it rates below professional are not
@@ -28,7 +31,7 @@ fields:
   - {name: team_id, type: integer, description: The team this player played for in this match.}
   - {name: team_name, type: string}
   - {name: account_id, type: integer, description: Steam account id.}
-  - {name: player_name, type: string, description: "The pro's competitive name when OpenDota knows it, else the Steam persona name."}
+  - {name: player_name, type: string, description: "The name shown for the player: the pro name when OpenDota lists one, else the Steam persona. The grouping for rankings of players; to filter a named pro, use pro_name."}
   - {name: pro_name, type: string, description: Competitive name; null for players OpenDota does not list as pro.}
   - {name: player_country, type: string}
   - {name: hero_id, type: integer}
@@ -53,24 +56,9 @@ fields:
   - {name: rune_pickups, type: integer}
   - {name: roshans_killed, type: integer}
   - {name: towers_killed, type: integer}
-  - {name: teamfight_participation, type: number}
   - {name: stuns, type: number, description: Seconds of stun dealt.}
-  - {name: lane, type: integer, description: "Map lane OpenDota parsed: 1 bottom, 2 middle, 3 top, 4 Radiant jungle, 5 Dire jungle (bottom is Radiant's safe lane, Dire's off lane). For the lane relative to the player's side use lane_role."}
-  - {name: lane_role, type: integer, description: "Lane relative to the player's side: 1 safe lane, 2 mid, 3 off lane, 4 jungle; null when not parsed."}
-  - {name: is_roaming, type: boolean}
-  - {name: position, type: integer, description: "1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support — derived from lane and farm rank inside the side (the position definition)."}
+  - {name: position, type: integer, description: "1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support — derived from lane and farm rank inside the side (the position definition); on equal gold per minute the laner with more last hits, then the lower player slot, takes the lower number."}
   - {name: position_name, type: string, description: "The position as a word: carry, mid, offlane, soft support or hard support; the filter for questions about carries, mids, offlaners or supports. Null when no position could be derived."}
-  - {name: item_0, type: integer}
-  - {name: item_1, type: integer}
-  - {name: item_2, type: integer}
-  - {name: item_3, type: integer}
-  - {name: item_4, type: integer}
-  - {name: item_5, type: integer}
-  - {name: item_neutral, type: integer}
-  - {name: has_aghanims_scepter, type: boolean}
-  - {name: has_aghanims_shard, type: boolean}
-  - {name: leaver_status, type: integer}
-  - {name: abandons, type: integer}
   - {name: started_at, type: timestamp}
   - {name: match_date, type: date}
   - {name: patch_id, type: integer}
@@ -79,34 +67,34 @@ fields:
   - {name: league_name, type: string}
   - {name: duration_min, type: number}
 dimensions:
-  - {name: hero_name, type: string}
-  - {name: team_name, type: string}
-  - {name: player_name, type: string}
-  - {name: patch_name, type: string}
-  - {name: league_name, type: string}
-  - {name: match_date, type: date}
-  - {name: is_radiant, type: boolean}
-  - {name: position, type: integer}
-  - {name: position_name, type: string}
+  - {name: hero_name, type: string, description: "The hero."}
+  - {name: team_name, type: string, description: "The team."}
+  - {name: player_name, type: string, description: "The name shown for the player: the pro name when OpenDota lists one, else the Steam persona. The grouping for rankings of players; to filter a named pro, use pro_name."}
+  - {name: pro_name, type: string, description: "The competitive name OpenDota lists for the player, e.g. Yatoro: the filter for one named pro. Null for accounts OpenDota does not list; they still count as players in pro matches."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
+  - {name: league_name, type: string, description: "League or tournament."}
+  - {name: match_date, type: date, description: "Match date, UTC."}
+  - {name: is_radiant, type: boolean, description: "True for the Radiant side."}
+  - {name: position_name, type: string, description: "The position as a word: carry, mid, offlane, soft support or hard support; the filter for questions about carries, mids, offlaners or supports. Null when no position could be derived."}
 metrics:
   - {name: games, agg: count, expr: player_performances.match_id, description: "Player-games, i.e. rows; the sample size to state beside every rate."}
-  - {name: wins, agg: sum, expr: "CASE WHEN player_performances.is_win THEN 1 ELSE 0 END"}
+  - {name: wins, agg: sum, expr: "CASE WHEN player_performances.is_win THEN 1 ELSE 0 END", description: "Player-games won, a count."}
   - name: win_rate
     better: higher
     type: derived
     expr: "CASE WHEN {games} >= 20 THEN {wins} * 1.0 / NULLIF({games}, 0) END"
     format: percent
     description: Wins divided by games at whatever grouping the question asks (hero, player); null under 20 games (the minimum_games term), so a small sample cannot rank first.
-  - {name: total_kills, agg: sum, expr: player_performances.kills}
-  - {name: total_deaths, agg: sum, expr: player_performances.deaths}
-  - {name: total_assists, agg: sum, expr: player_performances.assists}
+  - {name: total_kills, agg: sum, expr: player_performances.kills, description: "Kills, summed over player-games."}
+  - {name: total_deaths, agg: sum, expr: player_performances.deaths, description: "Deaths, summed over player-games."}
+  - {name: total_assists, agg: sum, expr: player_performances.assists, description: "Assists, summed over player-games."}
   - {name: total_kda, agg: sum, expr: player_performances.kda, description: Sum of per-game KDA; divide by games for the average.}
   - {name: total_gpm, agg: sum, expr: player_performances.gold_per_min, description: Sum of per-game GPM; divide by games for the average.}
   - {name: total_xpm, agg: sum, expr: player_performances.xp_per_min, description: Sum of per-game XPM; divide by games for the average.}
-  - {name: total_last_hits, agg: sum, expr: player_performances.last_hits}
-  - {name: total_hero_damage, agg: sum, expr: player_performances.hero_damage}
-  - {name: total_tower_damage, agg: sum, expr: player_performances.tower_damage}
-  - {name: total_net_worth, agg: sum, expr: player_performances.net_worth}
+  - {name: total_last_hits, agg: sum, expr: player_performances.last_hits, description: "Last hits, summed over player-games."}
+  - {name: total_hero_damage, agg: sum, expr: player_performances.hero_damage, description: "Hero damage, summed over player-games."}
+  - {name: total_tower_damage, agg: sum, expr: player_performances.tower_damage, description: "Tower damage, summed over player-games."}
+  - {name: total_net_worth, agg: sum, expr: player_performances.net_worth, description: "End-of-game net worth, summed over player-games."}
   - name: avg_gpm
     better: higher
     type: derived

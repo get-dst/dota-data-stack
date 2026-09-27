@@ -30,8 +30,10 @@
 - question: Which hero has the highest win rate this month?
   expect: answer
   status: approved
+# Player stats moved to pro_players: this lens selects the player grain for heroes in one
+# role only, so a player-stat question is refused here with a pointer to that lens.
 - question: Who has the highest average GPM?
-  expect: answer
+  expect: refuse
   status: approved
 # Retired: win_rate stopped being an ambiguous term once hero_win_rate and team_win_rate
 # became explicit; a bare "win rate" now answers the player-grain metric.
@@ -107,3 +109,28 @@
 - question: When do pros buy Black King Bar on Juggernaut?
   expect: answer
   status: retired
+# "Right now" is the current patch, not the whole loaded window.
+- question: What's the most picked hero in pro Dota right now?
+  expect: answer
+  status: approved
+# A role question reads the per-position table (hero_position_meta).
+- question: Which carry heroes are picked most in pro matches?
+  expect: answer
+  status: approved
+# A pick rate over several patches divides picks by those patches' matches, not a per-patch peak.
+- question: How often is Pudge picked in pro matches?
+  expect: answer
+  status: approved
+- question: What's Team Spirit's record this patch?
+  expect: answer
+  status: approved
+- question: What changed for Invoker in the latest patch?
+  expect: answer
+  status: approved
+# The winner of a tournament is the winner of its final, not the standings leader.
+- question: Who won The International 2026?
+  expect: answer
+  status: approved
+- question: Who will win The International 2027?
+  expect: refuse
+  status: approved

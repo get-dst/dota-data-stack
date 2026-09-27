@@ -12,7 +12,7 @@ common_questions:
 source:
   connection: warehouse
   table: marts.fact_pub_match
-default_time_field: started_at
+default_time_field: match_date
 primary_key: [match_id]
 population: "A sample of public matchmaking games: the newest matches OpenDota lists each
   time the loader runs, not every game played. Ranked All Pick only; Turbo and unranked
@@ -22,25 +22,22 @@ fields:
   - {name: match_id, type: integer}
   - {name: started_at, type: timestamp}
   - {name: match_date, type: date}
-  - {name: duration_s, type: integer}
   - {name: duration_min, type: number}
   - {name: radiant_win, type: boolean}
   - {name: avg_rank_tier, type: integer, description: "Average rank tier of the ten players: tens digit is the bracket, ones digit the stars."}
   - {name: bracket_id, type: integer, description: "1 Herald … 8 Immortal."}
   - {name: bracket_name, type: string}
   - {name: game_type, type: string, description: "ranked_all_pick, unranked_all_pick or turbo."}
-  - {name: game_mode_id, type: integer}
-  - {name: lobby_type_id, type: integer}
   - {name: patch_id, type: integer}
   - {name: patch_name, type: string}
 dimensions:
-  - {name: bracket_name, type: string}
-  - {name: patch_name, type: string}
-  - {name: match_date, type: date}
+  - {name: bracket_name, type: string, description: "Rank bracket, Herald to Immortal."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
+  - {name: match_date, type: date, description: "Match date, UTC."}
 metrics:
   - {name: match_count, agg: count, expr: pub_matches.match_id, description: Sampled matches.}
-  - {name: avg_duration_min, agg: avg, expr: pub_matches.duration_min}
-  - {name: radiant_wins, agg: sum, expr: "CASE WHEN pub_matches.radiant_win THEN 1 ELSE 0 END"}
+  - {name: avg_duration_min, agg: avg, expr: pub_matches.duration_min, description: "Average game length in minutes."}
+  - {name: radiant_wins, agg: sum, expr: "CASE WHEN pub_matches.radiant_win THEN 1 ELSE 0 END", description: "Sampled matches the Radiant side won."}
   - name: radiant_win_rate
     type: ratio
     numerator: radiant_wins

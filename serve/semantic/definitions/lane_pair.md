@@ -1,6 +1,8 @@
 ---
 metric: lane_pair
 summary: Two heroes of the same side that shared a lane in a pro match, counted on lane_pairings.
+about: lane_pairings.lane_pair_games
+sql: SUM(lane_pairings.games)
 aliases: [lane pair, laning pair, lane duo, safe lane pair, off lane pair, lane partners, laned with]
 ---
 

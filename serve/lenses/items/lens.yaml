@@ -3,9 +3,9 @@ display_name: Dota 2 itemization
 description: Item builds in professional Dota 2 matches from OpenDota — core build order,
   item timings and their win rates, starting builds, final inventories and neutral items.
 owner: dota-data-stack
-# Match times are UTC epochs; the business day is UTC.
+# Match dates are UTC dates; the business day is UTC.
 timezone: UTC
-# The loader runs hourly; two days without new matches is stale.
+# The loader runs every four hours; two days without new matches is stale.
 stale_after_days: 2
 connections: [warehouse]
 select:
@@ -30,13 +30,13 @@ select:
     - minimum_games
 not_computable:
   - measure: items in public matches
-    aliases: [pub builds, pubs, public matches, ranked pubs, matchmaking, my bracket]
+    aliases: [pub builds, pubs, public matches, ranked pubs, matchmaking, my bracket, turbo, turbo mode, in my games]
     reason: the public match feed carries no items; every item table here is from professional matches
   - measure: a named player's item builds
     aliases: [player build, what does a pro player build, personal build, my build, my items]
     reason: the item tables are aggregated per hero and patch and carry no player identity
   - measure: item activations
-    aliases: [item uses, how many times an item was used, times activated, cast count]
+    aliases: [item uses, how many times an item was used, times activated, activated, activation, activations, times used, cast count]
     reason: the match records loaded here carry what was bought and held, not how often an item was used
   - measure: neutral item timing
     aliases: [when a neutral item drops, neutral item drop, neutral drop, get their neutral, get their tier 1 neutral, get their tier 2 neutral, get their tier 3 neutral, get their tier 4 neutral, get their tier 5 neutral, neutral item minute, neutral item timing, neutral timing]

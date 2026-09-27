@@ -30,17 +30,20 @@ fields:
   - {name: earliest_bought_min, type: number}
   - {name: is_major_item, type: boolean, description: "True for a major item: at least 2000 gold, assembled or with its own active ability, not a recipe, consumable or neutral item."}
 dimensions:
-  - {name: hero_name, type: string}
-  - {name: item_name, type: string}
-  - {name: patch_name, type: string}
-  - {name: is_major_item, type: boolean}
+  - {name: hero_name, type: string, description: "The hero."}
+  - {name: item_name, type: string, description: "The item."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
 metrics:
-  - {name: total_games_bought, agg: sum, expr: item_timings.games_bought}
-  - {name: total_wins_when_bought, agg: sum, expr: item_timings.wins_when_bought}
-  - {name: typical_minute, agg: avg, expr: item_timings.avg_first_bought_min, description: Typical first-purchase minute.}
+  - {name: total_games_bought, agg: sum, expr: item_timings.games_bought, description: "Pro games in which the hero bought the item at least once; the sample size beside the typical minute."}
+  - {name: total_wins_when_bought, agg: sum, expr: item_timings.wins_when_bought, description: "Of the games that bought the item, those won."}
+  - {name: total_bought_minutes, agg: sum, expr: "item_timings.avg_first_bought_min * item_timings.games_bought", description: "First-purchase minutes summed over the games that bought the item; divide by total_games_bought for the typical minute."}
+  - name: typical_minute
+    type: derived
+    expr: "{total_bought_minutes} * 1.0 / NULLIF({total_games_bought}, 0)"
+    description: "The minute pros typically first buy the item on the hero (the item_timing term): the average first-purchase minute over the games that bought it, weighted by games across patches. Report total_games_bought beside it."
   - name: win_rate_when_bought
     better: higher
-    type: ratio
-    numerator: total_wins_when_bought
-    denominator: total_games_bought
+    type: derived
+    expr: "CASE WHEN {total_games_bought} >= 20 THEN {total_wins_when_bought} * 1.0 / NULLIF({total_games_bought}, 0) END"
     format: percent
+    description: "Share of the games that bought the item that were won; null under 20 games (the minimum_games term)."

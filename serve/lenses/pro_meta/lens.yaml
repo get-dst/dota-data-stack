@@ -1,18 +1,23 @@
 name: pro_meta
 display_name: Dota 2 pro meta
-description: Professional Dota 2 matches from OpenDota — heroes, drafts, teams, patches,
-  gold leads, objectives and positions.
-owner: dota-d-stack
-# Match times are UTC epochs; the business day is UTC.
+description: Professional Dota 2 matches from OpenDota — the hero meta per patch and
+  position, teams and their records, leagues and who won them, patch notes, gold leads,
+  comebacks and first objectives. Players are in pro_players, drafts in drafts, items in
+  items.
+owner: dota-data-stack
+# Match dates are UTC dates; the business day is UTC.
 timezone: UTC
-# The loader runs daily; two days without new matches is stale.
+# The loader runs every four hours; two days without new matches is stale.
 stale_after_days: 2
 connections: [warehouse]
 select:
   entities:
     - pro_matches
     - team_matches
-    - player_performances
+    # The player grain serves heroes filtered to one role (carries, pos 4) here; player
+    # stats live on pro_players, and hero numbers per patch or date on the rollups.
+    - name: player_performances
+      metrics: [games, wins, win_rate]
     - hero_daily_stats
     - heroes
     - patches
@@ -32,14 +37,27 @@ select:
     - team_win_rate
     - pick_rate
     - ban_rate
-    - contest_rate
     - current_patch
     - pro_match
     - position
     - minimum_games
     - comeback
     - first_objective
+    - tournament_winner
 not_computable:
+  - measure: item builds
+    aliases: [item build, item builds, what do pros build, build on, what to buy, core build, core items, first item, first major item, starting items, starting build, neutral item, neutral items, item timing, when do pros buy, when do pros get]
+    route_to: items
+    reason: item builds, timings and inventories are served per hero by the items lens
+  # The player grain is selected here for hero win rates in one role only; per-game player
+  # stats are the pro_players lens, and the refusal names it.
+  - measure: player stats
+    aliases: [GPM, XPM, KDA, gold per minute, experience per minute, average kills, average deaths, assists per game, last hits, hero damage, tower damage]
+    route_to: pro_players
+    reason: per-game player stats are served by the pro_players lens
+  - measure: predictions
+    aliases: [prediction, predictions, predict, who will win, will win, going to win, odds, betting odds, forecast, favourite to win, favorite to win]
+    reason: the warehouse holds matches already played; it cannot say who will win a match or an event that has not happened
   - measure: MMR
     aliases: [rank, skill bracket, rating of players, medal]
     reason: professional matches carry no matchmaking rating; only teams have an OpenDota rating
@@ -47,7 +65,7 @@ not_computable:
     aliases: [earnings, winnings, prize pool]
     reason: OpenDota's match feed carries no prize data
   - measure: personal match history
-    aliases: [my matches, my win rate, my account, my games, steam id, dotabuff profile]
+    aliases: [my matches, my win rate, my account, my games, steam id, steam account, account id, dotabuff profile]
     reason: this lens holds professional matches, not any individual player's public history
   - measure: tier-3 leagues
     aliases: [tier 3, tier-3, tier three, excluded leagues, amateur leagues, Destiny League, Dota 2 Space League]

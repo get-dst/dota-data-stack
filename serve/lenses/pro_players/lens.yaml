@@ -3,14 +3,15 @@ display_name: Dota 2 pro players
 description: Professional players and their performances — who plays what, how well, for
   which team, from OpenDota's pro matches.
 owner: dota-data-stack
+# Match dates are UTC dates; the business day is UTC.
 timezone: UTC
+# The loader runs every four hours; two days without new matches is stale.
 stale_after_days: 2
 connections: [warehouse]
 select:
   entities:
     - player_performances
     - pro_players
-    - pro_matches
     - heroes
     - patches
     - teams
@@ -22,6 +23,13 @@ select:
     - pro_match
     - minimum_games
 not_computable:
+  - measure: item builds
+    aliases: [item build, item builds, what do pros build, build on, what to buy, core build, core items, first item, first major item, starting items, starting build, neutral item, neutral items, item timing, when do pros buy, when do pros get]
+    route_to: items
+    reason: item builds are served per hero by the items lens; a named player's own builds are not in the item tables
+  - measure: predictions
+    aliases: [prediction, predictions, predict, who will win, will win, going to win, odds, forecast]
+    reason: the warehouse holds matches already played; it cannot say how a player will do in games that have not happened
   - measure: MMR
     aliases: [rank, medal, skill bracket, leaderboard rank]
     reason: professional matches carry no matchmaking rating
@@ -29,7 +37,7 @@ not_computable:
     aliases: [prize money, winnings, salary]
     reason: OpenDota's match feed carries no money
   - measure: personal match history
-    aliases: [my matches, my win rate, my account, my games, steam id]
+    aliases: [my matches, my win rate, my account, my games, steam id, steam account, account id]
     reason: this lens holds professional players only, not any individual account's public games
   - measure: tier-3 leagues
     aliases: [tier 3, tier-3, tier three, excluded leagues, amateur leagues, Destiny League, Dota 2 Space League]

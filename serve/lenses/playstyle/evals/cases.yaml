@@ -45,3 +45,14 @@
 - question: What share of the side's gold has a carry earned at 10 minutes, on average?
   expect: answer
   status: approved
+# A team's lane rate carries a 20-match floor, so a team seen twice cannot top it.
+- question: Which team wins its lanes most often?
+  expect: answer
+  status: approved
+# Players, not heroes.
+- question: Which hard support players place the most observer wards per game?
+  expect: answer
+  status: approved
+- question: Who creates the most space among offlaners?
+  expect: answer
+  status: approved

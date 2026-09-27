@@ -12,7 +12,6 @@ fields:
   - {name: patch_ended_at, type: timestamp, description: Release time of the next patch; null for the current one.}
   - {name: is_current, type: boolean, description: "True for exactly one row, the patch in play now."}
 dimensions:
-  - {name: patch_name, type: string}
-  - {name: is_current, type: boolean}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
 metrics:
-  - {name: patch_count, agg: count, expr: patches.patch_id}
+  - {name: patch_count, agg: count, expr: patches.patch_id, description: "Number of game versions."}

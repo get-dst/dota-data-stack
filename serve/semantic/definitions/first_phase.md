@@ -1,6 +1,8 @@
 ---
 metric: first_phase
 summary: The first of the three phases of a Captains Mode draft — the opening 7 bans and the first 2 picks.
+about: hero_draft_stats.first_phase_ban_rate
+sql: SUM(hero_draft_stats.first_phase_bans) * 1.0 / SUM(hero_draft_stats.drafted_matches)
 aliases: [first phase, first ban phase, opening bans, phase one, early bans, first pick phase]
 ---
 

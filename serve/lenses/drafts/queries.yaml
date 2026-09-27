@@ -1,17 +1,19 @@
 use_when:
-  - questions about professional Dota 2 drafts — picks, bans, draft phases, first and last picks, contested heroes
-  - hero against hero and lane partners in pro matches
-  - what a pro team drafts — its lineups, most-played and signature heroes
+  - the professional draft itself — bans by draft phase, first and last picks, contest rate (picks plus bans), how the first-pick side does, a hero's win rate by pick phase
+  - hero against hero in pro matches (counters) and lane partners
+  - what a pro team drafts — the heroes it bans, its lineups, most-played and signature heroes
+  - not for a hero's overall pick, ban or win rate on a patch; that hero meta is on pro_meta
 sample_queries:
   - question: Which heroes were the most contested in pro drafts on the current patch?
     sql: |
-      SELECT hero_name,
-             SUM(contests) AS hero_contests,
-             SUM(contests) * 1.0 / SUM(drafted_matches) AS contest_rate
+      SELECT hero_draft_stats.hero_name,
+             SUM(hero_draft_stats.contests) AS hero_contests,
+             CAST(SUM(hero_draft_stats.contests) AS DOUBLE)
+               / NULLIF(SUM(hero_draft_stats.drafted_matches), 0) AS contest_rate
       FROM marts.hero_draft_stats AS hero_draft_stats
       JOIN marts.dim_patch AS patches ON patches.patch_id = hero_draft_stats.patch_id
       WHERE patches.is_current = TRUE
-      GROUP BY hero_name
+      GROUP BY hero_draft_stats.hero_name
       ORDER BY contest_rate DESC
       LIMIT 10
   - question: How often does the side with the first pick win?

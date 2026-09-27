@@ -51,3 +51,13 @@
 - question: When do pros buy Black King Bar on Juggernaut?
   expect: answer
   status: approved
+# A neutral item seen in one game cannot top a win-rate ranking.
+- question: What is the best neutral item?
+  expect: answer
+  status: approved
+- question: When do pros get Blink Dagger on Earthshaker?
+  expect: answer
+  status: approved
+- question: What should I build on Juggernaut in Turbo?
+  expect: refuse
+  status: approved

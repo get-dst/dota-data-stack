@@ -12,7 +12,7 @@ common_questions:
 source:
   connection: warehouse
   table: marts.match_objectives
-default_time_field: started_at
+default_time_field: match_date
 primary_key: [match_id]
 population: Every professional match in the loaded window in a league OpenDota rates
   premium or professional. A match whose objective log is empty (has_objective_log false)
@@ -31,16 +31,13 @@ fields:
   - {name: radiant_team_name, type: string}
   - {name: dire_team_name, type: string}
   - {name: has_objective_log, type: boolean}
-  - {name: first_blood_s, type: integer, description: "Game seconds of first blood; negative before the horn."}
-  - {name: first_blood_min, type: number}
+  - {name: first_blood_min, type: number, description: "Game minute of first blood; negative before the horn."}
   - {name: first_blood_side, type: string, description: "radiant or dire: the side that made the first kill."}
   - {name: first_blood_side_won, type: boolean}
-  - {name: first_tower_s, type: integer, description: Game seconds when the first tower fell.}
-  - {name: first_tower_min, type: number}
+  - {name: first_tower_min, type: number, description: "Game minute the first tower fell."}
   - {name: first_tower_side, type: string, description: "radiant or dire: the side that did not own the first tower to fall."}
   - {name: first_tower_side_won, type: boolean}
-  - {name: first_roshan_s, type: integer, description: Game seconds of the first Roshan kill.}
-  - {name: first_roshan_min, type: number}
+  - {name: first_roshan_min, type: number, description: "Game minute of the first Roshan kill; null when Roshan was never killed."}
   - {name: first_roshan_side, type: string, description: "radiant or dire: the side that killed Roshan first."}
   - {name: first_roshan_side_won, type: boolean}
   - {name: roshan_kills, type: integer, description: Roshan kills by both sides.}
@@ -50,17 +47,17 @@ fields:
   - {name: dire_aegis, type: integer, description: "Aegis pickups by Dire heroes, stolen ones included."}
   - {name: aegis_stolen, type: integer, description: Aegis pickups by the side that did not kill Roshan.}
 dimensions:
-  - {name: patch_name, type: string}
-  - {name: league_name, type: string}
-  - {name: match_date, type: date}
-  - {name: first_blood_side, type: string}
-  - {name: first_tower_side, type: string}
-  - {name: first_roshan_side, type: string}
-  - {name: winner_side, type: string}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
+  - {name: league_name, type: string, description: "League or tournament."}
+  - {name: match_date, type: date, description: "Match date, UTC."}
+  - {name: first_blood_side, type: string, description: "radiant or dire: the side that made the first kill."}
+  - {name: first_tower_side, type: string, description: "radiant or dire: the side that did not own the first tower to fall."}
+  - {name: first_roshan_side, type: string, description: "radiant or dire: the side that killed Roshan first."}
+  - {name: winner_side, type: string, description: "radiant or dire."}
 metrics:
   - {name: objective_matches, agg: count, expr: match_objectives.match_id, description: Pro matches.}
   - {name: avg_first_tower_min, agg: avg, expr: match_objectives.first_tower_min, description: Average minute the first tower falls.}
   - {name: avg_first_roshan_min, agg: avg, expr: match_objectives.first_roshan_min, description: "Average minute of the first Roshan kill, over matches where Roshan died."}
   - {name: avg_roshan_kills, agg: avg, expr: match_objectives.roshan_kills, description: Roshan kills per match.}
-  - {name: total_roshan_kills, agg: sum, expr: match_objectives.roshan_kills}
-  - {name: total_aegis_stolen, agg: sum, expr: match_objectives.aegis_stolen}
+  - {name: total_roshan_kills, agg: sum, expr: match_objectives.roshan_kills, description: "Roshan kills by both sides, summed over matches."}
+  - {name: total_aegis_stolen, agg: sum, expr: match_objectives.aegis_stolen, description: "Aegis pickups by the side that did not kill Roshan, summed over matches."}

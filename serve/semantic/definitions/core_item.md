@@ -3,7 +3,6 @@ metric: core_item
 summary: A hero's core items are the first three major items finished in a game, in order; "first item" means item_order = 'first' (item_slot 1) on hero_core_items.
 aliases: [core build, core items, build order, item order, first item, second item, third item, first major item, rush item]
 about: hero_core_items.item_slot
-sql: hero_core_items.item_slot <= 3
 ---
 
 Read from hero_core_items. Within one pro game, the hero's major items are ordered by the

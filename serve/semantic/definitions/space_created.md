@@ -1,6 +1,8 @@
 ---
 metric: space_created
 summary: A declared proxy for "space", in two separate parts — damage absorbed from enemy heroes per game minute, and the share of the hero's deaths the side traded for a tower or Roshan within 60 seconds. No combined score.
+about: hero_playstyle.damage_absorbed_per_min
+sql: SUM(hero_playstyle.enemy_hero_damage_taken) * 1.0 / SUM(hero_playstyle.game_minutes)
 aliases: [space, create space, creates space, creating space, space maker, space creator, making space, makes space, draws attention, absorbs attention, attention absorbed, damage absorbed, trade deaths, traded deaths, trading deaths, sacrifice]
 ---
 

@@ -36,3 +36,22 @@
     JOIN marts.dim_patch AS patches ON patches.patch_id = match_leads.patch_id
     WHERE patches.is_current = TRUE
   status: active
+# The winner of a tournament is the winner of its last match; the standings leader is not
+# necessarily it (the tournament_winner term). The event is over, so the answer is fixed.
+- question: Who won The International 2026?
+  sql: |
+    SELECT CASE WHEN pro_matches.radiant_win THEN pro_matches.radiant_team_name
+                ELSE pro_matches.dire_team_name END AS tournament_winner
+    FROM marts.fact_match AS pro_matches
+    WHERE pro_matches.league_name = 'The International 2026'
+    ORDER BY pro_matches.started_at DESC
+    LIMIT 1
+  status: active
+- question: How often does the Radiant side win in pro matches on the current patch?
+  sql: |
+    SELECT SUM(CASE WHEN pro_matches.radiant_win THEN 1 ELSE 0 END) * 1.0
+           / COUNT(pro_matches.match_id) AS radiant_win_rate
+    FROM marts.fact_match AS pro_matches
+    JOIN marts.dim_patch AS patches ON patches.patch_id = pro_matches.patch_id
+    WHERE patches.is_current = TRUE
+  status: active
