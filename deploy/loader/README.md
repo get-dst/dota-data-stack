@@ -8,7 +8,7 @@ on manual dispatch only.
 
 | Piece | Name | Role |
 |---|---|---|
-| Cloud Run job | `dota-load` | Runs `run.sh`: `load/opendota_pipeline.py`, then `dbt build` in `transform/`, against the MotherDuck database `dota`. dbt runs even when the loader fails, and the execution fails if either step did. 1 vCPU, 1 GiB, 50-minute task timeout, no retries. |
+| Cloud Run job | `dota-load` | Runs `run.sh`: `load/opendota_pipeline.py`, then `dbt build` in `transform/`, then `dbt source freshness`, against the MotherDuck database `dota`. dbt runs even when the loader fails, and the execution fails if any step did. 1 vCPU, 1 GiB, 50-minute task timeout, no retries. |
 | Image | `europe-west1-docker.pkg.dev/kurator-core/dst/dota-loader:<commit>` | Built by Cloud Build from `Dockerfile`, with dependencies and DuckDB's MotherDuck extension installed. The tag is the last commit that changed `load/`, `transform/`, `.dlt/`, `pyproject.toml`, `uv.lock`, `Dockerfile` or `run.sh`. |
 | Cloud Scheduler job | `dota-load-schedule` | `23 */4 * * *` UTC (00:23, 04:23, … 20:23). Calls the Run Admin API (`jobs/dota-load:run`) with a token for `dota-scheduler@kurator-core.iam.gserviceaccount.com`, which holds `roles/run.invoker` on this job only. |
 | Service account | `dota-loader@kurator-core.iam.gserviceaccount.com` | The job's identity: `roles/secretmanager.secretAccessor` on the two secrets, `roles/logging.logWriter` on the project. |
@@ -45,7 +45,10 @@ Every default (`PROJECT`, `REGION`, `JOB`, `TRIGGER`, `SCHEDULE`, `MEMORY`, `TAG
 - **Logs**: `gcloud logging read 'resource.type="cloud_run_job" AND
   resource.labels.job_name="dota-load"' --project kurator-core --limit 100`. The loader
   prints `this run: N paid calls, N free calls, N match details`; dbt ends with
-  `Done. PASS=… ERROR=0`.
+  `Done. PASS=… ERROR=0`; the freshness check prints one line per raw table it dates
+  (`transform/models/sources.yml` holds the limits). A run whose load and build passed can
+  still fail there: a load that stops at the monthly paid-call cap exits 0 and brings no
+  new match details, and after 48 hours `match_details` is stale.
 - **Old images**: each `build` stores a new image of about 0.45 GiB. After a redeploy,
   delete the previous tag: `gcloud artifacts docker images delete
   europe-west1-docker.pkg.dev/kurator-core/dst/dota-loader:<old tag> --delete-tags`.
