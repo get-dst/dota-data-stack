@@ -27,3 +27,16 @@
 - question: Which supports place the most wards per game?
   expect: answer
   status: retired
+# Player questions name pros by their competitive name (pro_name).
+- question: What heroes does Yatoro play the most?
+  expect: answer
+  status: approved
+- question: Compare Yatoro and Satanic's average GPM this patch
+  expect: answer
+  status: approved
+- question: Who has the highest average GPM?
+  expect: answer
+  status: approved
+- question: What is Yatoro's MMR?
+  expect: refuse
+  status: approved

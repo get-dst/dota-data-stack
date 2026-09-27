@@ -54,3 +54,15 @@
 - question: Which heroes are picked most at Immortal?
   expect: answer
   status: retired
+- question: What is Anti-Mage's pick rate at Guardian?
+  expect: answer
+  status: approved
+- question: Which heroes have the highest win rate in Turbo?
+  expect: refuse
+  status: approved
+- question: What is the average MMR in Divine games?
+  expect: refuse
+  status: approved
+- question: How has the Steam account 86745912 done in ranked lately?
+  expect: refuse
+  status: approved

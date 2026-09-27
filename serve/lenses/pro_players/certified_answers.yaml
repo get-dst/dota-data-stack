@@ -1,5 +1,5 @@
 # Certified answers: scalar shapes only, re-verified on every apply and by `dst test`.
-- question: How many distinct pro players played on the current patch?
+- question: How many distinct players played in pro matches on the current patch?
   sql: |
     SELECT COUNT(DISTINCT account_id) AS players
     FROM marts.fact_player_match AS player_performances

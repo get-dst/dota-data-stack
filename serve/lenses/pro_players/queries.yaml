@@ -1,30 +1,35 @@
 use_when:
-  - questions about individual professional players — their heroes, stats (GPM, XPM, KDA,
-    kills, last hits), win rates, positions, teams, and countries
-  - "who is the best carry, mid or support; what does Yatoro play; which players win most"
+  - questions about individual professional players — a named pro's heroes, games, win rate and stats (GPM, XPM, KDA, kills, assists, last hits), the team they play for and their country
+  - rankings and comparisons of players, overall or in one role — "who is the best carry, mid or support", "Yatoro versus Satanic"
 sample_queries:
-  - question: Which pro players have the highest average GPM this patch, with at least 10 games?
+  - question: Which pro players have the highest average GPM this patch?
     sql: |
-      SELECT player_name, COUNT(*) AS games, AVG(gold_per_min) AS avg_gpm
+      SELECT player_performances.player_name,
+             COUNT(player_performances.match_id) AS games,
+             CASE WHEN COUNT(player_performances.match_id) >= 10
+                  THEN AVG(player_performances.gold_per_min) END AS avg_gpm
       FROM marts.fact_player_match AS player_performances
       JOIN marts.dim_patch AS patches ON patches.patch_id = player_performances.patch_id
       WHERE patches.is_current = TRUE
-      GROUP BY player_name
-      HAVING COUNT(*) >= 10
-      ORDER BY avg_gpm DESC
+      GROUP BY player_performances.player_name
+      ORDER BY avg_gpm DESC NULLS LAST
       LIMIT 10
   - question: Which heroes does Yatoro play most?
     sql: |
-      SELECT hero_name, COUNT(*) AS games,
-             AVG(CASE WHEN is_win THEN 1.0 ELSE 0.0 END) AS hero_win_rate
+      SELECT player_performances.hero_name, COUNT(player_performances.match_id) AS games
       FROM marts.fact_player_match AS player_performances
       WHERE player_performances.pro_name = 'Yatoro'
-      GROUP BY hero_name
+      GROUP BY player_performances.hero_name
       ORDER BY games DESC
       LIMIT 10
-  - question: How many pro players from Finland played this patch?
+  - question: Compare Yatoro and Satanic's average GPM this patch
     sql: |
-      SELECT COUNT(DISTINCT account_id) AS players
+      SELECT player_performances.pro_name,
+             COUNT(player_performances.match_id) AS games,
+             CASE WHEN COUNT(player_performances.match_id) >= 10
+                  THEN AVG(player_performances.gold_per_min) END AS avg_gpm
       FROM marts.fact_player_match AS player_performances
       JOIN marts.dim_patch AS patches ON patches.patch_id = player_performances.patch_id
-      WHERE patches.is_current = TRUE AND player_performances.player_country = 'fi'
+      WHERE patches.is_current = TRUE
+        AND player_performances.pro_name IN ('Yatoro', 'Satanic')
+      GROUP BY player_performances.pro_name

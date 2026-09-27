@@ -3,9 +3,9 @@ display_name: Dota 2 pro playstyle
 description: How pros play — fights, farm, lanes, space, vision — from OpenDota's parsed pro
   matches.
 owner: dota-data-stack
-# Match times are UTC epochs; the business day is UTC.
+# Match dates are UTC dates; the business day is UTC.
 timezone: UTC
-# The loader runs hourly; two days without new matches is stale.
+# The loader runs every four hours; two days without new matches is stale.
 stale_after_days: 2
 connections: [warehouse]
 select:
@@ -21,7 +21,6 @@ select:
     - patches
     - teams
     - pro_players
-    - pro_matches
   definitions:
     - playstyle_minimum_games
     - player_minimum_games

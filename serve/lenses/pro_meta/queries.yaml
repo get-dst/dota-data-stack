@@ -1,48 +1,50 @@
 use_when:
-  - questions about professional Dota 2 matches, heroes, drafts, teams, leagues or patches
-  - hero pick, ban, contest and win rates in pro play
-  - team results — a team's matches, wins and win rate over a month, a patch or a league — and player performance stats such as GPM, XPM, KDA in pro matches
-  - gold and XP leads by minute, comebacks and throws in pro matches
+  - the professional hero meta — which heroes are picked, banned and win most on a patch, in a date range or in one position (carries, mids, offlaners, supports)
+  - how a named hero does in pro matches — its pick, ban and win rate, the positions it is played in, how it moved since the previous patch, and what changed for it in the patch notes
+  - team results — a team's matches, wins, losses and win rate over a month, a patch or a league, two teams head to head, league standings and who won a tournament
+  - gold and XP leads by minute, comebacks and throws, match length and the Radiant side's record
   - first blood, first tower, Roshan and Aegis in pro matches, and how often taking them wins
-  - a hero's pick, ban and win rate per patch and per position in pro matches
 sample_queries:
   - question: How many pro matches were played on the current patch?
     sql: |
-      SELECT COUNT(*) AS match_count
+      SELECT COUNT(pro_matches.match_id) AS match_count
       FROM marts.fact_match AS pro_matches
       JOIN marts.dim_patch AS patches ON patches.patch_id = pro_matches.patch_id
       WHERE patches.is_current = TRUE
   - question: Which ten heroes were picked most on the current patch?
     sql: |
-      SELECT hero_name, SUM(picks) AS total_picks
-      FROM marts.daily_hero_stats AS hero_daily_stats
-      JOIN marts.dim_patch AS patches ON patches.patch_id = hero_daily_stats.patch_id
+      SELECT hero_patch_trends.hero_name, SUM(hero_patch_trends.picks) AS patch_picks
+      FROM marts.hero_patch_trends AS hero_patch_trends
+      JOIN marts.dim_patch AS patches ON patches.patch_id = hero_patch_trends.patch_id
       WHERE patches.is_current = TRUE
-      GROUP BY hero_name
-      ORDER BY total_picks DESC
+      GROUP BY hero_patch_trends.hero_name
+      ORDER BY patch_picks DESC
       LIMIT 10
-  - question: Which hero has the highest win rate on the current patch with at least 10 games?
+  - question: Which heroes have the highest win rate on the current patch?
     sql: |
-      SELECT player_performances.hero_name,
-             COUNT(player_performances.match_id) AS games,
-             AVG(CASE WHEN player_performances.is_win THEN 1.0 ELSE 0.0 END) AS hero_win_rate
-      FROM marts.fact_player_match AS player_performances
-      JOIN marts.dim_patch AS patches ON patches.patch_id = player_performances.patch_id
+      SELECT hero_patch_trends.hero_name,
+             SUM(hero_patch_trends.picks) AS patch_picks,
+             CASE WHEN SUM(hero_patch_trends.picks) >= 20
+                  THEN SUM(hero_patch_trends.wins) * 1.0 / SUM(hero_patch_trends.picks) END AS patch_win_rate
+      FROM marts.hero_patch_trends AS hero_patch_trends
+      JOIN marts.dim_patch AS patches ON patches.patch_id = hero_patch_trends.patch_id
       WHERE patches.is_current = TRUE
-      GROUP BY player_performances.hero_name
-      HAVING COUNT(player_performances.match_id) >= 10
-      ORDER BY hero_win_rate DESC
-      LIMIT 1
+      GROUP BY hero_patch_trends.hero_name
+      ORDER BY patch_win_rate DESC NULLS LAST
+      LIMIT 10
   - question: How many matches did Team Liquid play in August 2026, and how many did it win?
     sql: |
-      SELECT COUNT(*) AS matches,
-             SUM(CASE WHEN is_win THEN 1 ELSE 0 END) AS wins
+      SELECT COUNT(team_matches.match_id) AS matches_played,
+             SUM(CASE WHEN team_matches.is_win THEN 1 ELSE 0 END) AS team_wins
       FROM marts.fact_team_match AS team_matches
       WHERE team_matches.team_name = 'Team Liquid'
         AND team_matches.match_date >= DATE '2026-08-01'
         AND team_matches.match_date < DATE '2026-09-01'
-  - question: What is the average match duration in minutes this month?
+  - question: Who won The International 2026?
     sql: |
-      SELECT AVG(duration_min) AS avg_duration_min
+      SELECT CASE WHEN pro_matches.radiant_win THEN pro_matches.radiant_team_name
+                  ELSE pro_matches.dire_team_name END AS tournament_winner
       FROM marts.fact_match AS pro_matches
-      WHERE started_at >= DATE_TRUNC('month', CURRENT_DATE)
+      WHERE pro_matches.league_name = 'The International 2026'
+      ORDER BY pro_matches.started_at DESC
+      LIMIT 1
