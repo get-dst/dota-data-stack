@@ -35,6 +35,9 @@ not_computable:
   - measure: a named player's item builds
     aliases: [player build, what does a pro player build, personal build, my build, my items]
     reason: the item tables are aggregated per hero and patch and carry no player identity
+  - measure: items against a named enemy hero
+    aliases: [against, counter, counter-itemize, itemize against, when the enemy has, enemy team has]
+    reason: the item tables are per hero and patch and carry no enemy lineup; what pros buy against a named enemy is not recorded
   - measure: item activations
     aliases: [item uses, how many times an item was used, times activated, activated, activation, activations, times used, cast count]
     reason: the match records loaded here carry what was bought and held, not how often an item was used
