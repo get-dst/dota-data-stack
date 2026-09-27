@@ -1,4 +1,6 @@
-use_when:
+use_when: >
+  Player statistics belong to pro_players, picks and bans to drafts, item builds to items.
+  
   - the professional hero meta — which heroes are picked, banned and win most on a patch, in a date range or in one position (carries, mids, offlaners, supports)
   - how a named hero does in pro matches — its pick, ban and win rate, the positions it is played in, how it moved since the previous patch, and what changed for it in the patch notes
   - team results — a team's matches, wins, losses and win rate over a month, a patch or a league, two teams head to head, league standings and who won a tournament

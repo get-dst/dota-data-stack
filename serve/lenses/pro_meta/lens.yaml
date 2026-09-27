@@ -2,8 +2,7 @@ name: pro_meta
 display_name: Dota 2 pro meta
 description: Professional Dota 2 matches from OpenDota — the hero meta per patch and
   position, teams and their records, leagues and who won them, patch notes, gold leads,
-  comebacks and first objectives. Players are in pro_players, drafts in drafts, items in
-  items.
+  comebacks and first objectives.
 owner: dota-data-stack
 # Match dates are UTC dates; the business day is UTC.
 timezone: UTC
