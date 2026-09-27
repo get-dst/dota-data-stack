@@ -29,3 +29,19 @@ connections:
     type: duckdb
     config: {path: md:dota, schema: marts, statement_timeout_ms: 30000}
     secret_env: DST_API_KEY_WAREHOUSE
+
+# The public demo's page: one sentence, the privacy page, and an example exchange whose
+# figures come from the demo's own answers (data as of 26 September 2026).
+demo:
+  tagline: Ask about a year of pro Dota 2 from Claude, ChatGPT or any AI you use.
+  privacy_url: https://www.dataservetool.com/privacy/
+  log_days: 30
+  audience: consumer
+  example:
+    - user: I want to learn a carry this patch. What's strong?
+    - tool: asked roshan — which carry heroes win their lane most often on the current patch?
+    - tool: asked roshan — which heroes are contested most in pro drafts on the current patch?
+    - assistant: "Shadow Fiend stands out: pro carries on him win their lane 59.1% of the time this patch, ahead of Magnus (54.5%) and Drow Ranger (51.0%). In pro drafts the most fought-over heroes are Puck, Hoodwink and Lone Druid (2,068, 1,916 and 1,866 picks plus bans), so expect Lone Druid to go early."
+    - user: And what's Yatoro's MMR?
+    - tool: asked roshan — no MMR in pro match data
+    - assistant: roshan can't answer that. Pro matches carry no matchmaking rating.
