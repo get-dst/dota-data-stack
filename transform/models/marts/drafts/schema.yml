@@ -24,8 +24,7 @@ models:
       - name: action
         description: "'pick' or 'ban'."
         tests:
-          - accepted_values:
-              values: [pick, ban]
+          - accepted_values: {arguments: {values: [pick, ban]}}
       - name: is_pick
         description: True for a pick.
       - name: is_ban
@@ -34,14 +33,11 @@ models:
         description: "Draft phase 1-3. Each phase is a run of bans followed by a run of picks: phase 1 is 7 bans then 2 picks, phase 2 is 3 bans then 6 picks, phase 3 is 4 bans then 2 picks (one fewer ban when a ban was skipped)."
         tests:
           - not_null
-          - accepted_values:
-              values: [1, 2, 3]
-              quote: false
+          - accepted_values: {arguments: {values: [1, 2, 3], quote: false}}
       - name: phase_name
         description: "The phase and action together: 'ban phase 1', 'pick phase 1', 'ban phase 2', 'pick phase 2', 'ban phase 3' or 'pick phase 3'."
         tests:
-          - accepted_values:
-              values: [ban phase 1, pick phase 1, ban phase 2, pick phase 2, ban phase 3, pick phase 3]
+          - accepted_values: {arguments: {values: [ban phase 1, pick phase 1, ban phase 2, pick phase 2, ban phase 3, pick phase 3]}}
       - name: match_pick_number
         description: For a pick, its place among the match's ten picks (1 = the first pick of the match, 10 = the last); null for a ban.
       - name: team_pick_number

@@ -473,8 +473,7 @@ models:
       - name: game_type
         description: "ranked_all_pick (All Draft mode 22 in a ranked lobby 7), turbo (mode 23), or unranked_all_pick (any other All Pick or All Draft game)."
         tests:
-          - accepted_values:
-              values: [ranked_all_pick, unranked_all_pick, turbo]
+          - accepted_values: {arguments: {values: [ranked_all_pick, unranked_all_pick, turbo]}}
       - name: game_mode_id
         description: "Game mode code: 22 All Draft (ranked All Pick), 23 Turbo, 1 All Pick; other modes are dropped in staging."
       - name: lobby_type_id
