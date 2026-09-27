@@ -23,6 +23,7 @@ with pro_matches as (
 
 pro_leagues as (
     select distinct 'league_standings' as model, league_id from {{ ref('league_standings') }}
+    union all select distinct 'league_results', league_id from {{ ref('league_results') }}
     union all select distinct 'dim_league', league_id from {{ ref('dim_league') }}
 ),
 

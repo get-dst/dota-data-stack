@@ -972,6 +972,75 @@ models:
       - name: last_match_date
         description: Date of the team's latest loaded match in the league.
 
+  - name: league_results
+    description: One row per league in the pro tables, with its dates, games and series in
+      the loaded window and the result of its final. OpenDota marks neither a final nor the
+      end of a league, so the final is read from the games as the series holding the
+      league's last game; final_status says whether it names a winner and, if not, why.
+      A league that started before the window counts only its games inside it
+      (tests/league_results_shape.sql pins one row per league and the final's shape).
+    columns:
+      - name: league_id
+        description: League or tournament id; primary key; joins dim_league.league_id.
+        tests:
+          - unique
+          - not_null
+          - relationships: {arguments: {to: ref('dim_league'), field: league_id}}
+      - name: league_name
+        description: League or tournament name.
+      - name: league_tier
+        description: "OpenDota tier: premium or professional."
+      - name: first_match_date
+        description: UTC date of the league's first loaded game.
+      - name: last_match_date
+        description: UTC date of the league's latest loaded game.
+      - name: matches
+        description: Games of the league in the loaded window.
+      - name: series
+        description: Series of the league in the loaded window; a game without a series id counts as one.
+      - name: teams
+        description: Distinct identified teams that played in the league.
+      - name: final_series_id
+        description: OpenDota series id of the series holding the league's last game; null when that game has no series id.
+      - name: final_best_of
+        description: "Format of that series: 1, 2, 3 or 5 games (best of); null when OpenDota does not report it."
+        tests:
+          - accepted_values: {arguments: {values: [1, 2, 3, 5], quote: false}}
+      - name: final_status
+        description: "'final' when the league's last series names a winner. Otherwise why it does
+          not, checked in this order: 'in progress' (the league has a game in the three weeks
+          before the newest loaded pro match, so it may not be over; leagues pause between
+          stages), 'no series id' (the last game has no series, so its series cannot be put
+          together), 'parallel series' (another series was still being played when the last one
+          started, so there is no single final), 'teams not identified' (a side of the last series
+          is not tied to a team), 'not a final format' (the last series is a best of 1 or 2, or
+          shorter than a series played earlier in the league: a group stage or a show match, not
+          a final), 'several brackets' (the finalists are connected through games to half or
+          fewer of the league's teams: separate qualifiers under one league id, with no single
+          winner), 'incomplete series' (the loaded games give neither team the wins its format
+          needs: games missing from the feed, or a drawn best of 2)."
+        tests:
+          - not_null
+          - accepted_values: {arguments: {values: ['final', 'in progress', 'no series id', 'parallel series', 'teams not identified', 'not a final format', 'several brackets', 'incomplete series']}}
+      - name: winner_team_id
+        description: Team that won the final; joins dim_team.team_id. Null unless final_status is 'final'.
+        tests:
+          - relationships: {arguments: {to: ref('dim_team'), field: team_id}}
+      - name: winner_team_name
+        description: Name of that team as its latest game in the final carries it. Null unless final_status is 'final'.
+      - name: runner_up_team_id
+        description: Team that lost the final; joins dim_team.team_id. Null unless final_status is 'final'.
+        tests:
+          - relationships: {arguments: {to: ref('dim_team'), field: team_id}}
+      - name: runner_up_team_name
+        description: Name of that team as its latest game in the final carries it. Null unless final_status is 'final'.
+      - name: winner_games
+        description: Games of the final the winner won. Null unless final_status is 'final'.
+      - name: runner_up_games
+        description: Games of the final the runner-up won. Null unless final_status is 'final'.
+      - name: final_score
+        description: "The final's score in games, winner first, e.g. 3-2. Null unless final_status is 'final'."
+
   - name: daily_pub_hero_stats
     description: Hero games and wins per day over the public sample, ranked All Pick only,
       one row per day, patch and hero.
