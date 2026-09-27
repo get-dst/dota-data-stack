@@ -56,3 +56,14 @@
 - question: Who creates the most space among offlaners?
   expect: answer
   status: approved
+# Hero against hero in the same lane (the lane_matchup term); the rate carries a 20-game floor.
+- question: Which offlaners beat Juggernaut in lane most often this patch?
+  expect: answer
+  status: approved
+- question: How does Sven do in lane against Tiny?
+  expect: answer
+  status: approved
+# A lane against two named enemies together has no row; each enemy on its own does.
+- question: Which offlaners win the lane against Juggernaut and Crystal Maiden together?
+  expect: refuse
+  status: approved

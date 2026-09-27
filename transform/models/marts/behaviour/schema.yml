@@ -582,3 +582,43 @@ models:
         description: "Runes taken, summed."
       - name: buybacks
         description: "Buybacks used, summed."
+
+  - name: lane_matchups
+    description: "Hero against the enemy hero in the same map lane in parsed pro matches, one row per patch, the hero's own lane, hero and opponent hero; both orderings are present. Built from lane_outcomes, so a lane counts only when it has a result, and a 2v2 lane gives a hero one row per opponent. Counts only: the games floor for a rate lives in the serving layer."
+    columns:
+      - name: patch_id
+        description: "Game version id; joins dim_patch.patch_id; with lane_role, hero_id and opponent_hero_id the primary key."
+        tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
+      - name: patch_name
+        description: "Game version, e.g. 7.41."
+      - name: lane_role
+        description: "The hero's lane relative to its side: 1 safe lane, 2 mid, 3 off lane. The opponent's is the mirror: a safe-lane hero meets an off-lane hero in the same map lane, mid meets mid."
+        tests: [not_null]
+      - name: lane_name
+        description: "lane_role spelled out: safe lane, mid or off lane."
+      - name: hero_id
+        description: "The hero the counts are measured for; joins dim_hero.hero_id."
+        tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_hero'), field: hero_id}}
+      - name: hero_name
+        description: "Display name of the hero the counts are measured for."
+      - name: opponent_hero_id
+        description: "The enemy hero in the same map lane; joins dim_hero.hero_id."
+        tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_hero'), field: hero_id}}
+      - name: opponent_hero_name
+        description: "Display name of the enemy hero in the lane."
+      - name: games
+        description: "Parsed pro matches in which the two laned against each other."
+      - name: lanes_won
+        description: "Of those, lanes the hero's side had won at 10 minutes (lane_outcomes.lane_result)."
+      - name: lanes_drawn
+        description: "Of those, lanes drawn at 10 minutes."
+      - name: lanes_lost
+        description: "Of those, lanes the hero's side had lost at 10 minutes."
+      - name: wins
+        description: "Of those matches, the ones the hero's side won."

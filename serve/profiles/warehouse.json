@@ -1,6 +1,6 @@
 {
   "connection": "warehouse",
-  "recorded_at": "2026-09-27T00:31:20.629582Z",
+  "recorded_at": "2026-09-27T16:07:40.795215Z",
   "tables": [
     {
       "connection": "warehouse",
@@ -2308,6 +2308,11 @@
           "nullable": true
         },
         {
+          "name": "position_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
           "name": "games",
           "type": "BIGINT",
           "nullable": true
@@ -2401,6 +2406,77 @@
         {
           "name": "wins",
           "type": "HUGEINT",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "connection": "warehouse",
+      "table": "marts.lane_matchups",
+      "columns": [
+        {
+          "name": "patch_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "patch_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "lane_role",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "lane_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "hero_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "hero_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "opponent_hero_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "opponent_hero_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "games",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "lanes_won",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "lanes_drawn",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "lanes_lost",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "wins",
+          "type": "BIGINT",
           "nullable": true
         }
       ]
@@ -2628,6 +2704,102 @@
         {
           "name": "wins",
           "type": "HUGEINT",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "connection": "warehouse",
+      "table": "marts.league_results",
+      "columns": [
+        {
+          "name": "league_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "league_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "league_tier",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "first_match_date",
+          "type": "DATE",
+          "nullable": true
+        },
+        {
+          "name": "last_match_date",
+          "type": "DATE",
+          "nullable": true
+        },
+        {
+          "name": "matches",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "series",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "teams",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "final_series_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "final_best_of",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "final_status",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "winner_team_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "winner_team_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "runner_up_team_id",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "runner_up_team_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "winner_games",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "runner_up_games",
+          "type": "BIGINT",
+          "nullable": true
+        },
+        {
+          "name": "final_score",
+          "type": "VARCHAR",
           "nullable": true
         }
       ]
@@ -3238,6 +3410,11 @@
         },
         {
           "name": "player_name",
+          "type": "VARCHAR",
+          "nullable": true
+        },
+        {
+          "name": "pro_name",
           "type": "VARCHAR",
           "nullable": true
         },
