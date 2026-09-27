@@ -1,11 +1,10 @@
-use_when: >
-  Player statistics belong to pro_players, picks and bans to drafts, item builds to items.
-  
+use_when:
   - the professional hero meta — which heroes are picked, banned and win most on a patch, in a date range or in one position (carries, mids, offlaners, supports)
   - how a named hero does in pro matches — its pick, ban and win rate, the positions it is played in, how it moved since the previous patch, and what changed for it in the patch notes
   - team results — a team's matches, wins, losses and win rate over a month, a patch or a league, two teams head to head, league standings and who won a tournament
   - gold and XP leads by minute, comebacks and throws, match length and the Radiant side's record
   - first blood, first tower, Roshan and Aegis in pro matches, and how often taking them wins
+  - not this lens — a named player's statistics (pro_players), picks and bans (drafts), item builds (items)
 sample_queries:
   - question: How many pro matches were played on the current patch?
     sql: |
