@@ -4,13 +4,24 @@ sources:
   - name: raw
     description: Tables as dlt landed them from OpenDota (load/opendota_pipeline.py).
     schema: raw
+    # `dbt source freshness` (deploy/loader/run.sh runs it after every build) fails the run
+    # when a table below stops moving. Match tables are dated by the newest match start;
+    # the replaced dimensions by the load that last replaced them.
     tables:
       - name: pro_matches
         description: OpenDota's pro-match list (/proMatches) for the loaded window, one row per match, merged on match_id.
+        config:
+          loaded_at_field: to_timestamp(start_time)
+          freshness: {warn_after: {count: 24, period: hour}, error_after: {count: 48, period: hour}}
         columns:
           - {name: match_id, description: OpenDota match id.}
       - name: match_details
         description: Full match record (/matches/{id}) for each pro match fetched so far, one row per match; the children below hang off _dlt_id.
+        config:
+          # Also stale when the list still moves but details stop: the monthly paid-call cap
+          # ends a run's detail fetch without failing it.
+          loaded_at_field: to_timestamp(start_time)
+          freshness: {warn_after: {count: 24, period: hour}, error_after: {count: 48, period: hour}}
         columns:
           - {name: match_id, description: OpenDota match id.}
           - {name: start_time, description: Match start in Unix epoch seconds.}
@@ -30,6 +41,9 @@ sources:
         description: Every item purchase of each player in each fetched pro match; time in game seconds (negative before the horn), key = item key; _dlt_parent_id points at match_details__players._dlt_id.
       - name: public_matches
         description: A sample of public matchmaking games from /publicMatches, the newest pages at each load, kept for a limited number of days, one row per match.
+        config:
+          loaded_at_field: to_timestamp(start_time)
+          freshness: {warn_after: {count: 12, period: hour}, error_after: {count: 24, period: hour}}
         columns:
           - {name: match_id, description: OpenDota match id.}
           - {name: start_time, description: Match start in Unix epoch seconds.}
@@ -40,12 +54,16 @@ sources:
         description: The five Dire hero ids of each sampled public match (value = hero_id).
       - name: heroes
         description: The hero roster from /heroes, one row per hero; replaced on every load.
+        config: &replaced
+          loaded_at_field: to_timestamp(cast(_dlt_load_id as double))
+          freshness: {warn_after: {count: 12, period: hour}, error_after: {count: 48, period: hour}}
         columns:
           - {name: id, description: OpenDota hero id.}
       - name: heroes__roles
         description: The roles of each hero in OpenDota's order (value = role name).
       - name: items
         description: OpenDota's item constants, one row per item key; replaced on every load.
+        config: *replaced
         columns:
           - {name: id, description: OpenDota item id.}
           - {name: name, description: Item key, e.g. black_king_bar.}
@@ -55,6 +73,7 @@ sources:
         description: The abilities of each item in OpenDota's item constants (type = active, passive, use, toggle or upgrade); _dlt_parent_id points at items._dlt_id.
       - name: patches
         description: OpenDota's patch constants, one row per game version with its release date; replaced on every load.
+        config: *replaced
       - name: teams
         description: OpenDota's team ranking (/teams), the top teams by rating; replaced on every load.
         columns:
@@ -67,6 +86,7 @@ sources:
         description: OpenDota's patch notes flattened by the loader, one row per note line (patch_name, section, subject, heading, line_no, note); replaced on every load.
       - name: leagues
         description: OpenDota's league list (/leagues), one row per league; replaced on every load.
+        config: *replaced
         columns:
           - {name: leagueid, description: OpenDota league id.}
       - name: game_modes

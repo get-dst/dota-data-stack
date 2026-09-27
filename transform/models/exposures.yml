@@ -1,0 +1,126 @@
+version: 2
+
+# The six dst lenses in serve/lenses/, one exposure each. depends_on lists the marts behind
+# the entities a lens selects (serve/lenses/<name>/lens.yaml, each entity's source table in
+# serve/semantic/entities/), so `dbt ls --select +exposure:<name>` is everything a lens
+# answers from. Update it when a lens selects another entity.
+
+exposures:
+  - name: pro_meta
+    label: Dota 2 pro meta
+    type: application
+    maturity: high
+    description: The pro_meta lens (serve/lenses/pro_meta). Professional matches, heroes per
+      patch and position, teams, leagues, gold leads, comebacks and objectives.
+    owner: {name: dota-data-stack}
+    depends_on:
+      - ref('daily_hero_stats')
+      - ref('dim_hero')
+      - ref('dim_league')
+      - ref('dim_patch')
+      - ref('dim_patch_note')
+      - ref('dim_team')
+      - ref('fact_match')
+      - ref('fact_player_match')
+      - ref('fact_team_match')
+      - ref('gold_advantage_timeline')
+      - ref('hero_patch_trends')
+      - ref('hero_position_meta')
+      - ref('league_standings')
+      - ref('match_leads')
+      - ref('match_objectives')
+      - ref('objective_win_rates')
+      - ref('team_head_to_head')
+
+  - name: pro_players
+    label: Dota 2 pro players
+    type: application
+    maturity: high
+    description: The pro_players lens (serve/lenses/pro_players). The players in professional
+      matches, who plays what, how well and for which team.
+    owner: {name: dota-data-stack}
+    depends_on:
+      - ref('dim_hero')
+      - ref('dim_league')
+      - ref('dim_patch')
+      - ref('dim_pro_player')
+      - ref('dim_team')
+      - ref('fact_match')
+      - ref('fact_player_match')
+
+  - name: drafts
+    label: Dota 2 pro drafts
+    type: application
+    maturity: high
+    description: The drafts lens (serve/lenses/drafts). Picks, bans, draft phases, contested
+      heroes, pro matchups, lane pairs and team lineups.
+    owner: {name: dota-data-stack}
+    depends_on:
+      - ref('dim_hero')
+      - ref('dim_patch')
+      - ref('dim_team')
+      - ref('draft_phases')
+      - ref('hero_draft_stats')
+      - ref('lane_pairings')
+      - ref('pro_draft_matchups')
+      - ref('team_lineups')
+      - ref('team_signature_heroes')
+
+  - name: items
+    label: Dota 2 itemization
+    type: application
+    maturity: high
+    description: The items lens (serve/lenses/items). Core build order, item timings and their
+      win rates, starting builds, final inventories and neutral items in professional matches.
+    owner: {name: dota-data-stack}
+    depends_on:
+      - ref('dim_hero')
+      - ref('dim_item')
+      - ref('dim_patch')
+      - ref('final_inventories')
+      - ref('hero_core_items')
+      - ref('hero_item_builds')
+      - ref('hero_item_timings')
+      - ref('item_timing_buckets')
+      - ref('starting_builds')
+      - ref('starting_items')
+
+  - name: playstyle
+    label: Dota 2 pro playstyle
+    type: application
+    maturity: high
+    description: The playstyle lens (serve/lenses/playstyle). Fights, farm priority, lane
+      outcomes, space created, vision and runes in parsed professional matches, by hero,
+      position and player.
+    owner: {name: dota-data-stack}
+    depends_on:
+      - ref('dim_hero')
+      - ref('dim_patch')
+      - ref('dim_pro_player')
+      - ref('dim_team')
+      - ref('fact_match')
+      - ref('farm_priority')
+      - ref('hero_playstyle')
+      - ref('lane_outcomes')
+      - ref('player_fight_stats')
+      - ref('player_playstyle')
+      - ref('space_created')
+      - ref('vision_and_runes')
+
+  - name: pub_meta
+    label: Dota 2 pub meta
+    type: application
+    maturity: high
+    description: The pub_meta lens (serve/lenses/pub_meta). Hero win rates, counters, duos and
+      trends by rank bracket over the sample of public ranked matches.
+    owner: {name: dota-data-stack}
+    depends_on:
+      - ref('daily_pub_hero_stats')
+      - ref('dim_bracket')
+      - ref('dim_hero')
+      - ref('dim_patch')
+      - ref('fact_pub_match')
+      - ref('pub_duos')
+      - ref('pub_hero_by_duration')
+      - ref('pub_hero_stats')
+      - ref('pub_matchups')
