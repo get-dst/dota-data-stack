@@ -13,329 +13,456 @@ version: 2
 
 models:
   - name: fact_match
+    config: {contract: {enforced: true}}
     description: One row per professional Dota 2 match, winner resolved to a team.
     columns:
       - name: match_id
+        data_type: bigint
         description: OpenDota match id; primary key.
         tests: [unique, not_null]
       - name: started_at
+        data_type: timestamp with time zone
         description: Match start time (timestamp with time zone).
         tests: [not_null]
       - name: match_date
+        data_type: date
         description: UTC calendar date of started_at.
       - name: duration_s
+        data_type: bigint
         description: Game length in seconds.
       - name: duration_min
+        data_type: double
         description: Game length in minutes (duration_s / 60).
       - name: radiant_win
+        data_type: boolean
         description: True when the Radiant side won.
         tests: [not_null]
       - name: winner_team_id
+        data_type: bigint
         description: Team id of the winning side; null when that side's team is not identified.
         tests:
           - relationships: {arguments: {to: ref('dim_team'), field: team_id}}
       - name: loser_team_id
+        data_type: bigint
         description: Team id of the losing side; null when that side's team is not identified.
         tests:
           - relationships: {arguments: {to: ref('dim_team'), field: team_id}}
       - name: radiant_team_id
+        data_type: bigint
         description: Team id on the Radiant side; joins dim_team.team_id; null when not identified.
         tests:
           - relationships: {arguments: {to: ref('dim_team'), field: team_id}}
       - name: radiant_team_name
+        data_type: varchar
         description: Team name on the Radiant side as the match record carries it.
       - name: dire_team_id
+        data_type: bigint
         description: Team id on the Dire side; joins dim_team.team_id; null when not identified.
         tests:
           - relationships: {arguments: {to: ref('dim_team'), field: team_id}}
       - name: dire_team_name
+        data_type: varchar
         description: Team name on the Dire side as the match record carries it.
       - name: radiant_kills
+        data_type: bigint
         description: Hero kills by the Radiant side (the Radiant score).
       - name: dire_kills
+        data_type: bigint
         description: Hero kills by the Dire side (the Dire score).
       - name: total_kills
+        data_type: bigint
         description: Hero kills by both sides combined.
       - name: league_id
+        data_type: bigint
         description: League or tournament id; joins dim_league.league_id.
         tests:
           - relationships: {arguments: {to: ref('dim_league'), field: league_id}}
       - name: league_name
+        data_type: varchar
         description: League or tournament name as the match record carries it.
       - name: league_tier
+        data_type: varchar
         description: "OpenDota league tier: premium or professional. Matches in leagues it rates below professional are not in the marts."
         tests:
           - accepted_values: {arguments: {values: [premium, professional]}}
       - name: patch_id
+        data_type: bigint
         description: Game version id the match was played on; joins dim_patch.patch_id.
         tests:
           - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: patch_name
+        data_type: varchar
         description: Game version the match was played on, e.g. 7.41.
       - name: game_mode_id
+        data_type: bigint
         description: "Game mode code (OpenDota game_modes): 2 Captains Mode, 1 All Pick, 22 All Draft."
       - name: lobby_type_id
+        data_type: bigint
         description: "Lobby type code (OpenDota lobby_types); 1 = practice lobby, the tournament lobby type."
       - name: region_id
+        data_type: bigint
         description: Valve server region code; no lookup table is loaded; null when not reported.
       - name: series_id
+        data_type: bigint
         description: OpenDota series id shared by the games of one series; null when not reported.
       - name: series_type
+        data_type: bigint
         description: "Series format: 0 best of 1, 1 best of 3, 2 best of 5, 3 best of 2; null when not reported."
       - name: first_blood_s
+        data_type: bigint
         description: Seconds of game time until first blood.
       - name: first_blood_min
+        data_type: double
         description: Minutes of game time until first blood (first_blood_s / 60).
       - name: comeback
+        data_type: bigint
         description: OpenDota's comeback value, the largest gold deficit the winner overcame; null for about half the matches, where OpenDota does not supply it.
       - name: stomp
+        data_type: bigint
         description: OpenDota's stomp value, the largest gold lead the winner held; null where OpenDota does not supply it.
 
   - name: fact_team_match
+    config: {contract: {enforced: true}}
     description: One row per side per professional match, two per match; the grain for a
       team's matches, wins and win rate (tests/team_match_grain.sql pins two rows and one
       win per match). fact_player_match has five rows per side, so it never counts a
       team's matches.
     columns:
       - name: match_id
+        data_type: bigint
         description: OpenDota match id; with side the primary key; joins fact_match.match_id.
         tests:
           - not_null
           - relationships: {arguments: {to: ref('fact_match'), field: match_id}}
       - name: is_radiant
+        data_type: boolean
         description: True for the Radiant side's row.
         tests: [not_null]
       - name: side
+        data_type: varchar
         description: radiant or dire.
         tests:
           - accepted_values: {arguments: {values: [radiant, dire]}}
       - name: team_id
+        data_type: bigint
         description: Team on this side; joins dim_team.team_id; null when OpenDota did not identify the side's team.
         tests:
           - relationships: {arguments: {to: ref('dim_team'), field: team_id}}
       - name: team_name
+        data_type: varchar
         description: Team name on this side as the match record carries it; null when not identified.
       - name: opponent_team_id
+        data_type: bigint
         description: Team on the other side; joins dim_team.team_id; null when not identified.
         tests:
           - relationships: {arguments: {to: ref('dim_team'), field: team_id}}
       - name: opponent_team_name
+        data_type: varchar
         description: Team name on the other side.
       - name: is_win
+        data_type: boolean
         description: True when this side won; exactly one of a match's two rows.
         tests: [not_null]
       - name: kills
+        data_type: bigint
         description: Hero kills by this side.
       - name: kills_against
+        data_type: bigint
         description: Hero kills by the other side.
       - name: has_first_pick
+        data_type: boolean
         description: True when this side made the match's first pick (the first_pick definition); null when the match has no recorded draft.
       - name: started_at
+        data_type: timestamp with time zone
         description: Match start time (timestamp with time zone), from fact_match.
       - name: match_date
+        data_type: date
         description: UTC calendar date of started_at.
       - name: duration_min
+        data_type: double
         description: Game length in minutes.
       - name: patch_id
+        data_type: bigint
         description: Game version id the match was played on; joins dim_patch.patch_id.
         tests:
           - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: patch_name
+        data_type: varchar
         description: Game version the match was played on, e.g. 7.41.
       - name: league_id
+        data_type: bigint
         description: League or tournament id; joins dim_league.league_id.
         tests:
           - relationships: {arguments: {to: ref('dim_league'), field: league_id}}
       - name: league_name
+        data_type: varchar
         description: League or tournament name as the match record carries it.
       - name: league_tier
+        data_type: varchar
         description: "OpenDota league tier: premium or professional. Matches in leagues it rates below professional are not in the marts."
         tests:
           - accepted_values: {arguments: {values: [premium, professional]}}
       - name: game_mode_id
+        data_type: bigint
         description: "Game mode code (OpenDota game_modes): 2 Captains Mode, 1 All Pick, 22 All Draft."
       - name: series_id
+        data_type: bigint
         description: OpenDota series id shared by the games of one series; null when not reported.
       - name: series_type
+        data_type: bigint
         description: "Series format: 0 best of 1, 1 best of 3, 2 best of 5, 3 best of 2; null when not reported."
 
   - name: fact_player_match
+    config: {contract: {enforced: true}}
     description: One row per player per professional match (tests/ten_players_per_match.sql
       pins the grain).
     columns:
       - name: match_id
+        data_type: bigint
         description: OpenDota match id; joins fact_match.match_id.
         tests:
           - not_null
           - relationships: {arguments: {to: ref('fact_match'), field: match_id}}
       - name: player_slot
+        data_type: bigint
         description: Slot in the match, 0-4 Radiant and 128-132 Dire; with match_id the primary key.
       - name: is_radiant
+        data_type: boolean
         description: True when the player was on the Radiant side.
       - name: team_id
+        data_type: bigint
         description: Team the player played for in this match (the side's team id); null when not identified.
         tests:
           - relationships: {arguments: {to: ref('dim_team'), field: team_id}}
       - name: team_name
+        data_type: varchar
         description: Name of the team the player played for in this match.
       - name: account_id
+        data_type: bigint
         description: Steam account id (32-bit); joins dim_pro_player.account_id for the accounts OpenDota lists as pro, about a third of the rows, so the reference is partial by design and not tested.
       - name: player_name
+        data_type: varchar
         description: The pro's competitive name when OpenDota lists the account as pro, else the Steam persona name.
       - name: pro_name
+        data_type: varchar
         description: Competitive name from dim_pro_player; null when OpenDota does not list the account as pro.
       - name: player_country
+        data_type: varchar
         description: Two-letter country code from dim_pro_player (lowercase); null for non-listed players.
       - name: hero_id
+        data_type: bigint
         description: Hero played; joins dim_hero.hero_id.
         tests:
           - not_null
           - relationships: {arguments: {to: ref('dim_hero'), field: hero_id}}
       - name: hero_name
+        data_type: varchar
         description: Display name of the hero played, e.g. Windranger.
       - name: is_win
+        data_type: boolean
         description: True when this player's side won.
       - name: kills
+        data_type: bigint
         description: Hero kills by the player.
       - name: deaths
+        data_type: bigint
         description: Deaths of the player.
       - name: assists
+        data_type: bigint
         description: Assists by the player.
       - name: kda
+        data_type: double
         description: (kills + assists) / (deaths + 1), rounded to two decimals, as OpenDota computes it.
       - name: last_hits
+        data_type: bigint
         description: Creeps last-hit over the game.
       - name: denies
+        data_type: bigint
         description: Allied creeps and structures denied over the game.
       - name: gold_per_min
+        data_type: bigint
         description: Average gold earned per minute of the game.
       - name: xp_per_min
+        data_type: bigint
         description: Average experience earned per minute of the game.
       - name: level
+        data_type: bigint
         description: Hero level at the end of the game (max 30).
       - name: net_worth
+        data_type: bigint
         description: Net worth in gold at the end of the game.
       - name: hero_damage
+        data_type: bigint
         description: Damage dealt to enemy heroes over the game.
       - name: tower_damage
+        data_type: bigint
         description: Damage dealt to buildings over the game.
       - name: hero_healing
+        data_type: bigint
         description: Healing done to heroes over the game.
       - name: obs_placed
+        data_type: bigint
         description: Observer wards placed; null when the replay is not parsed.
       - name: sen_placed
+        data_type: bigint
         description: Sentry wards placed; null when the replay is not parsed.
       - name: camps_stacked
+        data_type: bigint
         description: Neutral camps stacked; null when the replay is not parsed.
       - name: rune_pickups
+        data_type: bigint
         description: Runes picked up; null when the replay is not parsed.
       - name: roshans_killed
+        data_type: bigint
         description: Roshan kills credited to the player; null when the replay is not parsed.
       - name: towers_killed
+        data_type: bigint
         description: Towers killed by the player; null when the replay is not parsed.
       - name: teamfight_participation
+        data_type: double
         description: OpenDota's teamfight participation, roughly (kills + assists) / side kills as a 0-1 share; can exceed 1 in the source; null when not parsed.
       - name: stuns
+        data_type: double
         description: Seconds of stun dealt to enemies, from the parsed replay; the source occasionally carries negative values.
       - name: item_0
+        data_type: bigint
         description: Item id in main inventory slot 0 at game end; 0 = empty; joins stg_items.item_id.
       - name: item_1
+        data_type: bigint
         description: Item id in main inventory slot 1 at game end; 0 = empty.
       - name: item_2
+        data_type: bigint
         description: Item id in main inventory slot 2 at game end; 0 = empty.
       - name: item_3
+        data_type: bigint
         description: Item id in main inventory slot 3 at game end; 0 = empty.
       - name: item_4
+        data_type: bigint
         description: Item id in main inventory slot 4 at game end; 0 = empty.
       - name: item_5
+        data_type: bigint
         description: Item id in main inventory slot 5 at game end; 0 = empty.
       - name: item_neutral
+        data_type: bigint
         description: Neutral item id in the neutral slot at game end; 0 = empty.
       - name: has_aghanims_scepter
+        data_type: boolean
         description: True when the match record reports the Aghanim's Scepter upgrade on the hero at game end.
       - name: has_aghanims_shard
+        data_type: boolean
         description: True when the match record reports the Aghanim's Shard upgrade on the hero at game end.
       - name: lane
+        data_type: bigint
         description: "Map lane OpenDota parsed: 1 bottom, 2 middle, 3 top, 4 Radiant jungle, 5 Dire jungle (bottom is Radiant's safe lane, Dire's off lane)."
       - name: lane_role
+        data_type: bigint
         description: "Lane relative to the player's side: 1 safe lane, 2 mid, 3 off lane, 4 jungle; null when not parsed."
       - name: is_roaming
+        data_type: boolean
         description: True when OpenDota flags the player as roaming; null when not parsed.
       - name: position
+        data_type: integer
         description: "Derived role 1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support: mid is 2; in the safe and off lanes the higher-GPM player of the side is 1/3 and the other 5/4 (equal GPM: more last hits, then the lower player slot); null for jungle or unparsed lanes (unit test position_from_lane_and_farm)."
       - name: position_name
+        data_type: varchar
         description: "position as a word: carry, mid, offlane, soft support or hard support; null when position is null."
         tests:
           - accepted_values: {arguments: {values: [carry, mid, offlane, soft support, hard support]}}
       - name: leaver_status
+        data_type: bigint
         description: "Valve leaver code: 0 none, 1 disconnected; higher codes (abandon, AFK) do not occur in the loaded data."
       - name: abandons
+        data_type: bigint
         description: OpenDota abandon count for the player in this match; 0 on every loaded row.
       - name: started_at
+        data_type: timestamp with time zone
         description: Match start time (timestamp with time zone), from fact_match.
       - name: match_date
+        data_type: date
         description: UTC calendar date of started_at.
       - name: patch_id
+        data_type: bigint
         description: Game version id the match was played on; joins dim_patch.patch_id.
         tests:
           - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: patch_name
+        data_type: varchar
         description: Game version the match was played on, e.g. 7.41.
       - name: league_id
+        data_type: bigint
         description: League or tournament id; joins dim_league.league_id.
         tests:
           - relationships: {arguments: {to: ref('dim_league'), field: league_id}}
       - name: league_name
+        data_type: varchar
         description: League or tournament name as the match record carries it.
       - name: duration_min
+        data_type: double
         description: Game length in minutes, repeated from fact_match.
 
   - name: fact_draft
+    config: {contract: {enforced: true}}
     description: Picks and bans per professional match in draft order, one row per pick or
       ban; matches whose draft OpenDota did not record have no rows.
     columns:
       - name: match_id
+        data_type: bigint
         description: OpenDota match id; with draft_order the primary key; joins fact_match.match_id.
         tests:
           - not_null
           - relationships: {arguments: {to: ref('fact_match'), field: match_id}}
       - name: draft_order
+        data_type: bigint
         description: Position in the draft sequence, 0-based (0-23).
       - name: is_pick
+        data_type: boolean
         description: True for a pick.
       - name: is_ban
+        data_type: boolean
         description: True for a ban (the negation of is_pick).
       - name: hero_id
+        data_type: bigint
         description: Hero picked or banned; joins dim_hero.hero_id.
         tests:
           - relationships: {arguments: {to: ref('dim_hero'), field: hero_id}}
       - name: hero_name
+        data_type: varchar
         description: Display name of the hero picked or banned.
       - name: is_radiant
+        data_type: boolean
         description: True when the Radiant side made this pick or ban.
       - name: team_id
+        data_type: bigint
         description: Team id of the side that made the pick or ban; null when not identified.
         tests:
           - relationships: {arguments: {to: ref('dim_team'), field: team_id}}
       - name: team_name
+        data_type: varchar
         description: Team name of the side that made the pick or ban.
       - name: side_won
+        data_type: boolean
         description: True when the side that made this pick or ban won the match.
       - name: started_at
+        data_type: timestamp with time zone
         description: Match start time (timestamp with time zone).
       - name: match_date
+        data_type: date
         description: UTC calendar date of started_at.
       - name: patch_id
+        data_type: bigint
         description: Game version id the match was played on; joins dim_patch.patch_id.
         tests:
           - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: patch_name
+        data_type: varchar
         description: Game version the match was played on, e.g. 7.41.
       - name: league_id
+        data_type: bigint
         description: League or tournament id; joins dim_league.league_id.
         tests:
           - relationships: {arguments: {to: ref('dim_league'), field: league_id}}
       - name: league_name
+        data_type: varchar
         description: League or tournament name as the match record carries it.
 
   - name: daily_hero_stats
@@ -368,39 +495,53 @@ models:
         description: Pro matches played that day on that patch; repeats on every hero row, so never sum it across heroes.
 
   - name: dim_hero
+    config: {contract: {enforced: true}}
     description: The hero roster, one row per hero, with primary attribute, attack type and roles.
     columns:
       - name: hero_id
+        data_type: bigint
         description: OpenDota hero id; primary key.
         tests: [unique, not_null]
       - name: hero_name
+        data_type: varchar
         description: Display name, e.g. Windranger.
       - name: hero_key
+        data_type: varchar
         description: Internal key, e.g. npc_dota_hero_windrunner.
       - name: primary_attribute
+        data_type: varchar
         description: "Primary attribute: str, agi, int or all (universal)."
       - name: attack_type
+        data_type: varchar
         description: Melee or Ranged.
       - name: roles
+        data_type: varchar
         description: Comma-separated roles in OpenDota's order, e.g. Carry, Escape, Nuker.
 
   - name: dim_patch
+    config: {contract: {enforced: true}}
     description: Game versions as time windows, one row per patch; a patch runs from its
       release until the next one, and the current patch has no end.
     columns:
       - name: patch_id
+        data_type: bigint
         description: OpenDota patch id, sequential from 0 = 6.70; primary key.
         tests: [unique, not_null]
       - name: patch_name
+        data_type: varchar
         description: Version string, e.g. 7.41; letter sub-patches (7.40c) are not separate rows.
       - name: patch_started_at
+        data_type: timestamp with time zone
         description: Release time of the patch (timestamp with time zone).
       - name: patch_ended_at
+        data_type: timestamp with time zone
         description: Release time of the next patch; null for the current one.
       - name: is_current
+        data_type: boolean
         description: True for exactly one row, the patch with no end.
 
   - name: dim_team
+    config: {contract: {enforced: true}}
     description: Professional teams, one row per team; every team in OpenDota's ranking (the
       top thousand by rating, with rating and all-time records) and every team identified
       on a loaded pro match, so a team id on a match always resolves here. A team that is not
@@ -409,120 +550,163 @@ models:
       loaded matches.
     columns:
       - name: team_id
+        data_type: bigint
         description: OpenDota team id; primary key.
         tests: [unique, not_null]
       - name: team_name
+        data_type: varchar
         description: Team name; from the ranking when the team is ranked, else from its latest loaded match.
         tests: [not_null]
       - name: team_tag
+        data_type: varchar
         description: Short team tag; null for a team outside the ranking.
       - name: rating
+        data_type: double
         description: OpenDota Elo-style team rating; null for a team outside the ranking.
       - name: all_time_wins
+        data_type: bigint
         description: Wins over the team's whole OpenDota history, not the loaded window; null for a team outside the ranking.
       - name: all_time_losses
+        data_type: bigint
         description: Losses over the team's whole OpenDota history, not the loaded window; null for a team outside the ranking.
       - name: last_match_at
+        data_type: timestamp with time zone
         description: Start time of the team's most recent match OpenDota knows; null for a team outside the ranking.
       - name: is_ranked
+        data_type: boolean
         description: True when the team is in OpenDota's ranking, so rating and the all-time records are present.
         tests: [not_null]
       - name: loaded_matches
+        data_type: bigint
         description: Pro matches of the team in the loaded window, premium and professional leagues only; 0 for a ranked team with none.
       - name: last_loaded_match_at
+        data_type: timestamp with time zone
         description: Start time of the team's latest loaded match; null when it has none.
 
   - name: dim_league
+    config: {contract: {enforced: true}}
     description: Leagues and tournaments OpenDota rates premium or professional, one row per
       league. Leagues it rates below professional, or does not rate, are not listed.
     columns:
       - name: league_id
+        data_type: bigint
         description: OpenDota league id; primary key.
         tests: [unique, not_null]
       - name: league_name
+        data_type: varchar
         description: League or tournament name.
       - name: league_tier
+        data_type: varchar
         description: "OpenDota tier: premium or professional."
         tests:
           - accepted_values: {arguments: {values: [premium, professional]}}
 
   - name: fact_pub_match
+    config: {contract: {enforced: true}}
     description: One row per sampled public matchmaking match.
     columns:
       - name: match_id
+        data_type: bigint
         description: OpenDota match id; primary key.
         tests: [unique, not_null]
       - name: started_at
+        data_type: timestamp with time zone
         description: Match start time (timestamp with time zone).
       - name: match_date
+        data_type: date
         description: UTC calendar date of started_at.
       - name: duration_s
+        data_type: bigint
         description: Game length in seconds.
       - name: duration_min
+        data_type: double
         description: Game length in minutes (duration_s / 60).
       - name: radiant_win
+        data_type: boolean
         description: True when the Radiant side won.
       - name: avg_rank_tier
+        data_type: bigint
         description: Average rank tier of the players, tens digit the bracket (1 Herald to 8 Immortal) and ones digit the stars, e.g. 54 = Legend 4.
       - name: bracket_id
+        data_type: integer
         description: Rank bracket, the tens digit of avg_rank_tier (1 Herald to 8 Immortal); joins dim_bracket.bracket_id.
         tests:
           - relationships: {arguments: {to: ref('dim_bracket'), field: bracket_id}}
       - name: bracket_name
+        data_type: varchar
         description: Bracket name, Herald to Immortal.
       - name: game_type
+        data_type: varchar
         description: "ranked_all_pick (All Draft mode 22 in a ranked lobby 7), turbo (mode 23), or unranked_all_pick (any other All Pick or All Draft game)."
         tests:
           - accepted_values: {arguments: {values: [ranked_all_pick, unranked_all_pick, turbo]}}
       - name: game_mode_id
+        data_type: bigint
         description: "Game mode code: 22 All Draft (ranked All Pick), 23 Turbo, 1 All Pick; other modes are dropped in staging."
       - name: lobby_type_id
+        data_type: bigint
         description: "Lobby type code: 7 ranked, 0 normal, 4 co-op with bots, 1 practice."
       - name: patch_id
+        data_type: bigint
         description: Game version the match was played on, resolved from the patch windows by started_at; joins dim_patch.patch_id.
         tests:
           - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: patch_name
+        data_type: varchar
         description: Game version the match was played on, e.g. 7.41.
 
   - name: fact_pub_hero
+    config: {contract: {enforced: true}}
     description: One row per hero per sampled public match (ten per match, pinned by
       tests/ten_heroes_per_pub_match.sql).
     columns:
       - name: match_id
+        data_type: bigint
         description: OpenDota match id; with hero_id the primary key; joins fact_pub_match.match_id.
         tests:
           - relationships: {arguments: {to: ref('fact_pub_match'), field: match_id}}
       - name: hero_id
+        data_type: bigint
         description: Hero; joins dim_hero.hero_id.
         tests:
           - not_null
           - relationships: {arguments: {to: ref('dim_hero'), field: hero_id}}
       - name: hero_name
+        data_type: varchar
         description: Display name of the hero.
       - name: is_radiant
+        data_type: boolean
         description: True when the hero was on the Radiant side.
       - name: is_win
+        data_type: boolean
         description: True when the hero's side won.
       - name: match_date
+        data_type: date
         description: UTC calendar date of started_at.
       - name: started_at
+        data_type: timestamp with time zone
         description: Match start time (timestamp with time zone).
       - name: patch_id
+        data_type: bigint
         description: Game version id, resolved from the patch windows; joins dim_patch.patch_id.
         tests:
           - relationships: {arguments: {to: ref('dim_patch'), field: patch_id}}
       - name: patch_name
+        data_type: varchar
         description: Game version, e.g. 7.41.
       - name: bracket_id
+        data_type: integer
         description: Rank bracket of the match (1 Herald to 8 Immortal); joins dim_bracket.bracket_id.
         tests:
           - relationships: {arguments: {to: ref('dim_bracket'), field: bracket_id}}
       - name: bracket_name
+        data_type: varchar
         description: Bracket name, Herald to Immortal.
       - name: game_type
+        data_type: varchar
         description: ranked_all_pick, unranked_all_pick or turbo (see fact_pub_match.game_type).
       - name: duration_min
+        data_type: double
         description: Game length in minutes.
 
   - name: pub_hero_stats
@@ -682,34 +866,46 @@ models:
         description: Date of the latest such match.
 
   - name: dim_bracket
+    config: {contract: {enforced: true}}
     description: The eight rank brackets, Herald to Immortal, one row per bracket.
     columns:
       - name: bracket_id
+        data_type: integer
         description: "1 Herald, 2 Guardian, 3 Crusader, 4 Archon, 5 Legend, 6 Ancient, 7 Divine, 8 Immortal; the tens digit of a rank tier."
         tests: [unique, not_null]
       - name: bracket_name
+        data_type: varchar
         description: Bracket name.
 
   - name: dim_pro_player
+    config: {contract: {enforced: true}}
     description: Players OpenDota lists as professional, one row per account, with the
       competitive name, last team and country; rows without a name are dropped.
     columns:
       - name: account_id
+        data_type: bigint
         description: Steam account id (32-bit); primary key; joins fact_player_match.account_id.
         tests: [unique, not_null]
       - name: player_name
+        data_type: varchar
         description: Competitive name, e.g. Yatoro.
       - name: persona_name
+        data_type: varchar
         description: Steam persona name; changes often, prefer player_name.
       - name: team_id
+        data_type: bigint
         description: Last team OpenDota has for the player; 0 when none.
       - name: team_name
+        data_type: varchar
         description: Name of that team.
       - name: team_tag
+        data_type: varchar
         description: Tag of that team.
       - name: country_code
+        data_type: varchar
         description: Two-letter country code, lowercase; empty or null when unknown.
       - name: last_match_at
+        data_type: timestamp with time zone
         description: Start time of the player's most recent match OpenDota knows; null when unknown.
 
   - name: hero_item_timings
@@ -831,20 +1027,28 @@ models:
         description: Of those games, the ones the hero's side won.
 
   - name: dim_patch_note
+    config: {contract: {enforced: true}}
     description: OpenDota's patch notes, one row per note line, with the hero or item the
       line is about resolved to its display name.
     columns:
       - name: patch_name
+        data_type: varchar
         description: Version the note belongs to, including letter sub-patches, e.g. 7.40c; matches dim_patch.patch_name only for main versions.
       - name: section
+        data_type: varchar
         description: general, heroes or items.
       - name: subject
+        data_type: varchar
         description: Internal key of the hero (without npc_dota_hero_) or item the line is about, or general.
       - name: subject_name
+        data_type: varchar
         description: Display name of the hero or item, e.g. Pudge or Black King Bar; falls back to subject when no match.
       - name: heading
+        data_type: varchar
         description: "Heroes section only: the ability key (e.g. tiny_grow) or group (talents, general, hero_facet) the line sits under; null elsewhere."
       - name: line_no
+        data_type: bigint
         description: Order of the line within its patch, section and subject, 0-based; gaps where blank lines were dropped.
       - name: note
+        data_type: varchar
         description: The text of the patch-note line.

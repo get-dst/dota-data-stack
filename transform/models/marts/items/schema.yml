@@ -2,36 +2,49 @@ version: 2
 
 models:
   - name: dim_item
+    config: {contract: {enforced: true}}
     description: One row per item in OpenDota's item constants, with the flags the item marts
       share. is_major_item marks a finished item worth planning a build around - at least
       2000 gold, assembled from components or carrying its own active ability, and not a
       recipe, consumable or neutral item.
     columns:
       - name: item_id
+        data_type: bigint
         description: OpenDota item id; primary key; the value in the player item slots.
         tests: [unique, not_null]
       - name: item_key
+        data_type: varchar
         description: "Internal key, e.g. black_king_bar; the key in purchase logs."
         tests: [unique, not_null]
       - name: item_name
+        data_type: varchar
         description: "Display name, e.g. Black King Bar; null for a few internal items."
       - name: item_cost
+        data_type: bigint
         description: Shop price in gold; 0 for items with no price (neutral items, enchantments, wards, Roshan drops).
       - name: quality
+        data_type: varchar
         description: "OpenDota item quality: component, rare, epic, consumable, artifact, common, secret_shop; null for many items and not a reliable finished-or-component flag (the upgraded Blinks are marked component)."
       - name: neutral_tier
+        data_type: bigint
         description: Neutral item tier 1-5 from the constants; null for shop items, enchantments, and a few neutral items the constants leave untiered (Disgraced Regalia, Gris-Gris).
       - name: component_count
+        data_type: bigint
         description: Number of components the item is assembled from in the constants (recipes not counted as components); 0 for items bought whole.
       - name: has_active_ability
+        data_type: boolean
         description: True when the constants list an active ability for the item (Blink Dagger, Dagon, Black King Bar ...).
       - name: is_recipe
+        data_type: boolean
         description: True for recipe scrolls (item key starting with recipe).
       - name: is_consumable
+        data_type: boolean
         description: True for items of consumable quality (Tango, Clarity, Moon Shard, Cheese ...).
       - name: is_neutral
+        data_type: boolean
         description: True for neutral items (a tier in the constants) and for enchantments (keys starting with enhancement).
       - name: is_major_item
+        data_type: boolean
         description: "True for a major item: item_cost at least 2000, assembled from components or with an active ability, and not a recipe, consumable or neutral item. The cheapest are Crystalys (2000) and Kaya, Sange and Yasha (2100); Demon Edge, Hyperstone, Mystic Staff, Ultimate Orb, Eaglesong, Reaver and Sacred Relic are components, not major items."
         tests: [not_null]
 
