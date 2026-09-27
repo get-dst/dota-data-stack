@@ -187,8 +187,8 @@ mart.
   position and per player, by patch.
 
 244 tests pin the grains, every fact-to-dimension reference, the league tier, the draft
-shape and the behaviour sums, and three unit tests pin the position derivation and the
-400-gold lane band on fixed inputs. Every model and all 831 mart columns are documented,
+shape and the behaviour sums, and three unit tests pin the position derivation, the
+400-gold lane band and the reading of a league's final on fixed inputs. Every model and all 831 mart columns are documented,
 and `persist_docs` writes those descriptions into the warehouse as comments.
 Match dates are the UTC date, pinned in SQL, whoever runs dbt.
 
