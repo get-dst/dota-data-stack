@@ -35,9 +35,9 @@ records their tokens (`resolution.decisions[].usage`) but does not price them.
 
 ## 0. Before anything
 
-- [x] dst 0.6.0 on the laptop (`pip install -U 'dst-core==0.6.0'`, or `~/dst-dev/.venv/bin/dst`).
+- [x] dst 0.6.1 on the laptop (`pip install -U 'dst-core==0.6.1'`, or `~/dst-dev/.venv/bin/dst`).
 - [x] `gcloud auth login` as the account that owns `kurator-core`.
-- [ ] Decide on the GHCR image. `ghcr.io/get-dst/dst:0.6.0` was pushed by the release,
+- [ ] Decide on the GHCR image. `ghcr.io/get-dst/dst:0.6.1` was pushed by the release,
       but an anonymous pull is refused (403), so the package is private. Cloud Run does
       not need it: `cloudbuild.yaml` builds from the public source tag. The VM variant and
       every stranger following dst's `deploy/` do need it. Either make it public
@@ -98,12 +98,12 @@ records their tokens (`resolution.decisions[].usage`) but does not price them.
 ## 4. Build, secret, migrate
 
 ```
-deploy/cloudrun.sh build              # Cloud Build: dst v0.6.0 source + local-embed + baked weights (~10 min)
+deploy/cloudrun.sh build              # Cloud Build: dst v0.6.1 source + local-embed + baked weights (~10 min)
 deploy/cloudrun.sh warehouse-secret   # paste the read-scaling token; stored as dst-api-key-warehouse
 deploy/cloudrun.sh migrate            # dst-migrate job on the new image
 ```
 
-Done 2026-09-27: the image `dota-demo:0.6.0` is built, `dst-migrate` ran on it (already at
+Done 2026-09-27: the image `dota-demo:0.6.1` is built, `dst-migrate` ran on it (already at
 head, 0067), and `dst-api-key-warehouse` holds the REGULAR MotherDuck token as version 1
 (dst opens it read-only; writes are refused). Run `warehouse-secret` again with the
 read-scaling token when it exists: it adds version 2 and the service reads `latest` on its
