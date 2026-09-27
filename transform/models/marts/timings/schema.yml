@@ -319,6 +319,11 @@ models:
         tests:
           - not_null
           - accepted_values: {arguments: {values: [1, 2, 3, 4, 5], quote: false}}
+      - name: position_name
+        description: "position as a word: carry, mid, offlane, soft support or hard support."
+        tests:
+          - not_null
+          - accepted_values: {arguments: {values: [carry, mid, offlane, soft support, hard support]}}
       - name: games
         description: Pro player-games on the hero in that position on the patch.
       - name: wins
