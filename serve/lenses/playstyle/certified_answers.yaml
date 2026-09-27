@@ -15,8 +15,6 @@
   status: active
 - question: What share of lanes are drawn at the ten-minute mark?
   sql: |
-    SELECT CASE WHEN SUM(hero_playstyle.games) >= 10
-                THEN SUM(hero_playstyle.lanes_drawn) * 1.0 / NULLIF(SUM(hero_playstyle.lane_games), 0)
-           END AS lane_draw_rate
+    SELECT SUM(hero_playstyle.lanes_drawn) * 1.0 / SUM(hero_playstyle.lane_games) AS lane_draw_rate
     FROM marts.hero_playstyle AS hero_playstyle
   status: active

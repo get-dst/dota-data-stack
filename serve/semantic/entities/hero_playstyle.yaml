@@ -3,7 +3,7 @@ description: "How each hero is played in professional matches, per patch and pos
 grain: "one row per hero per patch per position"
 use_cases:
   - "Use for rankings and comparisons of heroes or positions by how they play: which hero fights most, farms most, wins its lane, creates space, wards most."
-  - "Every rate here is null under 10 games (the playstyle_minimum_games term), so a ranking lists only rows past the floor; report the games beside every rate."
+  - "Every rate here except the lane draw share is null under 10 games (the playstyle_minimum_games term), so a ranking lists only rows past the floor; report the games beside every rate."
   - "Group by position for 'which position …' questions; filter a hero for one hero's numbers."
   - "Avoid for named players; that is player_playstyle. Avoid for teams or single matches; those are the per-match entities (fights_per_match, farm_per_match, lanes_per_match, space_per_match, vision_per_match)."
 common_questions:
@@ -123,10 +123,11 @@ metrics:
     format: percent
     description: "Share of lanes lost at 10 minutes (the lane_outcome term). Per hero and position; for named players it is the player_ metric on player_playstyle."
   - name: lane_draw_rate
-    type: derived
-    expr: "CASE WHEN {games} >= 10 THEN {lanes_drawn} * 1.0 / NULLIF({lane_games}, 0) END"
+    type: ratio
+    numerator: lanes_drawn
+    denominator: lane_games
     format: percent
-    description: "Share of lanes drawn at 10 minutes, within 400 gold either way (the lane_outcome term). Per hero and position; for named players it is the player_ metric on player_playstyle."
+    description: "Share of lanes drawn at 10 minutes, within 400 gold either way (the lane_outcome term); a share of all lanes, so it carries no games floor. Per hero and position; for named players it is the player_ metric on player_playstyle."
   - {name: enemy_hero_damage_taken, agg: sum, expr: "hero_playstyle.enemy_hero_damage_taken", description: "Damage taken from enemy heroes, summed."}
   - {name: game_minutes, agg: sum, expr: "hero_playstyle.game_minutes", description: "Minutes played, summed."}
   - name: damage_absorbed_per_min
