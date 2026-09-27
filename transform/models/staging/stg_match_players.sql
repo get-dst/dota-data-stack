@@ -5,7 +5,7 @@ select
     p.player_slot,
     p.is_radiant,
     p.account_id,
-    p.personaname as player_name,
+    {{ clean_name('p.personaname') }} as player_name,
     p.hero_id,
     p.hero_variant,
     p.kills,

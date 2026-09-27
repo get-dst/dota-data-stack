@@ -555,8 +555,8 @@ models:
         tests: [unique, not_null]
       - name: team_name
         data_type: varchar
-        description: Team name; from the ranking when the team is ranked, else from its latest loaded match.
-        tests: [not_null]
+        description: Team name; from the ranking when the team is ranked, else from its latest loaded
+          match; null for a team whose name OpenDota leaves blank on every record (a few unranked teams).
       - name: team_tag
         data_type: varchar
         description: Short team tag; null for a team outside the ranking.
@@ -903,7 +903,7 @@ models:
         description: Tag of that team.
       - name: country_code
         data_type: varchar
-        description: Two-letter country code, lowercase; empty or null when unknown.
+        description: Two-letter country code, lowercase; null when unknown.
       - name: last_match_at
         data_type: timestamp with time zone
         description: Start time of the player's most recent match OpenDota knows; null when unknown.
