@@ -56,9 +56,12 @@ deploy)
   # from a cloud machine that took 134 s against MotherDuck; the default 60 s aborts it.
   # 2Gi: the local embedder lifts the process to ~780 MiB resident after an apply, with
   # a 945 MiB peak; 1Gi leaves no headroom.
+  # --timeout 3600: an MCP client holds an event stream open; at the default 300 s Cloud
+  # Run cut it and the client reconnected every five minutes.
   g run deploy "$SERVICE" --region "$REGION" --image "$IMAGE" \
     --service-account "$SA" --set-cloudsql-instances "$SQL" \
     --min-instances 1 --max-instances 1 --no-cpu-throttling --memory 2Gi --cpu 1 \
+    --timeout 3600 \
     --update-env-vars "DST_PUBLIC_BASE_URL=https://${DEMO_DOMAIN},DST_CLERK_PUBLISHABLE_KEY=${DST_CLERK_PUBLISHABLE_KEY},DST_DEMO_ORG_ID=${DST_DEMO_ORG_ID},DST_DEMO_KEY_DAYS=7,DST_DAILY_REQUEST_CAP=2000,DST_TYPED_SERVING=auto,DST_INSTANCE_NAME=roshan,DST_LLM_DESCRIPTIONS=false,DST_APPLY_STEP_TIMEOUT_S=300" \
     --update-secrets "DST_API_KEY_WAREHOUSE=dst-api-key-warehouse:latest"
   ;;
