@@ -16,10 +16,11 @@ source:
   connection: warehouse
   table: marts.hero_patch_trends
 primary_key: [patch_id, hero_id]
-population: Heroes picked or banned at least once in the professional matches of the
-  loaded window, per patch, in leagues OpenDota rates premium or professional. The
-  previous-patch columns and the changes are null when the window holds no match of the
-  previous patch. Leagues it rates below professional are not counted.
+population: Every hero on every patch with professional matches in the loaded window, in
+  leagues OpenDota rates premium or professional; a hero nobody picked or banned on a patch
+  has zero picks and bans there. The previous-patch columns and the changes are null when
+  the window holds no match of the previous patch. Leagues it rates below professional are
+  not counted.
 fields:
   - {name: patch_id, type: integer}
   - {name: patch_name, type: string}

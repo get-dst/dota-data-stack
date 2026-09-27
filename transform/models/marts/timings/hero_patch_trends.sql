@@ -2,7 +2,9 @@
 -- to the same numbers on the previous patch (the patch before it in dim_patch's release
 -- order) and the change between the two. Rates are per match on that patch: a hero is
 -- picked at most once per match, so pick rate = picks / matches. The previous-patch
--- columns are null when the loaded window holds no match of the previous patch.
+-- columns are null when the loaded window holds no match of the previous patch. Every
+-- hero has a row on every patch of the window, zero when nobody picked or banned it
+-- there, so a pick rate summed over several patches counts every patch's matches.
 with patches as (
     select
         p.patch_id,
@@ -39,13 +41,15 @@ bans as (
 
 hero_patch as (
     select
-        coalesce(pk.patch_id, b.patch_id) as patch_id,
-        coalesce(pk.hero_id, b.hero_id) as hero_id,
+        mt.patch_id,
+        h.hero_id,
         coalesce(pk.picks, 0) as picks,
         coalesce(pk.wins, 0) as wins,
         coalesce(b.bans, 0) as bans
-    from picks as pk
-    full outer join bans as b on b.patch_id = pk.patch_id and b.hero_id = pk.hero_id
+    from matches as mt
+    cross join {{ ref('dim_hero') }} as h
+    left join picks as pk on pk.patch_id = mt.patch_id and pk.hero_id = h.hero_id
+    left join bans as b on b.patch_id = mt.patch_id and b.hero_id = h.hero_id
 ),
 
 rated as (
