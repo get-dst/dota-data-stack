@@ -4,6 +4,7 @@ grain: one row per patch-note line
 use_cases:
   - Use for what changed for a hero or item in a patch.
   - Avoid for numbers about matches; the notes are text.
+  - Lettered patches (7.40b, 7.40c) carry their own notes and have no row in patches; the latest patch's notes join on its patch_name.
 common_questions:
   - What changed for Pudge in 7.41?
   - Which items were changed in the latest patch?
@@ -21,8 +22,8 @@ fields:
   - {name: line_no, type: integer}
   - {name: note, type: string, description: The line of the patch note.}
 dimensions:
-  - {name: patch_name, type: string}
-  - {name: section, type: string}
-  - {name: subject_name, type: string}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
+  - {name: section, type: string, description: "general, heroes or items."}
+  - {name: subject_name, type: string, description: "Display name, e.g. Pudge or Black King Bar."}
 metrics:
-  - {name: note_count, agg: count, expr: patch_notes.line_no}
+  - {name: note_count, agg: count, expr: patch_notes.line_no, description: "Lines of patch notes."}

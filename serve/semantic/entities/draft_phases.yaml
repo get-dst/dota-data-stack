@@ -13,7 +13,7 @@ common_questions:
 source:
   connection: warehouse
   table: marts.draft_phases
-default_time_field: started_at
+default_time_field: match_date
 primary_key: [match_id, draft_order]
 population: Picks and bans of professional matches in leagues OpenDota rates premium or
   professional, played in Captains Mode, whose draft OpenDota recorded. Pro matches in
@@ -48,26 +48,25 @@ fields:
   - {name: league_id, type: integer}
   - {name: league_name, type: string}
 dimensions:
-  - {name: hero_name, type: string}
-  - {name: team_name, type: string}
-  - {name: opponent_team_name, type: string}
-  - {name: phase_name, type: string}
-  - {name: action, type: string}
-  - {name: patch_name, type: string}
-  - {name: league_name, type: string}
-  - {name: match_date, type: date}
+  - {name: hero_name, type: string, description: "The hero."}
+  - {name: team_name, type: string, description: "The team."}
+  - {name: opponent_team_name, type: string, description: "The opposing team."}
+  - {name: phase_name, type: string, description: "'ban phase 1', 'pick phase 1', 'ban phase 2', 'pick phase 2', 'ban phase 3' or 'pick phase 3'."}
+  - {name: action, type: string, description: "'pick' or 'ban'."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
+  - {name: league_name, type: string, description: "League or tournament."}
+  - {name: match_date, type: date, description: "Match date, UTC."}
 metrics:
   - {name: phase_picks, agg: sum, expr: "CASE WHEN draft_phases.is_pick THEN 1 ELSE 0 END", description: Picks among the rows in scope.}
-  - {name: phase_bans, agg: sum, expr: "CASE WHEN draft_phases.is_ban THEN 1 ELSE 0 END", description: Bans among the rows in scope.}
+  - {name: phase_bans, agg: sum, expr: "CASE WHEN draft_phases.is_ban THEN 1 ELSE 0 END", description: "Bans among the rows in scope; filtered by team_name and grouped by hero_name, the heroes a team bans most."}
   - {name: drafted_match_count, agg: count_distinct, expr: draft_phases.match_id, description: Distinct Captains Mode matches among the rows in scope.}
   - {name: pick_wins, agg: sum, expr: "CASE WHEN draft_phases.is_pick AND draft_phases.side_won THEN 1 ELSE 0 END", description: Picks whose side won.}
   - name: pick_win_rate
     better: higher
-    type: ratio
-    numerator: pick_wins
-    denominator: phase_picks
+    type: derived
+    expr: "CASE WHEN {phase_picks} >= 20 THEN {pick_wins} * 1.0 / NULLIF({phase_picks}, 0) END"
     format: percent
-    description: Share of the picks in scope whose side won, e.g. a hero's win rate when picked in pick phase 3.
+    description: "Share of the picks in scope whose side won, e.g. a hero's win rate when first-picked or picked in pick phase 3; null under 20 picks (the minimum_games term)."
   - {name: first_pick_matches, agg: sum, expr: "CASE WHEN draft_phases.is_first_pick THEN 1 ELSE 0 END", description: "Drafted matches counted once each by their first pick; the denominator of first_pick_side_win_rate. A hero's first-pick count is hero_draft_stats.hero_first_picks."}
   - {name: first_pick_side_wins, agg: sum, expr: "CASE WHEN draft_phases.is_first_pick AND draft_phases.side_won THEN 1 ELSE 0 END", description: Matches the side with the first pick won.}
   - name: first_pick_side_win_rate

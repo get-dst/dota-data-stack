@@ -13,7 +13,7 @@ common_questions:
 source:
   connection: warehouse
   table: marts.match_leads
-default_time_field: started_at
+default_time_field: match_date
 primary_key: [match_id]
 population: Professional matches in leagues OpenDota rates premium or professional, in the
   loaded window, whose per-minute advantage OpenDota supplies. A lead at a minute mark is
@@ -39,9 +39,6 @@ fields:
   - {name: radiant_gold_adv_20, type: integer}
   - {name: radiant_gold_adv_25, type: integer}
   - {name: radiant_xp_adv_10, type: integer, description: "Radiant experience advantage at minute 10; negative = Dire ahead."}
-  - {name: radiant_xp_adv_15, type: integer}
-  - {name: radiant_xp_adv_20, type: integer}
-  - {name: radiant_xp_adv_25, type: integer}
   - {name: winner_gold_adv_10, type: integer, description: "The eventual winner's gold advantage at minute 10; negative = behind."}
   - {name: winner_gold_adv_15, type: integer}
   - {name: winner_gold_adv_20, type: integer}
@@ -56,14 +53,14 @@ fields:
   - {name: leader_at_10_won, type: boolean, description: "True when the side ahead in gold at minute 10 won; null when level or the match ended earlier."}
   - {name: leader_at_20_won, type: boolean, description: "True when the side ahead in gold at minute 20 won; null when level or the match ended earlier."}
 dimensions:
-  - {name: patch_name, type: string}
-  - {name: league_name, type: string}
-  - {name: match_date, type: date}
-  - {name: winner_side, type: string}
-  - {name: winner_team_name, type: string}
-  - {name: loser_team_name, type: string}
-  - {name: comeback_team_name, type: string}
-  - {name: throw_team_name, type: string}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
+  - {name: league_name, type: string, description: "League or tournament."}
+  - {name: match_date, type: date, description: "Match date, UTC."}
+  - {name: winner_side, type: string, description: "radiant or dire."}
+  - {name: winner_team_name, type: string, description: "The team that won the match."}
+  - {name: loser_team_name, type: string, description: "The team that lost the match."}
+  - {name: comeback_team_name, type: string, description: "The winning team of a comeback match."}
+  - {name: throw_team_name, type: string, description: "The losing team of a comeback match: it held a lead of 10 000 gold or more and lost."}
 metrics:
   - {name: lead_matches, agg: count, expr: match_leads.match_id, description: Matches with a per-minute advantage.}
   - {name: comebacks, agg: sum, expr: "CASE WHEN match_leads.is_comeback THEN 1 ELSE 0 END", description: Matches the winner won from 10 000 gold or more behind.}

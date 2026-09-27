@@ -31,15 +31,22 @@ fields:
   - {name: losses, type: integer}
   - {name: matches_in_bracket, type: integer, description: "Sampled matches at this patch, bracket and game type; repeats on every hero row, so never sum it across heroes."}
 dimensions:
-  - {name: hero_name, type: string}
-  - {name: bracket_name, type: string}
-  - {name: patch_name, type: string}
+  - {name: hero_name, type: string, description: "The hero."}
+  - {name: bracket_name, type: string, description: "Rank bracket, Herald to Immortal."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
 metrics:
-  - {name: hero_games, agg: sum, expr: pub_hero_stats.games}
-  - {name: hero_wins, agg: sum, expr: pub_hero_stats.wins}
+  - {name: hero_games, agg: sum, expr: pub_hero_stats.games, description: "Sampled games the hero was picked in; rank by it for the most-picked heroes at a bracket."}
+  - {name: hero_wins, agg: sum, expr: pub_hero_stats.wins, description: "Of those, games won."}
   - name: hero_win_rate
     better: higher
     type: derived
     expr: "CASE WHEN {hero_games} >= 20 THEN {hero_wins} * 1.0 / NULLIF({hero_games}, 0) END"
     format: percent
     description: Wins divided by games for the hero over the selected brackets and patches; null under 20 games (the minimum_games term), so a small sample cannot rank first.
+  - {name: bracket_matches, agg: sum, expr: pub_hero_stats.matches_in_bracket, description: "Sampled matches at the hero's brackets and patches: the denominator of its pick rate. Read it grouped or filtered by hero; summed over several heroes it counts each match once per hero."}
+  - name: pub_pick_rate
+    type: ratio
+    numerator: hero_games
+    denominator: bracket_matches
+    format: percent
+    description: "Share of sampled matches at the bracket in which the hero was picked (the pub_pick_rate term). Group or filter by hero; report hero_games beside it."

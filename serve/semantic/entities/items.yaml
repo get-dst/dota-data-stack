@@ -29,10 +29,8 @@ fields:
   - {name: is_neutral, type: boolean, description: True for neutral items and enchantments.}
   - {name: is_major_item, type: boolean, description: "True for a major item: at least 2000 gold, assembled from components or with its own active ability, not a recipe, consumable or neutral item."}
 dimensions:
-  - {name: item_name, type: string}
-  - {name: neutral_tier, type: integer}
-  - {name: is_major_item, type: boolean}
-  - {name: is_neutral, type: boolean}
+  - {name: item_name, type: string, description: "The item."}
+  - {name: neutral_tier, type: integer, description: "Neutral item tier, 1 to 5; null for shop items and enchantments."}
 metrics:
-  - {name: item_count, agg: count, expr: items.item_id}
+  - {name: item_count, agg: count, expr: items.item_id, description: "Number of items."}
   - {name: avg_item_cost, agg: avg, expr: items.item_cost, description: Average shop price in gold.}

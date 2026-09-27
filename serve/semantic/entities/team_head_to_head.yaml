@@ -26,15 +26,16 @@ fields:
   - {name: first_match_date, type: date}
   - {name: last_match_date, type: date}
 dimensions:
-  - {name: team_name, type: string}
-  - {name: opponent_team_name, type: string}
-  - {name: patch_name, type: string}
+  - {name: team_name, type: string, description: "The team."}
+  - {name: opponent_team_name, type: string, description: "The opposing team."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
 metrics:
-  - {name: h2h_matches, agg: sum, expr: team_head_to_head.matches}
-  - {name: h2h_wins, agg: sum, expr: team_head_to_head.wins}
+  - {name: h2h_matches, agg: sum, expr: team_head_to_head.matches, description: "Matches between the two teams (games, not series)."}
+  - {name: h2h_wins, agg: sum, expr: team_head_to_head.wins, description: "Of those, matches team_name won; h2h_matches minus h2h_wins is the opponent's."}
   - name: head_to_head_win_rate
     better: higher
     type: ratio
     numerator: h2h_wins
     denominator: h2h_matches
     format: percent
+    description: "Share of the matches between the two teams that team_name won. No games floor: it is asked about one named pair, so give h2h_matches and h2h_wins beside it."

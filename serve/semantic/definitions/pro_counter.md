@@ -1,6 +1,8 @@
 ---
 metric: pro_counter
 summary: In pro play, a hero that the asked-about hero loses to more than usual, measured on pro_draft_matchups.
+about: pro_draft_matchups.pro_matchup_win_rate
+sql: SUM(pro_draft_matchups.wins) * 1.0 / SUM(pro_draft_matchups.games)
 aliases: [counter, counters, pro counter, counters in pro play, pro matchup, bad matchup in pro, counter in drafts]
 ---
 

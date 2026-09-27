@@ -26,15 +26,15 @@ fields:
   - {name: games, type: integer}
   - {name: wins, type: integer}
 dimensions:
-  - {name: hero_name, type: string}
-  - {name: patch_name, type: string}
-  - {name: starting_build, type: string}
+  - {name: hero_name, type: string, description: "The hero."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
+  - {name: starting_build, type: string, description: "Every item bought before the horn in item-name order, counts after an x."}
 metrics:
-  - {name: build_games, agg: sum, expr: starting_builds.games}
-  - {name: build_wins, agg: sum, expr: starting_builds.wins}
+  - {name: build_games, agg: sum, expr: starting_builds.games, description: "Games in which the player bought exactly this starting build; rank by it for the most common build."}
+  - {name: build_wins, agg: sum, expr: starting_builds.wins, description: "Of those, games won."}
   - name: build_win_rate
     better: higher
-    type: ratio
-    numerator: build_wins
-    denominator: build_games
+    type: derived
+    expr: "CASE WHEN {build_games} >= 20 THEN {build_wins} * 1.0 / NULLIF({build_games}, 0) END"
     format: percent
+    description: "Share of the games with this whole starting build that were won; null under 20 games (the minimum_games term)."

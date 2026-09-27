@@ -9,6 +9,6 @@ fields:
   - {name: bracket_id, type: integer, description: "1 Herald, 2 Guardian, 3 Crusader, 4 Archon, 5 Legend, 6 Ancient, 7 Divine, 8 Immortal."}
   - {name: bracket_name, type: string}
 dimensions:
-  - {name: bracket_name, type: string}
+  - {name: bracket_name, type: string, description: "Rank bracket, Herald to Immortal."}
 metrics:
-  - {name: bracket_count, agg: count, expr: brackets.bracket_id}
+  - {name: bracket_count, agg: count, expr: brackets.bracket_id, description: "Number of rank brackets."}

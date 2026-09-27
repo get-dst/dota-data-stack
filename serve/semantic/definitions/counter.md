@@ -1,6 +1,8 @@
 ---
 metric: counter
 summary: A hero that the asked-about hero loses to more than usual, measured over the public sample.
+about: pub_matchups.matchup_win_rate
+sql: SUM(pub_matchups.wins) * 1.0 / SUM(pub_matchups.games)
 aliases: [counters, counter pick, what beats, bad matchup, good against, strong against]
 grain: one value per hero pair, over a patch
 ---

@@ -1,10 +1,11 @@
 name: hero_daily_stats
 description: Per hero, per day, per patch — picks, bans, wins and losses across pro matches.
-  The rollup for meta questions.
+  The rollup for a hero's picks, bans and win rate over a date range (this week, last month,
+  in August).
 grain: one row per hero per match date per patch
 use_cases:
   - Use for hero pick, ban and win totals, and the day-by-day series behind them, over a period or a patch.
-  - Avoid for a hero's win rate; that is player_performances (the hero_win_rate definition, null under 20 games) or, per patch, hero_patch_trends. Avoid for anything about a specific player or team.
+  - A hero's win rate over dates is period_win_rate (null under 20 picks); on one patch, hero_patch_trends answers from a smaller table. Avoid for anything about a specific player, team or position.
 common_questions:
   - Which heroes were picked most on the current patch?
   - How many times was Windranger banned this week?
@@ -28,11 +29,17 @@ fields:
   - {name: losses, type: integer}
   - {name: matches_that_day, type: integer, description: Pro matches played that day on that patch; repeats on every hero row.}
 dimensions:
-  - {name: hero_name, type: string}
-  - {name: patch_name, type: string}
-  - {name: match_date, type: date}
+  - {name: hero_name, type: string, description: "The hero."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
+  - {name: match_date, type: date, description: "Match date, UTC."}
 metrics:
-  - {name: total_picks, agg: sum, expr: hero_daily_stats.picks}
-  - {name: total_bans, agg: sum, expr: hero_daily_stats.bans}
-  - {name: total_wins, agg: sum, expr: hero_daily_stats.wins}
-  - {name: total_losses, agg: sum, expr: hero_daily_stats.losses}
+  - {name: total_picks, agg: sum, expr: hero_daily_stats.picks, description: "Times the hero was picked in pro matches over the dates in scope, in every role (every match has ten picks); rank by it for the most-picked heroes. Picks in one role (carries, pos 4) are hero_position_meta.position_games."}
+  - {name: total_bans, agg: sum, expr: hero_daily_stats.bans, description: "Times the hero was banned in pro matches over the dates in scope."}
+  - {name: total_wins, agg: sum, expr: hero_daily_stats.wins, description: "Picks of the hero whose side won, over the dates in scope."}
+  - {name: total_losses, agg: sum, expr: hero_daily_stats.losses, description: "Picks of the hero whose side lost, over the dates in scope."}
+  - name: period_win_rate
+    better: higher
+    type: derived
+    expr: "CASE WHEN {total_picks} >= 20 THEN {total_wins} * 1.0 / NULLIF({total_picks}, 0) END"
+    format: percent
+    description: "Wins divided by picks for the hero over the dates in scope (the hero_win_rate term); null under 20 picks, so a rarely picked hero cannot rank first. The rollup for a hero's win rate over a date range; state total_picks beside it."

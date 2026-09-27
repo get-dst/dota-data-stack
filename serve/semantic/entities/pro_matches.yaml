@@ -12,7 +12,7 @@ common_questions:
 source:
   connection: warehouse
   table: marts.fact_match
-default_time_field: started_at
+default_time_field: match_date
 primary_key: [match_id]
 population: Professional matches only, in leagues OpenDota rates premium or professional,
   as listed by OpenDota's pro-match feed, for the loaded window. Leagues it rates below
@@ -21,48 +21,40 @@ fields:
   - {name: match_id, type: integer, description: OpenDota match id.}
   - {name: started_at, type: timestamp, description: "Match start, UTC."}
   - {name: match_date, type: date, description: "Match start date, UTC."}
-  - {name: duration_s, type: integer, description: Game length in seconds.}
   - {name: duration_min, type: number, description: Game length in minutes.}
   - {name: radiant_win, type: boolean, description: True when the Radiant side won.}
   - {name: winner_team_id, type: integer}
-  - {name: loser_team_id, type: integer}
-  - {name: radiant_team_id, type: integer}
   - {name: radiant_team_name, type: string}
-  - {name: dire_team_id, type: integer}
   - {name: dire_team_name, type: string}
   - {name: radiant_kills, type: integer}
   - {name: dire_kills, type: integer}
   - {name: total_kills, type: integer, description: Kills by both sides combined.}
   - {name: league_id, type: integer}
   - {name: league_name, type: string}
-  - {name: league_tier, type: string, description: "OpenDota tier of the league: premium or professional (premium is the top tier)."}
+  - {name: league_tier, type: string, description: "League tier: premium for the top events, such as The International; every other league here holds the standard tier. A filter only for a question about premium or top-tier tournaments."}
   - {name: patch_id, type: integer}
   - {name: patch_name, type: string, description: "Game version the match was played on, e.g. 7.41."}
-  - {name: game_mode_id, type: integer}
-  - {name: lobby_type_id, type: integer}
-  - {name: region_id, type: integer}
   - {name: series_id, type: integer}
   - {name: series_type, type: integer, description: "0 = best of 1, 1 = best of 3, 2 = best of 5, 3 = best of 2; null when not reported."}
-  - {name: first_blood_s, type: integer, description: Seconds until first blood.}
   - {name: first_blood_min, type: number}
   - {name: comeback, type: integer, description: Largest gold deficit the winner overcame.}
   - {name: stomp, type: integer, description: Largest gold lead the winner held.}
 dimensions:
-  - {name: match_date, type: date}
-  - {name: patch_name, type: string}
-  - {name: league_name, type: string}
-  - {name: league_tier, type: string}
-  - {name: radiant_team_name, type: string}
-  - {name: dire_team_name, type: string}
+  - {name: match_date, type: date, description: "Match date, UTC."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
+  - {name: league_name, type: string, description: "League or tournament."}
+  - {name: league_tier, type: string, description: "League tier: premium for the top events, such as The International; every other league here holds the standard tier. A filter only for a question about premium or top-tier tournaments."}
+  - {name: radiant_team_name, type: string, description: "The team on the Radiant side."}
+  - {name: dire_team_name, type: string, description: "The team on the Dire side."}
 metrics:
   - {name: match_count, agg: count, expr: pro_matches.match_id, description: Number of pro matches.}
   - {name: avg_duration_min, agg: avg, expr: pro_matches.duration_min, description: Average game length in minutes.}
-  - {name: avg_total_kills, agg: avg, expr: pro_matches.total_kills}
-  - {name: avg_first_blood_min, agg: avg, expr: pro_matches.first_blood_min}
+  - {name: avg_total_kills, agg: avg, expr: pro_matches.total_kills, description: "Average kills by both sides per match."}
+  - {name: avg_first_blood_min, agg: avg, expr: pro_matches.first_blood_min, description: "Average game minute of first blood."}
   - name: radiant_win_rate
     type: ratio
     numerator: radiant_wins
     denominator: match_count
     format: percent
     description: Share of matches the Radiant side won.
-  - {name: radiant_wins, agg: sum, expr: "CASE WHEN pro_matches.radiant_win THEN 1 ELSE 0 END"}
+  - {name: radiant_wins, agg: sum, expr: "CASE WHEN pro_matches.radiant_win THEN 1 ELSE 0 END", description: "Matches the Radiant side won."}

@@ -1,6 +1,7 @@
 ---
 metric: lane_outcome
 summary: A lane is won when the side's laners are on average more than 400 gold ahead of the enemy laners in the same map lane at minute 10, lost when 400 behind, drawn in between.
+about: hero_playstyle.lane_win_rate
 sql: SUM(hero_playstyle.lanes_won) * 1.0 / SUM(hero_playstyle.lane_games)
 aliases: [lane win, won lane, lost lane, win the lane, wins the lane, win their lane, lane win rate, laning, laning phase, lane result, lane outcome, laning stage, lane matchup]
 ---

@@ -12,7 +12,7 @@ common_questions:
 source:
   connection: warehouse
   table: marts.team_lineups
-default_time_field: started_at
+default_time_field: match_date
 primary_key: [match_id, is_radiant]
 population: Sides of professional matches in leagues OpenDota rates premium or
   professional that OpenDota tied to a team; a side with no identified team has no row.
@@ -38,24 +38,23 @@ fields:
   - {name: league_id, type: integer}
   - {name: league_name, type: string}
 dimensions:
-  - {name: team_name, type: string}
-  - {name: opponent_team_name, type: string}
-  - {name: carry_hero, type: string}
-  - {name: mid_hero, type: string}
-  - {name: offlane_hero, type: string}
-  - {name: soft_support_hero, type: string}
-  - {name: hard_support_hero, type: string}
-  - {name: patch_name, type: string}
-  - {name: league_name, type: string}
-  - {name: side, type: string}
-  - {name: match_date, type: date}
+  - {name: team_name, type: string, description: "The team."}
+  - {name: opponent_team_name, type: string, description: "The opposing team."}
+  - {name: carry_hero, type: string, description: "The team's hero at position 1 (carry) in the match: group by it for the carry heroes a team plays."}
+  - {name: mid_hero, type: string, description: "The team's hero at position 2 (mid) in the match: group by it for the mid heroes a team plays."}
+  - {name: offlane_hero, type: string, description: "The team's hero at position 3 (offlane) in the match: group by it for the offlane heroes a team plays."}
+  - {name: soft_support_hero, type: string, description: "The team's hero at position 4 (soft support) in the match: group by it for the soft support heroes a team plays."}
+  - {name: hard_support_hero, type: string, description: "The team's hero at position 5 (hard support) in the match: group by it for the hard support heroes a team plays."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
+  - {name: league_name, type: string, description: "League or tournament."}
+  - {name: side, type: string, description: "radiant or dire."}
+  - {name: match_date, type: date, description: "Match date, UTC."}
 metrics:
-  - {name: lineup_games, agg: count, expr: team_lineups.match_id, description: Team matches in scope.}
-  - {name: lineup_wins, agg: sum, expr: "CASE WHEN team_lineups.is_win THEN 1 ELSE 0 END"}
+  - {name: lineup_games, agg: count, expr: team_lineups.match_id, description: "Team matches in scope; grouped by carry_hero, mid_hero, offlane_hero, soft_support_hero or hard_support_hero, how often a team played each hero in that position."}
+  - {name: lineup_wins, agg: sum, expr: "CASE WHEN team_lineups.is_win THEN 1 ELSE 0 END", description: "Of the team matches in scope, those won."}
   - name: lineup_win_rate
     better: higher
-    type: ratio
-    numerator: lineup_wins
-    denominator: lineup_games
+    type: derived
+    expr: "CASE WHEN {lineup_games} >= 20 THEN {lineup_wins} * 1.0 / NULLIF({lineup_games}, 0) END"
     format: percent
-    description: Share of the team matches in scope that the team won.
+    description: "Share of the team matches in scope that the team won; null under 20 matches (the minimum_games term)."

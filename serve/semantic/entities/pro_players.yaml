@@ -18,8 +18,8 @@ fields:
   - {name: country_code, type: string, description: Two-letter country code.}
   - {name: last_match_at, type: timestamp}
 dimensions:
-  - {name: player_name, type: string}
-  - {name: team_name, type: string}
-  - {name: country_code, type: string}
+  - {name: player_name, type: string, description: "The competitive name, e.g. Yatoro."}
+  - {name: team_name, type: string, description: "The team."}
+  - {name: country_code, type: string, description: "Two-letter country code."}
 metrics:
-  - {name: player_count, agg: count, expr: pro_players.account_id}
+  - {name: player_count, agg: count, expr: pro_players.account_id, description: "Number of pro players."}

@@ -36,19 +36,18 @@ fields:
   - {name: avg_bought_min, type: number, description: Average game minute the item was completed in those games.}
   - {name: hero_games, type: integer, description: "Pro games the hero played on the patch with a purchase log; repeats on every row of the hero, so never sum it across rows."}
 dimensions:
-  - {name: hero_name, type: string}
-  - {name: item_name, type: string}
-  - {name: patch_name, type: string}
-  - {name: item_slot, type: integer}
-  - {name: item_order, type: string}
+  - {name: hero_name, type: string, description: "The hero."}
+  - {name: item_name, type: string, description: "The item."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
+  - {name: item_slot, type: integer, description: "1 = the first major item completed in the game, 2 = the second, 3 = the third."}
+  - {name: item_order, type: string, description: "item_slot in words: first, second or third major item of the game."}
 metrics:
   - {name: core_item_games, agg: sum, expr: hero_core_items.games, description: "Games in which the item was the hero's first, second or third major item (per item_order); rank by it for the most common first item."}
-  - {name: core_item_wins, agg: sum, expr: hero_core_items.wins}
+  - {name: core_item_wins, agg: sum, expr: hero_core_items.wins, description: "Of the games with the item in that slot, those won."}
   - name: core_item_win_rate
     better: higher
-    type: ratio
-    numerator: core_item_wins
-    denominator: core_item_games
+    type: derived
+    expr: "CASE WHEN {core_item_games} >= 20 THEN {core_item_wins} * 1.0 / NULLIF({core_item_games}, 0) END"
     format: percent
-    description: Share of the games with the item in that slot that were won.
+    description: "Share of the games with the item in that slot that were won; null under 20 games (the minimum_games term)."
   - {name: median_completion_minute, agg: avg, expr: hero_core_items.median_bought_min, description: "Median completion minute; exact for one hero, item and slot on one patch, an average of patch medians otherwise."}

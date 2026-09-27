@@ -28,16 +28,15 @@ fields:
   - {name: games, type: integer, description: Pro matches the two were on opposite sides.}
   - {name: wins, type: integer, description: "Of those, the ones hero_name's side won."}
 dimensions:
-  - {name: hero_name, type: string}
-  - {name: opponent_hero_name, type: string}
-  - {name: patch_name, type: string}
+  - {name: hero_name, type: string, description: "The hero."}
+  - {name: opponent_hero_name, type: string, description: "The hero picked by the other side: the grouping for a hero's counters in pro play (the pro_counter term)."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
 metrics:
-  - {name: pro_matchup_games, agg: sum, expr: pro_draft_matchups.games}
-  - {name: pro_matchup_wins, agg: sum, expr: pro_draft_matchups.wins}
+  - {name: pro_matchup_games, agg: sum, expr: pro_draft_matchups.games, description: "Pro matches the two heroes were on opposite sides; the sample size beside the matchup rate."}
+  - {name: pro_matchup_wins, agg: sum, expr: pro_draft_matchups.wins, description: "Of those, matches hero_name's side won."}
   - name: pro_matchup_win_rate
     better: higher
-    type: ratio
-    numerator: pro_matchup_wins
-    denominator: pro_matchup_games
+    type: derived
+    expr: "CASE WHEN {pro_matchup_games} >= 20 THEN {pro_matchup_wins} * 1.0 / NULLIF({pro_matchup_games}, 0) END"
     format: percent
-    description: Share of pro matches hero_name's side won against opponent_hero_name.
+    description: "Share of pro matches hero_name's side won against opponent_hero_name (the pro_counter term); null under 20 games. Filter hero_name to the hero asked about and rank opponents lowest first for its counters, highest first for the heroes it beats."

@@ -28,8 +28,7 @@ fields:
   - {name: loaded_matches, type: integer, description: The team's pro matches in the loaded window.}
   - {name: last_loaded_match_at, type: timestamp, description: Start of the team's latest loaded match.}
 dimensions:
-  - {name: team_name, type: string}
-  - {name: is_ranked, type: boolean}
+  - {name: team_name, type: string, description: "The team."}
 metrics:
-  - {name: team_count, agg: count, expr: teams.team_id}
+  - {name: team_count, agg: count, expr: teams.team_id, description: "Number of teams."}
   - {name: avg_rating, agg: avg, expr: teams.rating, better: higher, description: Average OpenDota rating over ranked teams; null ratings are skipped.}

@@ -1,6 +1,8 @@
 ---
 metric: trend
 summary: A hero's win rate over days, compared across two windows — rising, falling, or flat.
+about: pub_hero_trends.daily_win_rate
+sql: SUM(pub_hero_trends.wins) * 1.0 / SUM(pub_hero_trends.games)
 aliases: [trending, rising, falling, going up, going down, this week vs last week, momentum]
 grain: one value per hero per day
 ---

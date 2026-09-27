@@ -1,6 +1,8 @@
 ---
 metric: first_objective
 summary: First blood, the first tower and the first Roshan of a pro match, each credited to the side that took it.
+about: objective_win_rates.objective_win_rate
+sql: SUM(objective_win_rates.taker_wins) * 1.0 / SUM(objective_win_rates.matches)
 aliases: [first blood, first tower, first roshan, first rosh, first objective, fb]
 grain: one value per match
 ---

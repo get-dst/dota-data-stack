@@ -15,7 +15,7 @@ common_questions:
 source:
   connection: warehouse
   table: marts.fact_team_match
-default_time_field: started_at
+default_time_field: match_date
 primary_key: [match_id, side]
 population: Both sides of every professional match in the loaded window in a league
   OpenDota rates premium or professional. A side OpenDota did not tie to a team has a null
@@ -40,23 +40,22 @@ fields:
   - {name: patch_name, type: string, description: "Game version the match was played on, e.g. 7.41."}
   - {name: league_id, type: integer}
   - {name: league_name, type: string}
-  - {name: league_tier, type: string, description: "OpenDota tier of the league: premium or professional (premium is the top tier)."}
-  - {name: game_mode_id, type: integer}
+  - {name: league_tier, type: string, description: "League tier: premium for the top events, such as The International; every other league here holds the standard tier. A filter only for a question about premium or top-tier tournaments."}
   - {name: series_id, type: integer}
   - {name: series_type, type: integer, description: "0 = best of 1, 1 = best of 3, 2 = best of 5, 3 = best of 2; null when not reported."}
 dimensions:
-  - {name: team_name, type: string}
-  - {name: opponent_team_name, type: string}
-  - {name: side, type: string}
-  - {name: has_first_pick, type: boolean}
-  - {name: patch_name, type: string}
-  - {name: league_name, type: string}
-  - {name: league_tier, type: string}
-  - {name: match_date, type: date}
+  - {name: team_name, type: string, description: "The team."}
+  - {name: opponent_team_name, type: string, description: "The opposing team."}
+  - {name: side, type: string, description: "radiant or dire."}
+  - {name: has_first_pick, type: boolean, description: "True when this side made the match's first pick; null when the match has no recorded draft."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
+  - {name: league_name, type: string, description: "League or tournament."}
+  - {name: league_tier, type: string, description: "League tier: premium for the top events, such as The International; every other league here holds the standard tier. A filter only for a question about premium or top-tier tournaments."}
+  - {name: match_date, type: date, description: "Match date, UTC."}
 metrics:
   - {name: matches_played, agg: count, expr: team_matches.match_id, description: "Matches the team played (games, not series); one row per team per match."}
-  - {name: team_wins, agg: sum, expr: "CASE WHEN team_matches.is_win THEN 1 ELSE 0 END", description: Matches the team won.}
-  - {name: team_losses, agg: sum, expr: "CASE WHEN team_matches.is_win THEN 0 ELSE 1 END", description: Matches the team lost.}
+  - {name: team_wins, agg: sum, expr: "CASE WHEN team_matches.is_win THEN 1 ELSE 0 END", description: "Matches the team won; with team_losses, the team's record (wins-losses). Rank by it for the team that won the most."}
+  - {name: team_losses, agg: sum, expr: "CASE WHEN team_matches.is_win THEN 0 ELSE 1 END", description: "Matches the team lost; with team_wins, the team's record (wins-losses)."}
   - name: team_win_rate
     better: higher
     type: derived

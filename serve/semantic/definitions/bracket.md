@@ -1,8 +1,9 @@
 ---
 metric: bracket
 summary: The rank bracket of a public match, from the average rank tier of its ten players.
+about: pub_hero_stats.bracket_name
+value_aliases: {heralds: Herald, guardians: Guardian, crusaders: Crusader, archons: Archon, legends: Legend, ancients: Ancient, divines: Divine}
 aliases: [rank bracket, skill bracket, medal, rank tier, Herald, Guardian, Crusader, Archon, Legend, Ancient, Divine, Immortal]
-sql: brackets.bracket_name
 ---
 
 Herald, Guardian, Crusader, Archon, Legend, Ancient, Divine, Immortal, in that order.

@@ -25,15 +25,15 @@ fields:
   - {name: first_match_date, type: date}
   - {name: last_match_date, type: date}
 dimensions:
-  - {name: league_name, type: string}
-  - {name: team_name, type: string}
+  - {name: league_name, type: string, description: "League or tournament."}
+  - {name: team_name, type: string, description: "The team."}
 metrics:
-  - {name: league_matches, agg: sum, expr: league_standings.matches}
-  - {name: league_wins, agg: sum, expr: league_standings.wins}
-  - {name: league_losses, agg: sum, expr: league_standings.losses}
+  - {name: league_matches, agg: sum, expr: league_standings.matches, description: "Games the team played in the league (games, not series)."}
+  - {name: league_wins, agg: sum, expr: league_standings.wins, description: "Games the team won in the league."}
+  - {name: league_losses, agg: sum, expr: league_standings.losses, description: "Games the team lost in the league."}
   - name: league_win_rate
     better: higher
-    type: ratio
-    numerator: league_wins
-    denominator: league_matches
+    type: derived
+    expr: "CASE WHEN {league_matches} >= 10 THEN {league_wins} * 1.0 / NULLIF({league_matches}, 0) END"
     format: percent
+    description: "Wins divided by games for the team in the league; null under 10 games (the minimum_games term). Games, not series."

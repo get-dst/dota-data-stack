@@ -10,9 +10,9 @@ population: Leagues and tournaments OpenDota rates premium or professional. Leag
 fields:
   - {name: league_id, type: integer}
   - {name: league_name, type: string}
-  - {name: league_tier, type: string, description: "OpenDota tier of the league: premium or professional (premium is the top tier)."}
+  - {name: league_tier, type: string, description: "League tier: premium for the top events, such as The International; every other league here holds the standard tier. A filter only for a question about premium or top-tier tournaments."}
 dimensions:
-  - {name: league_name, type: string}
-  - {name: league_tier, type: string}
+  - {name: league_name, type: string, description: "League or tournament."}
+  - {name: league_tier, type: string, description: "League tier: premium for the top events, such as The International; every other league here holds the standard tier. A filter only for a question about premium or top-tier tournaments."}
 metrics:
-  - {name: league_count, agg: count, expr: leagues.league_id}
+  - {name: league_count, agg: count, expr: leagues.league_id, description: "Number of leagues."}

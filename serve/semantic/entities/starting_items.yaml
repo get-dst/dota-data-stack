@@ -31,16 +31,16 @@ fields:
   - {name: wins_when_bought, type: integer}
   - {name: hero_games, type: integer, description: "Pro games the hero played on the patch with a purchase log; repeats on every item row, so never sum it across items."}
 dimensions:
-  - {name: hero_name, type: string}
-  - {name: item_name, type: string}
-  - {name: patch_name, type: string}
+  - {name: hero_name, type: string, description: "The hero."}
+  - {name: item_name, type: string, description: "The item."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
 metrics:
   - {name: starting_games, agg: sum, expr: starting_items.games_bought, description: Games in which the item was bought before the horn.}
-  - {name: starting_units, agg: sum, expr: starting_items.units_bought}
-  - {name: starting_wins, agg: sum, expr: starting_items.wins_when_bought}
+  - {name: starting_units, agg: sum, expr: starting_items.units_bought, description: "Units of the item bought before the horn, summed over games."}
+  - {name: starting_wins, agg: sum, expr: starting_items.wins_when_bought, description: "Of the games that bought the item before the horn, those won."}
   - name: starting_item_win_rate
     better: higher
-    type: ratio
-    numerator: starting_wins
-    denominator: starting_games
+    type: derived
+    expr: "CASE WHEN {starting_games} >= 20 THEN {starting_wins} * 1.0 / NULLIF({starting_games}, 0) END"
     format: percent
+    description: "Share of the games that bought the item before the horn that were won; null under 20 games (the minimum_games term)."

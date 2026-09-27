@@ -13,8 +13,8 @@ fields:
   - {name: attack_type, type: string, description: Melee or Ranged.}
   - {name: roles, type: string, description: "Comma-separated roles, e.g. Carry, Support."}
 dimensions:
-  - {name: hero_name, type: string}
-  - {name: primary_attribute, type: string}
-  - {name: attack_type, type: string}
+  - {name: hero_name, type: string, description: "The hero."}
+  - {name: primary_attribute, type: string, description: "str, agi, int or all."}
+  - {name: attack_type, type: string, description: "Melee or Ranged."}
 metrics:
-  - {name: hero_count, agg: count, expr: heroes.hero_id}
+  - {name: hero_count, agg: count, expr: heroes.hero_id, description: "Number of heroes in the roster."}

@@ -1,4 +1,0 @@
-left: drafts
-right: pro_matches
-on: drafts.match_id = pro_matches.match_id
-relationship: many_to_one

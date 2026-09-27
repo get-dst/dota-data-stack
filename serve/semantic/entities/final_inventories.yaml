@@ -35,19 +35,17 @@ fields:
   - {name: wins_with_item, type: integer}
   - {name: hero_games, type: integer, description: "Pro games the hero played on the patch; repeats on every row of the hero, so never sum it across rows."}
 dimensions:
-  - {name: hero_name, type: string}
-  - {name: item_name, type: string}
-  - {name: patch_name, type: string}
-  - {name: slot_group, type: string}
-  - {name: neutral_tier, type: integer}
-  - {name: is_major_item, type: boolean}
+  - {name: hero_name, type: string, description: "The hero."}
+  - {name: item_name, type: string, description: "The item."}
+  - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
+  - {name: slot_group, type: string, description: "main, backpack, neutral, enchantment or consumed."}
+  - {name: neutral_tier, type: integer, description: "Neutral item tier 1 to 5; null for shop items and enchantments."}
 metrics:
   - {name: games_ended_with, agg: sum, expr: final_inventories.games_with_item, description: Games ending with the item in the slot group.}
-  - {name: wins_ended_with, agg: sum, expr: final_inventories.wins_with_item}
+  - {name: wins_ended_with, agg: sum, expr: final_inventories.wins_with_item, description: "Of the games ending with the item, those won."}
   - name: ended_with_win_rate
     better: higher
-    type: ratio
-    numerator: wins_ended_with
-    denominator: games_ended_with
+    type: derived
+    expr: "CASE WHEN {games_ended_with} >= 20 THEN {wins_ended_with} * 1.0 / NULLIF({games_ended_with}, 0) END"
     format: percent
-    description: Share of the games ending with the item that were won.
+    description: "Share of the games ending with the item that were won; null under 20 games (the minimum_games term), so a neutral item seen once cannot rank first."
