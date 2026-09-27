@@ -35,8 +35,8 @@ records their tokens (`resolution.decisions[].usage`) but does not price them.
 
 ## 0. Before anything
 
-- [ ] dst 0.5.9 on the laptop (`pip install -U 'dst-core==0.5.9'`, or `~/dst-dev/.venv/bin/dst`).
-- [ ] `gcloud auth login` as the account that owns `kurator-core`.
+- [x] dst 0.5.9 on the laptop (`pip install -U 'dst-core==0.5.9'`, or `~/dst-dev/.venv/bin/dst`).
+- [x] `gcloud auth login` as the account that owns `kurator-core`.
 - [ ] Decide on the GHCR image. `ghcr.io/get-dst/dst:0.5.9` was pushed by the release,
       but an anonymous pull is refused (403), so the package is private. Cloud Run does
       not need it: `cloudbuild.yaml` builds from the public source tag. The VM variant and
@@ -103,6 +103,12 @@ deploy/cloudrun.sh warehouse-secret   # paste the read-scaling token; stored as 
 deploy/cloudrun.sh migrate            # dst-migrate job on the new image
 ```
 
+Done 2026-09-27: the image `dota-demo:0.5.9` is built, `dst-migrate` ran on it (already at
+head, 0067), and `dst-api-key-warehouse` holds the REGULAR MotherDuck token as version 1
+(dst opens it read-only; writes are refused). Run `warehouse-secret` again with the
+read-scaling token when it exists: it adds version 2 and the service reads `latest` on its
+next deploy.
+
 ## 5. Domain
 
 - [x] `deploy/cloudrun.sh domain` (maps `demo.dataservetool.com` onto the service). Done
@@ -110,7 +116,8 @@ deploy/cloudrun.sh migrate            # dst-migrate job on the new image
 - [x] Cloudflare: `CNAME demo → ghs.googlehosted.com`, **DNS only** (resolves to a Google
       IP, so not proxied). A proxied (orange)
       record blocks Google's certificate, the same as on the docs site.
-- [ ] `deploy/cloudrun.sh status` until the mapping reports its certificate ready.
+- [x] `deploy/cloudrun.sh status` until the mapping reports its certificate ready.
+      Ready since 2026-09-26.
       Do not deploy before that. Step 6 sets `DST_PUBLIC_BASE_URL` to the domain, and MCP
       then answers only on that host (the run.app URL gets 421).
 
@@ -128,7 +135,9 @@ providers: deepseek, jev …`, `environment: production`. The live service today
 ## 7. Content: retire jaffle, apply Dota
 
 You need the org's admin token (`dstadm_…`). It was printed once to the `dst-bootstrap`
-job's Cloud Logging trail. If it was not kept, re-run the job with `--args=bootstrap,--org=demo`
+job's Cloud Logging trail. Recovered and verified on 2026-09-27 (GET /mgmt/lenses → 200)
+into `~/.config/dst-demo/admin_token` (mode 600): `export DEMO_TOKEN=$(cat
+~/.config/dst-demo/admin_token)`. If it was not kept, re-run the job with `--args=bootstrap,--org=demo`
 (idempotent; mints a fresh token for the same org), store it, and scrub the log entry.
 
 ```
@@ -177,7 +186,7 @@ cd serve && dst apply --url $DEMO --token $DEMO_TOKEN --timeout 1500
 
 ## 9. Retention
 
-- [ ] `deploy/cloudrun.sh prune-job`: a Cloud Run job plus a Cloud Scheduler trigger at
+- [x] `deploy/cloudrun.sh prune-job`: a Cloud Run job plus a Cloud Scheduler trigger at
       03:17 UTC that deletes `request_log` rows older than 30 days. The `/demo` page tells
       visitors their questions are logged with their email.
 
