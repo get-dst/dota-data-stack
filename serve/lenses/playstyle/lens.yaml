@@ -40,7 +40,7 @@ not_computable:
     reason: the match record holds what happened in the game, not what players said or who led
   - measure: intent and decision quality
     aliases: [intent, intention, decision making, decision quality, game sense, why did they, mistakes, misplays, good decisions, bad decisions, mindset, tilt]
-    reason: replays record actions, not the reasons behind them; no column can say whether a play was a good decision
+    reason: replays record actions, not the reasons behind them; nothing here can say whether a play was a good decision
   - measure: public matchmaking playstyle
     aliases: [public matches, pubs, ranked games, matchmaking, my games, my bracket, Divine pubs, Immortal pubs, Turbo]
     reason: the parsed per-match detail here comes only from professional matches; the public sample carries no fights, lanes, wards or runes
@@ -55,7 +55,7 @@ not_computable:
     reason: the loaded ward logs record where and when a ward was placed, not how long it lived, what it saw, or which enemy wards were destroyed
   - measure: tier-3 leagues
     aliases: [tier 3, tier-3, tier three, excluded leagues, amateur leagues, Destiny League, Dota 2 Space League]
-    reason: professional matches here are those in leagues OpenDota rates premium or professional; matches in leagues it rates excluded, its tier-3 leagues such as Destiny League, Dota 2 Space League and Ultras Dota Pro League 2025-26, stay in the raw tables and reach no table in this lens
+    reason: professional matches here are those in leagues OpenDota rates premium or professional; its tier-3 leagues such as Destiny League, Dota 2 Space League and Ultras Dota Pro League 2025-26 are left out of every answer
 access:
   allow:
     - {group: demo}

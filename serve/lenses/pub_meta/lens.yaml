@@ -31,7 +31,7 @@ select:
 not_computable:
   - measure: Turbo and unranked games
     aliases: [turbo, turbo mode, unranked, unranked games, normal matchmaking, casual games]
-    reason: every table here counts ranked All Pick only; Turbo and unranked games are a different game from ranked and are kept out of every answer
+    reason: everything here counts ranked All Pick only; Turbo and unranked games are a different game from ranked and are kept out of every answer
   - measure: MMR
     aliases: [MMR, matchmaking rating, average MMR, MMR bracket]
     reason: the public feed carries each match's average rank tier (the bracket, Herald to Immortal), not any player's matchmaking rating
@@ -44,15 +44,15 @@ not_computable:
   - measure: items in pubs
     aliases: [item build, builds, what to buy, purchase]
     route_to: items
-    reason: the public feed carries no items; professional item builds are on the items lens
+    reason: the public feed carries no items; professional item builds are answered separately
   - measure: positions in pubs
     aliases: [role, lane, carry, mid, offlane, support]
     route_to: pro_meta
-    reason: the public feed carries no lane data; positions exist for pro matches on pro_meta
+    reason: the public feed carries no lane data; positions exist only for pro matches
   - measure: ban rate in pubs
     aliases: [bans, banned]
     route_to: drafts
-    reason: the public feed carries picks only; bans exist for pro matches on the drafts lens
+    reason: the public feed carries picks only; bans exist only for pro matches
 eval_gate: block
 # Typed first; a question that does not type falls to raw SQL, disclosed UNTYPED.
 untyped_fallback: true

@@ -36,7 +36,7 @@ not_computable:
     reason: the draft log records which hero was picked or banned and in what order, not why; how often a hero is picked, banned or wins is answerable, the reason behind a choice is not
   - measure: predictions
     aliases: [prediction, predictions, predict, who will win, will win, going to win, odds, forecast, next patch]
-    reason: the warehouse holds drafts already made; it cannot say what teams will pick or who will win
+    reason: the drafts here were already made; nothing here says what teams will pick or who will win
   - measure: MMR
     aliases: [rank, skill bracket, rating of players, medal]
     reason: professional matches carry no matchmaking rating; only teams have an OpenDota rating
@@ -46,13 +46,13 @@ not_computable:
   - measure: public matchmaking
     aliases: [pubs, pub games, public matches, ranked matchmaking, pub bans, pub drafts, bans in public matchmaking, turbo]
     route_to: pub_meta
-    reason: this lens holds professional matches only; public games carry no draft or bans, and pub hero stats live on the pub_meta lens
+    reason: only professional matches have drafts and bans here; public games carry no draft, and pub hero stats are answered separately
   - measure: personal match history
     aliases: [my matches, my win rate, my account, my games, my drafts, steam id, steam account, account id, dotabuff profile]
-    reason: this lens holds professional matches, not any individual player's public history
+    reason: only professional matches are here, not any individual player's public history
   - measure: tier-3 leagues
     aliases: [tier 3, tier-3, tier three, excluded leagues, amateur leagues, Destiny League, Dota 2 Space League]
-    reason: professional matches here are those in leagues OpenDota rates premium or professional; matches in leagues it rates excluded, its tier-3 leagues such as Destiny League, Dota 2 Space League and Ultras Dota Pro League 2025-26, stay in the raw tables and reach no table in this lens
+    reason: professional matches here are those in leagues OpenDota rates premium or professional; its tier-3 leagues such as Destiny League, Dota 2 Space League and Ultras Dota Pro League 2025-26 are left out of every answer
 access:
   allow:
     - {group: demo}
