@@ -2,13 +2,15 @@
 -- from the lane OpenDota parsed and the player's farm rank inside the side: mid is 2;
 -- the richer safe-laner is the carry (1) and the poorer the hard support (5); the
 -- richer offlaner is 3 and the poorer is 4. A convention, stated in the entity file.
+-- Richer is the higher gold per minute; two laners on the same gold per minute are
+-- split by last hits, then by player slot, so a rebuild never swaps their positions.
 -- position_name is the same number as the word people use for it.
 with ranked as (
     select
         pm.*,
         row_number() over (
             partition by pm.match_id, pm.is_radiant, pm.lane_role
-            order by pm.gold_per_min desc
+            order by pm.gold_per_min desc, pm.last_hits desc, pm.player_slot
         ) as farm_rank_in_lane
     from {{ ref('stg_match_players') }} as pm
 ),

@@ -8,6 +8,7 @@ unit_tests:
   - name: position_from_lane_and_farm
     description: Mid is 2; of two safe-laners the richer is 1 and the poorer 5; of two
       offlaners the richer is 3 and the poorer 4; jungle and unparsed lanes get no position.
+      Laners on the same gold per minute are split by last hits, then by player slot.
     model: fact_player_match
     given:
       - input: ref('stg_match_players')
@@ -19,9 +20,17 @@ unit_tests:
           - {match_id: 1, player_slot: 4, is_radiant: true, lane_role: 3, gold_per_min: 280}
           - {match_id: 1, player_slot: 128, is_radiant: false, lane_role: 4, gold_per_min: 400}
           - {match_id: 1, player_slot: 129, is_radiant: false, lane_role: null, gold_per_min: 400}
+          # match 2: both lanes tied on gold per minute; last hits decide the safe lane,
+          # player slot the off lane. The expected winner is listed second in one lane
+          # and first in the other, so row order alone cannot pass both.
+          - {match_id: 2, player_slot: 128, is_radiant: false, lane_role: 1, gold_per_min: 500, last_hits: 40}
+          - {match_id: 2, player_slot: 129, is_radiant: false, lane_role: 1, gold_per_min: 500, last_hits: 90}
+          - {match_id: 2, player_slot: 130, is_radiant: false, lane_role: 3, gold_per_min: 450, last_hits: 60}
+          - {match_id: 2, player_slot: 131, is_radiant: false, lane_role: 3, gold_per_min: 450, last_hits: 60}
       - input: ref('fact_match')
         rows:
           - {match_id: 1, radiant_team_id: 10, dire_team_id: 20}
+          - {match_id: 2, radiant_team_id: 10, dire_team_id: 20}
       - input: ref('stg_heroes')
         rows: []
       - input: ref('stg_pro_players')
@@ -35,6 +44,10 @@ unit_tests:
         - {match_id: 1, player_slot: 4, position: 4, position_name: soft support}
         - {match_id: 1, player_slot: 128, position: null, position_name: null}
         - {match_id: 1, player_slot: 129, position: null, position_name: null}
+        - {match_id: 2, player_slot: 128, position: 5, position_name: hard support}
+        - {match_id: 2, player_slot: 129, position: 1, position_name: carry}
+        - {match_id: 2, player_slot: 130, position: 3, position_name: offlane}
+        - {match_id: 2, player_slot: 131, position: 4, position_name: soft support}
 
   - name: lane_result_band_is_400_gold
     description: A lane is won when the side's laners average more than 400 gold ahead of

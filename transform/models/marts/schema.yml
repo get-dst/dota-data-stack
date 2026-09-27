@@ -262,7 +262,7 @@ models:
       - name: is_roaming
         description: True when OpenDota flags the player as roaming; null when not parsed.
       - name: position
-        description: "Derived role 1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support: mid is 2; in the safe and off lanes the higher-GPM player of the side is 1/3 and the other 5/4; null for jungle or unparsed lanes (unit test position_from_lane_and_farm)."
+        description: "Derived role 1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support: mid is 2; in the safe and off lanes the higher-GPM player of the side is 1/3 and the other 5/4 (equal GPM: more last hits, then the lower player slot); null for jungle or unparsed lanes (unit test position_from_lane_and_farm)."
       - name: position_name
         description: "position as a word: carry, mid, offlane, soft support or hard support; null when position is null."
         tests:
