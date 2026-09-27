@@ -49,7 +49,7 @@ not_computable:
     reason: professional matches carry no matchmaking rating
   - measure: a lane against two named enemy heroes together
     aliases: [together, against both, both of them, the pair of, versus the pair, against the duo, the two of them]
-    reason: the lane tables count a hero against one enemy hero at a time and carry no enemy pair, so a lane against two named heroes together is not recorded; each hero on its own is
+    reason: lanes here are counted a hero against one enemy hero at a time, never against an enemy pair, so a lane against two named heroes together is not recorded; each hero on its own is
   - measure: vision coverage and dewards
     aliases: [vision score, ward coverage, map vision, wards destroyed, dewards, dewarding, ward lifetime, how long wards lived]
     reason: the loaded ward logs record where and when a ward was placed, not how long it lived, what it saw, or which enemy wards were destroyed
