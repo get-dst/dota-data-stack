@@ -1,8 +1,9 @@
 version: 2
 
-# Unit tests pin the two derivations a reader has to take on trust: the position a
-# player is given, and the line between a won, drawn and lost lane. Both run on fixed
-# rows, so a change to the rule fails here before it reaches the warehouse.
+# Unit tests pin the derivations a reader has to take on trust: the position a player is
+# given, the line between a won, drawn and lost lane, and which series is a league's
+# final. Each runs on fixed rows, so a change to the rule fails here before it reaches
+# the warehouse.
 
 unit_tests:
   - name: position_from_lane_and_farm
@@ -96,3 +97,71 @@ unit_tests:
         - {match_id: 3, player_slot: 131, lane_gold_diff_10: 500, lane_result: won}
         - {match_id: 4, player_slot: 2, lane_gold_diff_10: 401, lane_result: won}
         - {match_id: 4, player_slot: 130, lane_gold_diff_10: -401, lane_result: lost}
+
+  - name: league_final_is_the_last_decided_series
+    description: The final is the series holding a league's last game. It names a winner
+      only when it is a decided best of 3 or 5, no shorter than the series before it, its
+      finalists are connected through games to more than half of the league's teams, and
+      the league has had no game in the three weeks before the newest loaded match.
+    model: league_results
+    given:
+      - input: ref('fact_team_match')
+        rows:
+          # league 1: two best-of-3 semifinals (3 beats 4, 1 beats 2), then 1 beats 3 2-1
+          - {league_id: 1, match_id: 11, started_at: '2026-01-01 09:00:00+00', series_id: 99, series_type: 1, team_id: 3, opponent_team_id: 4, is_win: true}
+          - {league_id: 1, match_id: 11, started_at: '2026-01-01 09:00:00+00', series_id: 99, series_type: 1, team_id: 4, opponent_team_id: 3, is_win: false}
+          - {league_id: 1, match_id: 12, started_at: '2026-01-01 10:00:00+00', series_id: 99, series_type: 1, team_id: 3, opponent_team_id: 4, is_win: true}
+          - {league_id: 1, match_id: 12, started_at: '2026-01-01 10:00:00+00', series_id: 99, series_type: 1, team_id: 4, opponent_team_id: 3, is_win: false}
+          - {league_id: 1, match_id: 13, started_at: '2026-01-01 12:00:00+00', series_id: 100, series_type: 1, team_id: 1, opponent_team_id: 2, is_win: true}
+          - {league_id: 1, match_id: 13, started_at: '2026-01-01 12:00:00+00', series_id: 100, series_type: 1, team_id: 2, opponent_team_id: 1, is_win: false}
+          - {league_id: 1, match_id: 14, started_at: '2026-01-01 13:00:00+00', series_id: 100, series_type: 1, team_id: 1, opponent_team_id: 2, is_win: true}
+          - {league_id: 1, match_id: 14, started_at: '2026-01-01 13:00:00+00', series_id: 100, series_type: 1, team_id: 2, opponent_team_id: 1, is_win: false}
+          - {league_id: 1, match_id: 15, started_at: '2026-01-02 10:00:00+00', series_id: 101, series_type: 1, team_id: 1, opponent_team_id: 3, is_win: false}
+          - {league_id: 1, match_id: 15, started_at: '2026-01-02 10:00:00+00', series_id: 101, series_type: 1, team_id: 3, opponent_team_id: 1, is_win: true}
+          - {league_id: 1, match_id: 16, started_at: '2026-01-02 11:00:00+00', series_id: 101, series_type: 1, team_id: 1, opponent_team_id: 3, is_win: true}
+          - {league_id: 1, match_id: 16, started_at: '2026-01-02 11:00:00+00', series_id: 101, series_type: 1, team_id: 3, opponent_team_id: 1, is_win: false}
+          - {league_id: 1, match_id: 17, started_at: '2026-01-02 12:00:00+00', series_id: 101, series_type: 1, team_id: 1, opponent_team_id: 3, is_win: true}
+          - {league_id: 1, match_id: 17, started_at: '2026-01-02 12:00:00+00', series_id: 101, series_type: 1, team_id: 3, opponent_team_id: 1, is_win: false}
+          # league 2: two brackets that never meet; the last series decides one of them only
+          - {league_id: 2, match_id: 21, started_at: '2026-01-01 09:00:00+00', series_id: 200, series_type: 1, team_id: 5, opponent_team_id: 6, is_win: true}
+          - {league_id: 2, match_id: 21, started_at: '2026-01-01 09:00:00+00', series_id: 200, series_type: 1, team_id: 6, opponent_team_id: 5, is_win: false}
+          - {league_id: 2, match_id: 22, started_at: '2026-01-01 10:00:00+00', series_id: 200, series_type: 1, team_id: 5, opponent_team_id: 6, is_win: true}
+          - {league_id: 2, match_id: 22, started_at: '2026-01-01 10:00:00+00', series_id: 200, series_type: 1, team_id: 6, opponent_team_id: 5, is_win: false}
+          - {league_id: 2, match_id: 23, started_at: '2026-01-02 09:00:00+00', series_id: 201, series_type: 1, team_id: 7, opponent_team_id: 8, is_win: true}
+          - {league_id: 2, match_id: 23, started_at: '2026-01-02 09:00:00+00', series_id: 201, series_type: 1, team_id: 8, opponent_team_id: 7, is_win: false}
+          - {league_id: 2, match_id: 24, started_at: '2026-01-02 10:00:00+00', series_id: 201, series_type: 1, team_id: 7, opponent_team_id: 8, is_win: true}
+          - {league_id: 2, match_id: 24, started_at: '2026-01-02 10:00:00+00', series_id: 201, series_type: 1, team_id: 8, opponent_team_id: 7, is_win: false}
+          # league 3: a best of 5 with two games in the feed
+          - {league_id: 3, match_id: 31, started_at: '2026-01-02 09:00:00+00', series_id: 300, series_type: 2, team_id: 9, opponent_team_id: 10, is_win: true}
+          - {league_id: 3, match_id: 31, started_at: '2026-01-02 09:00:00+00', series_id: 300, series_type: 2, team_id: 10, opponent_team_id: 9, is_win: false}
+          - {league_id: 3, match_id: 32, started_at: '2026-01-02 10:00:00+00', series_id: 300, series_type: 2, team_id: 9, opponent_team_id: 10, is_win: true}
+          - {league_id: 3, match_id: 32, started_at: '2026-01-02 10:00:00+00', series_id: 300, series_type: 2, team_id: 10, opponent_team_id: 9, is_win: false}
+          # league 4: the last series is a best of 1
+          - {league_id: 4, match_id: 41, started_at: '2026-01-01 09:00:00+00', series_id: 400, series_type: 1, team_id: 13, opponent_team_id: 14, is_win: true}
+          - {league_id: 4, match_id: 41, started_at: '2026-01-01 09:00:00+00', series_id: 400, series_type: 1, team_id: 14, opponent_team_id: 13, is_win: false}
+          - {league_id: 4, match_id: 42, started_at: '2026-01-01 10:00:00+00', series_id: 400, series_type: 1, team_id: 13, opponent_team_id: 14, is_win: true}
+          - {league_id: 4, match_id: 42, started_at: '2026-01-01 10:00:00+00', series_id: 400, series_type: 1, team_id: 14, opponent_team_id: 13, is_win: false}
+          - {league_id: 4, match_id: 43, started_at: '2026-01-02 09:00:00+00', series_id: 401, series_type: 0, team_id: 13, opponent_team_id: 14, is_win: true}
+          - {league_id: 4, match_id: 43, started_at: '2026-01-02 09:00:00+00', series_id: 401, series_type: 0, team_id: 14, opponent_team_id: 13, is_win: false}
+          # league 5: played within three weeks of the newest match
+          - {league_id: 5, match_id: 51, started_at: '2026-03-01 09:00:00+00', series_id: 500, series_type: 1, team_id: 11, opponent_team_id: 12, is_win: true}
+          - {league_id: 5, match_id: 51, started_at: '2026-03-01 09:00:00+00', series_id: 500, series_type: 1, team_id: 12, opponent_team_id: 11, is_win: false}
+          - {league_id: 5, match_id: 52, started_at: '2026-03-01 10:00:00+00', series_id: 500, series_type: 1, team_id: 11, opponent_team_id: 12, is_win: true}
+          - {league_id: 5, match_id: 52, started_at: '2026-03-01 10:00:00+00', series_id: 500, series_type: 1, team_id: 12, opponent_team_id: 11, is_win: false}
+      - input: ref('fact_match')
+        rows:
+          - {match_id: 52, started_at: '2026-03-01 10:00:00+00'}
+      - input: ref('dim_league')
+        rows:
+          - {league_id: 1, league_name: League 1, league_tier: professional}
+          - {league_id: 2, league_name: League 2, league_tier: professional}
+          - {league_id: 3, league_name: League 3, league_tier: professional}
+          - {league_id: 4, league_name: League 4, league_tier: professional}
+          - {league_id: 5, league_name: League 5, league_tier: professional}
+    expect:
+      rows:
+        - {league_id: 1, matches: 7, series: 3, teams: 4, final_best_of: 3, final_status: final, winner_team_id: 1, runner_up_team_id: 3, final_score: 2-1}
+        - {league_id: 2, matches: 4, series: 2, teams: 4, final_best_of: 3, final_status: several brackets, winner_team_id: null, runner_up_team_id: null, final_score: null}
+        - {league_id: 3, matches: 2, series: 1, teams: 2, final_best_of: 5, final_status: incomplete series, winner_team_id: null, runner_up_team_id: null, final_score: null}
+        - {league_id: 4, matches: 3, series: 2, teams: 2, final_best_of: 1, final_status: not a final format, winner_team_id: null, runner_up_team_id: null, final_score: null}
+        - {league_id: 5, matches: 2, series: 1, teams: 2, final_best_of: 3, final_status: in progress, winner_team_id: null, runner_up_team_id: null, final_score: null}

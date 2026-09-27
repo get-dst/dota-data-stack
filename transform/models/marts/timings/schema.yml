@@ -234,7 +234,9 @@ models:
   - name: hero_patch_trends
     description: Per hero and patch over professional matches, picks, bans, wins and the rates,
       beside the same numbers on the previous patch (dim_patch release order) and the change.
-      A hero neither picked nor banned on a patch has no row for it.
+      Every hero in dim_hero has a row on every patch with a loaded pro match; a hero nobody
+      picked or banned on the patch has zero picks and bans there (tests/hero_patch_trends_complete.sql),
+      so picks over matches_on_patch summed across patches is the exact multi-patch pick rate.
     columns:
       - name: patch_id
         description: Game version id; joins dim_patch.patch_id; with hero_id the primary key.
@@ -265,7 +267,7 @@ models:
       - name: losses
         description: Picks minus wins.
       - name: win_rate
-        description: wins / picks, 0-1; null when the hero was banned but never picked.
+        description: wins / picks, 0-1; null when the hero was never picked on the patch.
       - name: pick_rate
         description: picks / matches_on_patch, 0-1.
       - name: ban_rate
@@ -319,6 +321,11 @@ models:
         tests:
           - not_null
           - accepted_values: {arguments: {values: [1, 2, 3, 4, 5], quote: false}}
+      - name: position_name
+        description: "position as a word: carry, mid, offlane, soft support or hard support."
+        tests:
+          - not_null
+          - accepted_values: {arguments: {values: [carry, mid, offlane, soft support, hard support]}}
       - name: games
         description: Pro player-games on the hero in that position on the patch.
       - name: wins

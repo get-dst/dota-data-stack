@@ -1,7 +1,8 @@
 -- Per hero, patch and position (1-5, the derived position in fact_player_match) over
 -- professional matches: games, the share of the hero's positioned games on that patch
 -- played in that position, and the win rate there. Player-games without a derived
--- position (roaming or unparsed lanes) are left out of both counts.
+-- position (roaming or unparsed lanes) are left out of both counts. position_name is
+-- the position as the word people use for it.
 with games as (
     select
         patch_id,
@@ -22,6 +23,7 @@ select
     hero_id,
     hero_name,
     position,
+    {{ position_name('position') }} as position_name,
     games,
     wins,
     games - wins as losses,

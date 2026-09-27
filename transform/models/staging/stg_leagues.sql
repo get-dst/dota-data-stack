@@ -5,7 +5,7 @@
 -- keep every league and match.
 select
     leagueid as league_id,
-    name as league_name,
+    {{ clean_name('name') }} as league_name,
     tier as league_tier
 from {{ source('raw', 'leagues') }}
 where tier in ('premium', 'professional')

@@ -506,6 +506,8 @@ models:
         tests: [not_null]
       - name: player_name
         description: "Name on the player's latest match of the patch: the pro name when OpenDota lists the account as a pro, else the Steam persona."
+      - name: pro_name
+        description: "Competitive name from dim_pro_player, e.g. Yatoro; null when OpenDota does not list the account as pro."
       - name: main_position
         description: "The position (1-5) the player played most on the patch; null when no game had a derived position."
       - name: main_position_name

@@ -94,11 +94,11 @@ models:
       - {name: radiant_score, description: Radiant hero kills.}
       - {name: dire_score, description: Dire hero kills.}
       - {name: radiant_team_id, description: Radiant team id; null when not identified.}
-      - {name: radiant_team_name, description: Radiant team name (team record first, then the match's name field).}
+      - {name: radiant_team_name, description: "Radiant team name, trimmed (team record first, then the match's name field)."}
       - {name: dire_team_id, description: Dire team id; null when not identified.}
-      - {name: dire_team_name, description: Dire team name (team record first, then the match's name field).}
+      - {name: dire_team_name, description: "Dire team name, trimmed (team record first, then the match's name field)."}
       - {name: league_id, description: League id.}
-      - {name: league_name, description: League name.}
+      - {name: league_name, description: League name, trimmed.}
       - {name: league_tier, description: "OpenDota tier of the league: premium or professional."}
       - {name: patch_id, description: OpenDota patch id.}
       - {name: game_mode_id, description: "Game mode code: 2 Captains Mode, 1 All Pick, 22 All Draft."}
@@ -134,7 +134,7 @@ models:
       - {name: is_radiant, description: True when Radiant made it (OpenDota team 0).}
 
   - name: stg_pro_players
-    description: One row per account OpenDota lists as pro; rows without a competitive name are dropped.
+    description: One row per account OpenDota lists as pro; rows without a competitive name are dropped. Names are trimmed.
     columns:
       - {name: account_id, description: Steam account id (32-bit).}
       - {name: player_name, description: Competitive name.}
@@ -142,7 +142,7 @@ models:
       - {name: team_id, description: Last team id; 0 when none.}
       - {name: team_name, description: Last team name.}
       - {name: team_tag, description: Last team tag.}
-      - {name: country_code, description: Two-letter country code, lowercase.}
+      - {name: country_code, description: Two-letter country code, lowercase; null when OpenDota has none (it sends an empty string).}
       - {name: fantasy_role, description: OpenDota fantasy role code (0-4); not carried to the marts.}
       - {name: last_match_at, description: Most recent match time OpenDota knows.}
 
@@ -182,7 +182,7 @@ models:
       - {name: item_key, description: Item internal key; joins stg_items.item_key.}
 
   - name: stg_teams
-    description: One row per named team from OpenDota's team ranking.
+    description: One row per named team from OpenDota's team ranking; names and tags trimmed, a blank name dropped.
     columns:
       - {name: team_id, description: OpenDota team id.}
       - {name: team_name, description: Team name.}

@@ -24,6 +24,7 @@ fields:
   - {name: patch_name, type: string}
   - {name: account_id, type: integer, description: "Steam account id."}
   - {name: player_name, type: string, description: "The pro name when OpenDota lists the account, else the Steam persona, from the player's latest match on the patch."}
+  - {name: pro_name, type: string, description: "Competitive name; null for players OpenDota does not list as pro."}
   - {name: main_position, type: integer, description: "The position (1-5) the player played most on the patch."}
   - {name: main_position_name, type: string, description: "main_position as a word: carry, mid, offlane, soft support or hard support; the filter for questions about carries, mids, offlaners or supports."}
   - {name: games, type: integer, description: "Player-games in the row: the sample size. Rankings keep rows with games >= 10 (the player_minimum_games term)."}
@@ -55,6 +56,7 @@ fields:
   - {name: buybacks, type: integer}
 dimensions:
   - {name: player_name, type: string, description: "The pro name when OpenDota lists the account, else the Steam persona, from the player's latest match on the patch."}
+  - {name: pro_name, type: string, description: "The competitive name OpenDota lists for the player, e.g. Yatoro: the filter for one named pro. Null for accounts OpenDota does not list; they still count as players."}
   - {name: patch_name, type: string, description: "Game version; group by it only to compare patches."}
   - {name: main_position, type: integer, description: "The position (1-5) the player played most on the patch."}
   - {name: main_position_name, type: string, description: "main_position as a word: carry, mid, offlane, soft support or hard support; the filter for questions about carries, mids, offlaners or supports."}

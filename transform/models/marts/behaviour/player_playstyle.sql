@@ -2,7 +2,8 @@
 -- farm, lane, space and vision measures as hero_playstyle, for questions about named
 -- players. `games` is the sample size every ranking must check (the
 -- playstyle_minimum_games definition). player_name is the name on the player's latest
--- match of the patch (the pro name when OpenDota lists the account as a pro);
+-- match of the patch (the pro name when OpenDota lists the account as a pro); pro_name
+-- is the name from dim_pro_player, null for accounts OpenDota does not list as pro;
 -- main_position is the position the player played most on the patch.
 with pos as (
     select
@@ -30,6 +31,7 @@ select
     f.patch_name,
     f.account_id,
     max(n.player_name) as player_name,
+    max(pp.player_name) as pro_name,
     max(p.position) as main_position,
     {{ position_name('max(p.position)') }} as main_position_name,
     count(*) as games,
@@ -70,6 +72,7 @@ select
 from {{ ref('player_fight_stats') }} as f
 left join names as n on n.patch_id = f.patch_id and n.account_id = f.account_id and n.rn = 1
 left join pos as p on p.patch_id = f.patch_id and p.account_id = f.account_id and p.rn = 1
+left join {{ ref('dim_pro_player') }} as pp on pp.account_id = f.account_id
 left join {{ ref('farm_priority') }} as fp on fp.match_id = f.match_id and fp.player_slot = f.player_slot
 left join {{ ref('lane_outcomes') }} as lo on lo.match_id = f.match_id and lo.player_slot = f.player_slot
 left join {{ ref('space_created') }} as s on s.match_id = f.match_id and s.player_slot = f.player_slot
