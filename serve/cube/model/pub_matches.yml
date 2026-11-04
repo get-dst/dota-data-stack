@@ -1,0 +1,103 @@
+cubes:
+- name: pub_matches
+  title: pub matches
+  description: A sample of public matchmaking games from OpenDota's public feed, one row per match, with the average
+    rank bracket of its players and the patch it was played on.
+  sql: |-
+    SELECT * FROM marts.fact_pub_match
+    WHERE game_type = 'ranked_all_pick'
+  meta:
+    dst:
+      grain: one row per sampled public match
+      key:
+      - match_id
+      population: 'A sample of public matchmaking games: the newest matches OpenDota lists each time the loader
+        runs, not every game played. Ranked All Pick only; Turbo and unranked games are excluded here.'
+  joins:
+  - name: brackets
+    relationship: many_to_one
+    sql: '{CUBE}.bracket_id = {brackets}.bracket_id'
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  dimensions:
+  - name: match_id
+    sql: '{CUBE}.match_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: started_at
+    sql: '{CUBE}.started_at'
+    type: time
+  - name: match_date
+    sql: '{CUBE}.match_date'
+    type: time
+  - name: duration_min
+    sql: '{CUBE}.duration_min'
+    type: number
+  - name: radiant_win
+    sql: '{CUBE}.radiant_win'
+    type: boolean
+  - name: avg_rank_tier
+    sql: '{CUBE}.avg_rank_tier'
+    type: number
+    description: 'Average rank tier of the ten players: tens digit is the bracket, ones digit the stars.'
+  - name: bracket_id
+    sql: '{CUBE}.bracket_id'
+    type: number
+    description: 1 Herald … 8 Immortal.
+  - name: bracket_name
+    sql: '{CUBE}.bracket_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - Archon
+        - Legend
+        - Crusader
+        - Ancient
+        - Guardian
+        - Divine
+        - Herald
+  - name: game_type
+    sql: '{CUBE}.game_type'
+    type: string
+    description: ranked_all_pick, unranked_all_pick or turbo.
+    meta:
+      dst:
+        dictionary:
+        - turbo
+        - ranked_all_pick
+        - unranked_all_pick
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - '7.41'
+  measures:
+  - name: match_count
+    title: match_count
+    description: Sampled matches.
+    type: count
+    sql: '{CUBE}.match_id'
+  - name: avg_duration_min
+    title: avg_duration_min
+    description: Average game length in minutes.
+    type: avg
+    sql: '{CUBE}.duration_min'
+  - name: radiant_wins
+    title: radiant_wins
+    description: Sampled matches the Radiant side won.
+    type: sum
+    sql: CASE WHEN {CUBE}.radiant_win THEN 1 ELSE 0 END
+  - name: radiant_win_rate
+    title: radiant_win_rate
+    description: Share of sampled matches the Radiant side won.
+    type: number
+    sql: '{radiant_wins} / NULLIF({match_count}, 0)'
+    format: percent

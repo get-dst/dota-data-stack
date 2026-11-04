@@ -1,0 +1,83 @@
+cubes:
+- name: starting_builds
+  title: starting builds
+  description: Whole starting builds — every pre-game purchase of one player in one game written as one line (e.g.
+    "Iron Branch x3, Magic Stick, Ring of Protection"), counted per hero and patch.
+  sql_table: marts.starting_builds
+  meta:
+    dst:
+      grain: one row per hero, patch and starting build
+      key:
+      - patch_id
+      - hero_id
+      - starting_build
+      population: Professional matches in leagues OpenDota rates premium or professional, in the loaded window,
+        that have a purchase log, player-games with at least one purchase at or before 0:00. Leagues it rates below
+        professional are not counted.
+  joins:
+  - name: heroes
+    relationship: many_to_one
+    sql: '{CUBE}.hero_id = {heroes}.hero_id'
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  dimensions:
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - '7.39'
+        - '7.41'
+        - '7.40'
+  - name: hero_id
+    sql: '{CUBE}.hero_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: hero_name
+    sql: '{CUBE}.hero_name'
+    type: string
+  - name: starting_build
+    sql: '{CUBE}.starting_build'
+    type: string
+    description: Every item bought before the horn in item-name order, counts after an x.
+    primary_key: true
+    public: true
+  - name: build_items
+    sql: '{CUBE}.build_items'
+    type: number
+    description: Item units in the build.
+  - name: games
+    sql: '{CUBE}.games'
+    type: number
+  - name: wins
+    sql: '{CUBE}.wins'
+    type: number
+  measures:
+  - name: build_games
+    title: build_games
+    description: Games in which the player bought exactly this starting build; rank by it for the most common build.
+    type: sum
+    sql: '{CUBE}.games'
+  - name: build_wins
+    title: build_wins
+    description: Of those, games won.
+    type: sum
+    sql: '{CUBE}.wins'
+  - name: build_win_rate
+    title: build_win_rate
+    description: Share of the games with this whole starting build that were won; null under 20 games (the minimum_games
+      term).
+    type: number
+    sql: CASE WHEN {build_games} >= 20 THEN {build_wins} * 1.0 / NULLIF({build_games}, 0) END
+    format: percent
+    meta:
+      dst:
+        better: higher

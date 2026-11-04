@@ -1,0 +1,209 @@
+cubes:
+- name: fights_per_match
+  title: fights per match
+  description: 'One player''s teamfights in one parsed professional match: fights present in, participation, deaths
+    inside and outside fights, and the gold, XP and damage of the fights.'
+  sql_table: marts.player_fight_stats
+  meta:
+    dst:
+      grain: one row per player per parsed match
+      key:
+      - match_id
+      - player_slot
+      population: Players in parsed professional matches in leagues OpenDota rates premium or professional, in the
+        loaded window; a match with no teamfight has match_fights = 0. Leagues it rates below professional are not
+        counted.
+  joins:
+  - name: heroes
+    relationship: many_to_one
+    sql: '{CUBE}.hero_id = {heroes}.hero_id'
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  - name: pro_matches
+    relationship: many_to_one
+    sql: '{CUBE}.match_id = {pro_matches}.match_id'
+  - name: teams
+    relationship: many_to_one
+    sql: '{CUBE}.team_id = {teams}.team_id'
+  dimensions:
+  - name: match_id
+    sql: '{CUBE}.match_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: player_slot
+    sql: '{CUBE}.player_slot'
+    type: number
+    description: 0-4 Radiant, 128-132 Dire.
+    primary_key: true
+    public: true
+  - name: is_radiant
+    sql: '{CUBE}.is_radiant'
+    type: boolean
+  - name: team_id
+    sql: '{CUBE}.team_id'
+    type: number
+  - name: team_name
+    sql: '{CUBE}.team_name'
+    type: string
+    description: Team name as the match record carries it; null when OpenDota lists no team for the side, so a team
+      ranking leaves the null rows out.
+  - name: account_id
+    sql: '{CUBE}.account_id'
+    type: number
+  - name: player_name
+    sql: '{CUBE}.player_name'
+    type: string
+  - name: hero_id
+    sql: '{CUBE}.hero_id'
+    type: number
+  - name: hero_name
+    sql: '{CUBE}.hero_name'
+    type: string
+  - name: position
+    sql: '{CUBE}.position'
+    type: number
+    description: 1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support; null for jungle, roaming or unparsed
+      lanes.
+  - name: position_name
+    sql: '{CUBE}.position_name'
+    type: string
+    description: 'The position as a word: carry, mid, offlane, soft support or hard support; the filter for questions
+      about carries, mids, offlaners or supports.'
+    meta:
+      dst:
+        dictionary:
+        - mid
+        - carry
+        - offlane
+        - hard support
+        - soft support
+  - name: is_win
+    sql: '{CUBE}.is_win'
+    type: boolean
+  - name: match_fights
+    sql: '{CUBE}.match_fights'
+    type: number
+    description: Teamfights in the match.
+  - name: fights_present
+    sql: '{CUBE}.fights_present'
+    type: number
+  - name: fight_participation
+    sql: '{CUBE}.fight_participation'
+    type: number
+    description: fights_present / match_fights, 0-1; null without a teamfight.
+  - name: fight_kills
+    sql: '{CUBE}.fight_kills'
+    type: number
+  - name: fight_deaths
+    sql: '{CUBE}.fight_deaths'
+    type: number
+  - name: total_deaths
+    sql: '{CUBE}.total_deaths'
+    type: number
+  - name: deaths_outside_fights
+    sql: '{CUBE}.deaths_outside_fights'
+    type: number
+  - name: fight_buybacks
+    sql: '{CUBE}.fight_buybacks'
+    type: number
+  - name: fight_damage
+    sql: '{CUBE}.fight_damage'
+    type: number
+    description: Hero damage inside fight windows.
+  - name: fight_healing
+    sql: '{CUBE}.fight_healing'
+    type: number
+  - name: fight_gold_delta
+    sql: '{CUBE}.fight_gold_delta'
+    type: number
+    description: Gold gained over fight windows (passive income included).
+  - name: fight_xp_delta
+    sql: '{CUBE}.fight_xp_delta'
+    type: number
+  - name: match_date
+    sql: '{CUBE}.match_date'
+    type: time
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - '7.39'
+        - '7.41'
+        - '7.40'
+  - name: league_id
+    sql: '{CUBE}.league_id'
+    type: number
+  - name: league_name
+    sql: '{CUBE}.league_name'
+    type: string
+  - name: duration_min
+    sql: '{CUBE}.duration_min'
+    type: number
+  measures:
+  - name: fight_player_games
+    title: fight_player_games
+    description: Player-games (rows).
+    type: count
+    sql: '{CUBE}.match_id'
+  - name: fight_matches
+    title: fight_matches
+    description: Distinct matches in scope; a team's games. The team fight rate is null under 20 of them.
+    type: count_distinct
+    sql: '{CUBE}.match_id'
+  - name: fights_in_games
+    title: fights_in_games
+    description: Teamfights in the player-games in scope, summed; the denominator of the team fight rate.
+    type: sum
+    sql: '{CUBE}.match_fights'
+  - name: avg_teamfights_per_match
+    title: avg_teamfights_per_match
+    description: Teamfights per match; the same for all ten players of a match, so the average over player-games
+      is the average over matches.
+    type: avg
+    sql: '{CUBE}.match_fights'
+  - name: fights_attended
+    title: fights_attended
+    description: Teamfights the players were present in, summed.
+    type: sum
+    sql: '{CUBE}.fights_present'
+  - name: team_fight_participation
+    title: team_fight_participation
+    description: Share of teamfights the players were present in (the fight_participation term), for a team, league
+      or date; null under 20 matches. A hero, position or player rate is hero_playstyle.fight_participation or player_playstyle.
+    type: number
+    sql: CASE WHEN {fight_matches} >= 20 THEN {fights_attended} * 1.0 / NULLIF({fights_in_games}, 0) END
+    format: percent
+    meta:
+      dst:
+        better: higher
+  - name: avg_fight_gold_swing
+    title: avg_fight_gold_swing
+    description: Gold gained over teamfight windows per player-game.
+    type: avg
+    sql: '{CUBE}.fight_gold_delta'
+    meta:
+      dst:
+        better: higher
+  - name: avg_deaths_outside_fights
+    title: avg_deaths_outside_fights
+    description: Deaths outside teamfights per player-game.
+    type: avg
+    sql: '{CUBE}.deaths_outside_fights'
+    meta:
+      dst:
+        better: lower
+  - name: avg_fight_deaths
+    title: avg_fight_deaths
+    description: Deaths inside teamfights per player-game.
+    type: avg
+    sql: '{CUBE}.fight_deaths'
+    meta:
+      dst:
+        better: lower

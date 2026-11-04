@@ -1,0 +1,383 @@
+views:
+- name: pub_meta_lens
+  title: Dota 2 pub meta
+  description: Hero win rates, counters and duos by rank bracket, from a sample of public ranked matches on OpenDota.
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: pub_matches
+    includes:
+    - match_id
+    - started_at
+    - match_date
+    - duration_min
+    - radiant_win
+    - avg_rank_tier
+    - bracket_id
+    - bracket_name
+    - game_type
+    - patch_id
+    - patch_name
+    - match_count
+    - avg_duration_min
+    - radiant_wins
+    - radiant_win_rate
+    prefix: true
+  - join_path: pub_hero_stats
+    includes:
+    - patch_id
+    - patch_name
+    - bracket_id
+    - bracket_name
+    - game_type
+    - hero_id
+    - hero_name
+    - games
+    - wins
+    - losses
+    - matches_in_bracket
+    - hero_games
+    - hero_wins
+    - hero_win_rate
+    - bracket_matches
+    - pub_pick_rate
+    - pub_pick_rate
+    prefix: true
+  - join_path: pub_matchups
+    includes:
+    - patch_id
+    - patch_name
+    - game_type
+    - hero_id
+    - hero_name
+    - opponent_hero_id
+    - opponent_hero_name
+    - games
+    - wins
+    - matchup_games
+    - matchup_wins
+    - matchup_win_rate
+    - counter
+    prefix: true
+  - join_path: pub_duos
+    includes:
+    - patch_id
+    - patch_name
+    - game_type
+    - hero_id
+    - hero_name
+    - ally_hero_id
+    - ally_hero_name
+    - games
+    - wins
+    - duo_games
+    - duo_wins
+    - duo_win_rate
+    - synergy
+    prefix: true
+  - join_path: pub_hero_trends
+    includes:
+    - match_date
+    - patch_id
+    - patch_name
+    - hero_id
+    - hero_name
+    - games
+    - wins
+    - daily_games
+    - daily_wins
+    - daily_win_rate
+    - trend
+    prefix: true
+  - join_path: pub_hero_by_duration
+    includes:
+    - patch_id
+    - patch_name
+    - bracket_id
+    - bracket_name
+    - hero_id
+    - hero_name
+    - duration_bucket
+    - duration_bucket_order
+    - games
+    - wins
+    - bucket_games
+    - bucket_wins
+    - bucket_win_rate
+    prefix: true
+  - join_path: heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    - hero_count
+    prefix: true
+  - join_path: patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    - patch_count
+    prefix: true
+  - join_path: brackets
+    includes:
+    - bracket_id
+    - bracket_name
+    - bracket_count
+    prefix: true
+- name: pub_meta_pub_duos
+  title: 'Dota 2 pub meta: pub_duos with its dimensions'
+  description: pub_duos with the dimensions of heroes, patches joined (the pub_meta lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: pub_duos
+    includes:
+    - patch_id
+    - patch_name
+    - game_type
+    - hero_id
+    - hero_name
+    - ally_hero_id
+    - ally_hero_name
+    - games
+    - wins
+    - duo_games
+    - duo_wins
+    - duo_win_rate
+    - synergy
+    prefix: true
+  - join_path: pub_duos.heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    prefix: true
+  - join_path: pub_duos.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+- name: pub_meta_pub_hero_by_duration
+  title: 'Dota 2 pub meta: pub_hero_by_duration with its dimensions'
+  description: pub_hero_by_duration with the dimensions of brackets, heroes, patches joined (the pub_meta lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: pub_hero_by_duration
+    includes:
+    - patch_id
+    - patch_name
+    - bracket_id
+    - bracket_name
+    - hero_id
+    - hero_name
+    - duration_bucket
+    - duration_bucket_order
+    - games
+    - wins
+    - bucket_games
+    - bucket_wins
+    - bucket_win_rate
+    prefix: true
+  - join_path: pub_hero_by_duration.brackets
+    includes:
+    - bracket_id
+    - bracket_name
+    prefix: true
+  - join_path: pub_hero_by_duration.heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    prefix: true
+  - join_path: pub_hero_by_duration.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+- name: pub_meta_pub_hero_stats
+  title: 'Dota 2 pub meta: pub_hero_stats with its dimensions'
+  description: pub_hero_stats with the dimensions of brackets, heroes, patches joined (the pub_meta lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: pub_hero_stats
+    includes:
+    - patch_id
+    - patch_name
+    - bracket_id
+    - bracket_name
+    - game_type
+    - hero_id
+    - hero_name
+    - games
+    - wins
+    - losses
+    - matches_in_bracket
+    - hero_games
+    - hero_wins
+    - hero_win_rate
+    - bracket_matches
+    - pub_pick_rate
+    - pub_pick_rate
+    prefix: true
+  - join_path: pub_hero_stats.brackets
+    includes:
+    - bracket_id
+    - bracket_name
+    prefix: true
+  - join_path: pub_hero_stats.heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    prefix: true
+  - join_path: pub_hero_stats.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+- name: pub_meta_pub_hero_trends
+  title: 'Dota 2 pub meta: pub_hero_trends with its dimensions'
+  description: pub_hero_trends with the dimensions of heroes, patches joined (the pub_meta lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: pub_hero_trends
+    includes:
+    - match_date
+    - patch_id
+    - patch_name
+    - hero_id
+    - hero_name
+    - games
+    - wins
+    - daily_games
+    - daily_wins
+    - daily_win_rate
+    - trend
+    prefix: true
+  - join_path: pub_hero_trends.heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    prefix: true
+  - join_path: pub_hero_trends.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+- name: pub_meta_pub_matches
+  title: 'Dota 2 pub meta: pub_matches with its dimensions'
+  description: pub_matches with the dimensions of brackets, patches joined (the pub_meta lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: pub_matches
+    includes:
+    - match_id
+    - started_at
+    - match_date
+    - duration_min
+    - radiant_win
+    - avg_rank_tier
+    - bracket_id
+    - bracket_name
+    - game_type
+    - patch_id
+    - patch_name
+    - match_count
+    - avg_duration_min
+    - radiant_wins
+    - radiant_win_rate
+    prefix: true
+  - join_path: pub_matches.brackets
+    includes:
+    - bracket_id
+    - bracket_name
+    prefix: true
+  - join_path: pub_matches.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+- name: pub_meta_pub_matchups
+  title: 'Dota 2 pub meta: pub_matchups with its dimensions'
+  description: pub_matchups with the dimensions of heroes, patches joined (the pub_meta lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: pub_matchups
+    includes:
+    - patch_id
+    - patch_name
+    - game_type
+    - hero_id
+    - hero_name
+    - opponent_hero_id
+    - opponent_hero_name
+    - games
+    - wins
+    - matchup_games
+    - matchup_wins
+    - matchup_win_rate
+    - counter
+    prefix: true
+  - join_path: pub_matchups.heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    prefix: true
+  - join_path: pub_matchups.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true

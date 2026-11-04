@@ -1,0 +1,529 @@
+views:
+- name: items_lens
+  title: Dota 2 itemization
+  description: Item builds in professional Dota 2 matches from OpenDota — core build order, item timings and their
+    win rates, starting builds, final inventories and neutral items.
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: hero_core_items
+    includes:
+    - patch_id
+    - patch_name
+    - hero_id
+    - hero_name
+    - item_slot
+    - item_order
+    - item_id
+    - item_name
+    - item_cost
+    - games
+    - wins
+    - median_bought_min
+    - avg_bought_min
+    - hero_games
+    - core_item_games
+    - core_item_wins
+    - core_item_win_rate
+    - median_completion_minute
+    prefix: true
+  - join_path: item_timing_buckets
+    includes:
+    - patch_id
+    - patch_name
+    - hero_id
+    - hero_name
+    - item_id
+    - item_name
+    - item_cost
+    - bucket_order
+    - timing_bucket
+    - bucket_start_min
+    - games
+    - wins
+    - timing_games
+    - timing_wins
+    - timing_win_rate
+    prefix: true
+  - join_path: starting_items
+    includes:
+    - patch_id
+    - patch_name
+    - hero_id
+    - hero_name
+    - item_id
+    - item_name
+    - item_cost
+    - games_bought
+    - units_bought
+    - wins_when_bought
+    - hero_games
+    - starting_games
+    - starting_units
+    - starting_wins
+    - starting_item_win_rate
+    prefix: true
+  - join_path: starting_builds
+    includes:
+    - patch_id
+    - patch_name
+    - hero_id
+    - hero_name
+    - starting_build
+    - build_items
+    - games
+    - wins
+    - build_games
+    - build_wins
+    - build_win_rate
+    prefix: true
+  - join_path: final_inventories
+    includes:
+    - patch_id
+    - patch_name
+    - hero_id
+    - hero_name
+    - slot_group
+    - item_id
+    - item_name
+    - item_cost
+    - neutral_tier
+    - is_major_item
+    - games_with_item
+    - wins_with_item
+    - hero_games
+    - games_ended_with
+    - wins_ended_with
+    - ended_with_win_rate
+    prefix: true
+  - join_path: items
+    includes:
+    - item_id
+    - item_key
+    - item_name
+    - item_cost
+    - quality
+    - neutral_tier
+    - component_count
+    - has_active_ability
+    - is_recipe
+    - is_consumable
+    - is_neutral
+    - is_major_item
+    - item_count
+    - avg_item_cost
+    prefix: true
+  - join_path: hero_item_builds
+    includes:
+    - patch_id
+    - patch_name
+    - hero_id
+    - hero_name
+    - item_id
+    - item_name
+    - item_cost
+    - games_with_item
+    - wins_with_item
+    - hero_games
+    - is_major_item
+    - end_inventory_games
+    - end_inventory_wins
+    - item_win_rate
+    prefix: true
+  - join_path: item_timings
+    includes:
+    - patch_id
+    - patch_name
+    - hero_id
+    - hero_name
+    - item_id
+    - item_name
+    - item_cost
+    - games_bought
+    - wins_when_bought
+    - avg_first_bought_min
+    - earliest_bought_min
+    - is_major_item
+    - total_games_bought
+    - total_wins_when_bought
+    - total_bought_minutes
+    - typical_minute
+    - win_rate_when_bought
+    - item_timing
+    prefix: true
+  - join_path: heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    - hero_count
+    prefix: true
+  - join_path: patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    - patch_count
+    prefix: true
+- name: items_final_inventories
+  title: 'Dota 2 itemization: final_inventories with its dimensions'
+  description: final_inventories with the dimensions of heroes, items, patches joined (the items lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: final_inventories
+    includes:
+    - patch_id
+    - patch_name
+    - hero_id
+    - hero_name
+    - slot_group
+    - item_id
+    - item_name
+    - item_cost
+    - neutral_tier
+    - is_major_item
+    - games_with_item
+    - wins_with_item
+    - hero_games
+    - games_ended_with
+    - wins_ended_with
+    - ended_with_win_rate
+    prefix: true
+  - join_path: final_inventories.heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    prefix: true
+  - join_path: final_inventories.items
+    includes:
+    - item_id
+    - item_key
+    - item_name
+    - item_cost
+    - quality
+    - neutral_tier
+    - component_count
+    - has_active_ability
+    - is_recipe
+    - is_consumable
+    - is_neutral
+    - is_major_item
+    prefix: true
+  - join_path: final_inventories.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+- name: items_hero_core_items
+  title: 'Dota 2 itemization: hero_core_items with its dimensions'
+  description: hero_core_items with the dimensions of heroes, items, patches joined (the items lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: hero_core_items
+    includes:
+    - patch_id
+    - patch_name
+    - hero_id
+    - hero_name
+    - item_slot
+    - item_order
+    - item_id
+    - item_name
+    - item_cost
+    - games
+    - wins
+    - median_bought_min
+    - avg_bought_min
+    - hero_games
+    - core_item_games
+    - core_item_wins
+    - core_item_win_rate
+    - median_completion_minute
+    prefix: true
+  - join_path: hero_core_items.heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    prefix: true
+  - join_path: hero_core_items.items
+    includes:
+    - item_id
+    - item_key
+    - item_name
+    - item_cost
+    - quality
+    - neutral_tier
+    - component_count
+    - has_active_ability
+    - is_recipe
+    - is_consumable
+    - is_neutral
+    - is_major_item
+    prefix: true
+  - join_path: hero_core_items.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+- name: items_hero_item_builds
+  title: 'Dota 2 itemization: hero_item_builds with its dimensions'
+  description: hero_item_builds with the dimensions of heroes, patches joined (the items lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: hero_item_builds
+    includes:
+    - patch_id
+    - patch_name
+    - hero_id
+    - hero_name
+    - item_id
+    - item_name
+    - item_cost
+    - games_with_item
+    - wins_with_item
+    - hero_games
+    - is_major_item
+    - end_inventory_games
+    - end_inventory_wins
+    - item_win_rate
+    prefix: true
+  - join_path: hero_item_builds.heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    prefix: true
+  - join_path: hero_item_builds.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+- name: items_item_timing_buckets
+  title: 'Dota 2 itemization: item_timing_buckets with its dimensions'
+  description: item_timing_buckets with the dimensions of heroes, items, patches joined (the items lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: item_timing_buckets
+    includes:
+    - patch_id
+    - patch_name
+    - hero_id
+    - hero_name
+    - item_id
+    - item_name
+    - item_cost
+    - bucket_order
+    - timing_bucket
+    - bucket_start_min
+    - games
+    - wins
+    - timing_games
+    - timing_wins
+    - timing_win_rate
+    prefix: true
+  - join_path: item_timing_buckets.heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    prefix: true
+  - join_path: item_timing_buckets.items
+    includes:
+    - item_id
+    - item_key
+    - item_name
+    - item_cost
+    - quality
+    - neutral_tier
+    - component_count
+    - has_active_ability
+    - is_recipe
+    - is_consumable
+    - is_neutral
+    - is_major_item
+    prefix: true
+  - join_path: item_timing_buckets.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+- name: items_item_timings
+  title: 'Dota 2 itemization: item_timings with its dimensions'
+  description: item_timings with the dimensions of heroes, patches joined (the items lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: item_timings
+    includes:
+    - patch_id
+    - patch_name
+    - hero_id
+    - hero_name
+    - item_id
+    - item_name
+    - item_cost
+    - games_bought
+    - wins_when_bought
+    - avg_first_bought_min
+    - earliest_bought_min
+    - is_major_item
+    - total_games_bought
+    - total_wins_when_bought
+    - total_bought_minutes
+    - typical_minute
+    - win_rate_when_bought
+    - item_timing
+    prefix: true
+  - join_path: item_timings.heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    prefix: true
+  - join_path: item_timings.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+- name: items_starting_builds
+  title: 'Dota 2 itemization: starting_builds with its dimensions'
+  description: starting_builds with the dimensions of heroes, patches joined (the items lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: starting_builds
+    includes:
+    - patch_id
+    - patch_name
+    - hero_id
+    - hero_name
+    - starting_build
+    - build_items
+    - games
+    - wins
+    - build_games
+    - build_wins
+    - build_win_rate
+    prefix: true
+  - join_path: starting_builds.heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    prefix: true
+  - join_path: starting_builds.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+- name: items_starting_items
+  title: 'Dota 2 itemization: starting_items with its dimensions'
+  description: starting_items with the dimensions of heroes, items, patches joined (the items lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: starting_items
+    includes:
+    - patch_id
+    - patch_name
+    - hero_id
+    - hero_name
+    - item_id
+    - item_name
+    - item_cost
+    - games_bought
+    - units_bought
+    - wins_when_bought
+    - hero_games
+    - starting_games
+    - starting_units
+    - starting_wins
+    - starting_item_win_rate
+    prefix: true
+  - join_path: starting_items.heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    prefix: true
+  - join_path: starting_items.items
+    includes:
+    - item_id
+    - item_key
+    - item_name
+    - item_cost
+    - quality
+    - neutral_tier
+    - component_count
+    - has_active_ability
+    - is_recipe
+    - is_consumable
+    - is_neutral
+    - is_major_item
+    prefix: true
+  - join_path: starting_items.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true

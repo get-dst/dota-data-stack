@@ -1,0 +1,123 @@
+cubes:
+- name: team_lineups
+  title: team lineups
+  description: The five heroes an identified team played in each professional match — as a lineup key (names sorted,
+    so the same five heroes always match) and by derived position (carry, mid, offlane, soft support, hard support)
+    — with the result.
+  sql_table: marts.team_lineups
+  meta:
+    dst:
+      grain: one row per identified team per pro match
+      key:
+      - match_id
+      - is_radiant
+      population: Sides of professional matches in leagues OpenDota rates premium or professional that OpenDota
+        tied to a team; a side with no identified team has no row. Leagues it rates below professional are not counted.
+  joins:
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  - name: teams
+    relationship: many_to_one
+    sql: '{CUBE}.team_id = {teams}.team_id'
+  dimensions:
+  - name: match_id
+    sql: '{CUBE}.match_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: is_radiant
+    sql: '{CUBE}.is_radiant'
+    type: boolean
+    primary_key: true
+    public: true
+  - name: side
+    sql: '{CUBE}.side'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - radiant
+        - dire
+  - name: team_id
+    sql: '{CUBE}.team_id'
+    type: number
+  - name: team_name
+    sql: '{CUBE}.team_name'
+    type: string
+  - name: opponent_team_name
+    sql: '{CUBE}.opponent_team_name'
+    type: string
+  - name: lineup_key
+    sql: '{CUBE}.lineup_key'
+    type: string
+    description: The five hero names sorted and joined with ' / '.
+  - name: carry_hero
+    sql: '{CUBE}.carry_hero'
+    type: string
+    description: Hero at position 1; null when no player got that position.
+  - name: mid_hero
+    sql: '{CUBE}.mid_hero'
+    type: string
+    description: Hero at position 2.
+  - name: offlane_hero
+    sql: '{CUBE}.offlane_hero'
+    type: string
+    description: Hero at position 3.
+  - name: soft_support_hero
+    sql: '{CUBE}.soft_support_hero'
+    type: string
+    description: Hero at position 4.
+  - name: hard_support_hero
+    sql: '{CUBE}.hard_support_hero'
+    type: string
+    description: Hero at position 5.
+  - name: is_win
+    sql: '{CUBE}.is_win'
+    type: boolean
+  - name: started_at
+    sql: '{CUBE}.started_at'
+    type: time
+  - name: match_date
+    sql: '{CUBE}.match_date'
+    type: time
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - '7.39'
+        - '7.41'
+        - '7.40'
+  - name: league_id
+    sql: '{CUBE}.league_id'
+    type: number
+  - name: league_name
+    sql: '{CUBE}.league_name'
+    type: string
+  measures:
+  - name: lineup_games
+    title: lineup_games
+    description: Team matches in scope; grouped by carry_hero, mid_hero, offlane_hero, soft_support_hero or hard_support_hero,
+      how often a team played each hero in that position.
+    type: count
+    sql: '{CUBE}.match_id'
+  - name: lineup_wins
+    title: lineup_wins
+    description: Of the team matches in scope, those won.
+    type: sum
+    sql: CASE WHEN {CUBE}.is_win THEN 1 ELSE 0 END
+  - name: lineup_win_rate
+    title: lineup_win_rate
+    description: Share of the team matches in scope that the team won; null under 20 matches (the minimum_games
+      term).
+    type: number
+    sql: CASE WHEN {lineup_games} >= 20 THEN {lineup_wins} * 1.0 / NULLIF({lineup_games}, 0) END
+    format: percent
+    meta:
+      dst:
+        better: higher

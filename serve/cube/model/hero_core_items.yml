@@ -1,0 +1,127 @@
+cubes:
+- name: hero_core_items
+  title: hero core items
+  description: The order pros finish their major items in — per hero and patch, which item was the first, second
+    and third major item of the game, how often, how those games ended, and at what minute it was completed.
+  sql_table: marts.hero_core_items
+  meta:
+    dst:
+      grain: one row per hero, patch, item slot (1st, 2nd or 3rd major item) and item
+      key:
+      - patch_id
+      - hero_id
+      - item_slot
+      - item_id
+      population: Professional matches in leagues OpenDota rates premium or professional, in the loaded window,
+        that have a purchase log (unparsed matches carry none and are left out); major items only. Leagues it rates
+        below professional are not counted.
+  joins:
+  - name: heroes
+    relationship: many_to_one
+    sql: '{CUBE}.hero_id = {heroes}.hero_id'
+  - name: items
+    relationship: many_to_one
+    sql: '{CUBE}.item_id = {items}.item_id'
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  dimensions:
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - '7.39'
+        - '7.41'
+        - '7.40'
+  - name: hero_id
+    sql: '{CUBE}.hero_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: hero_name
+    sql: '{CUBE}.hero_name'
+    type: string
+  - name: item_slot
+    sql: '{CUBE}.item_slot'
+    type: number
+    description: 1 = the first major item completed in the game, 2 = the second, 3 = the third.
+    primary_key: true
+    public: true
+  - name: item_order
+    sql: '{CUBE}.item_order'
+    type: string
+    description: 'item_slot in words: first, second or third major item of the game.'
+    meta:
+      dst:
+        dictionary:
+        - third
+        - second
+        - first
+  - name: item_id
+    sql: '{CUBE}.item_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: item_name
+    sql: '{CUBE}.item_name'
+    type: string
+    description: Display name, e.g. Battle Fury.
+  - name: item_cost
+    sql: '{CUBE}.item_cost'
+    type: number
+    description: Shop price in gold.
+  - name: games
+    sql: '{CUBE}.games'
+    type: number
+    description: Pro games in which the item was the hero's major item number item_slot.
+  - name: wins
+    sql: '{CUBE}.wins'
+    type: number
+  - name: median_bought_min
+    sql: '{CUBE}.median_bought_min'
+    type: number
+    description: Median game minute the item was completed in those games.
+  - name: avg_bought_min
+    sql: '{CUBE}.avg_bought_min'
+    type: number
+    description: Average game minute the item was completed in those games.
+  - name: hero_games
+    sql: '{CUBE}.hero_games'
+    type: number
+    description: Pro games the hero played on the patch with a purchase log; repeats on every row of the hero, so
+      never sum it across rows.
+  measures:
+  - name: core_item_games
+    title: core_item_games
+    description: Games in which the item was the hero's first, second or third major item (per item_order); rank
+      by it for the most common first item.
+    type: sum
+    sql: '{CUBE}.games'
+  - name: core_item_wins
+    title: core_item_wins
+    description: Of the games with the item in that slot, those won.
+    type: sum
+    sql: '{CUBE}.wins'
+  - name: core_item_win_rate
+    title: core_item_win_rate
+    description: Share of the games with the item in that slot that were won; null under 20 games (the minimum_games
+      term).
+    type: number
+    sql: CASE WHEN {core_item_games} >= 20 THEN {core_item_wins} * 1.0 / NULLIF({core_item_games}, 0) END
+    format: percent
+    meta:
+      dst:
+        better: higher
+  - name: median_completion_minute
+    title: median_completion_minute
+    description: Median completion minute; exact for one hero, item and slot on one patch, an average of patch medians
+      otherwise.
+    type: avg
+    sql: '{CUBE}.median_bought_min'

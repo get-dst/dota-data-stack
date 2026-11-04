@@ -1,0 +1,132 @@
+cubes:
+- name: lane_pairings
+  title: lane pairings
+  description: Heroes that shared a lane on the same side in professional matches, per patch, with each hero's derived
+    position — e.g. a safe-lane carry (1) with its hard support (5). Both orderings are present, so start from either
+    hero.
+  sql_table: marts.lane_pairings
+  meta:
+    dst:
+      grain: one row per patch, lane, hero with its position, and partner hero with its position
+      key:
+      - patch_id
+      - lane_role
+      - hero_id
+      - position
+      - partner_hero_id
+      - partner_position
+      population: Professional matches in leagues OpenDota rates premium or professional whose lanes OpenDota parsed.
+        Solo lanes (usually mid) and players with no parsed lane have no pair, so a hero's games here are fewer
+        than its picks. Leagues it rates below professional are not counted.
+  joins:
+  - name: heroes
+    relationship: many_to_one
+    sql: '{CUBE}.hero_id = {heroes}.hero_id'
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  dimensions:
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - '7.39'
+        - '7.40'
+        - '7.41'
+  - name: lane_role
+    sql: '{CUBE}.lane_role'
+    type: number
+    description: 'Lane relative to the side: 1 safe lane, 2 mid, 3 off lane, 4 jungle.'
+    primary_key: true
+    public: true
+  - name: lane_name
+    sql: '{CUBE}.lane_name'
+    type: string
+    description: safe lane, mid, off lane or jungle.
+    meta:
+      dst:
+        dictionary:
+        - safe lane
+        - off lane
+        - mid
+  - name: hero_id
+    sql: '{CUBE}.hero_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: hero_name
+    sql: '{CUBE}.hero_name'
+    type: string
+    description: The hero the counts are measured for.
+  - name: position
+    sql: '{CUBE}.position'
+    type: number
+    description: hero_name's derived position, 1 carry, 2 mid, 3 offlaner, 4 soft support, 5 hard support.
+    primary_key: true
+    public: true
+  - name: partner_hero_id
+    sql: '{CUBE}.partner_hero_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: partner_hero_name
+    sql: '{CUBE}.partner_hero_name'
+    type: string
+    description: The hero that shared the lane.
+  - name: partner_position
+    sql: '{CUBE}.partner_position'
+    type: number
+    description: partner_hero_name's derived position, 1-5.
+    primary_key: true
+    public: true
+  - name: games
+    sql: '{CUBE}.games'
+    type: number
+    description: Pro matches the two shared this lane on the same side.
+  - name: wins
+    sql: '{CUBE}.wins'
+    type: number
+    description: Of those, the ones their side won.
+  measures:
+  - name: lane_pair_games
+    title: lane_pair_games
+    description: Pro matches in which the two heroes shared the lane on the same side (the lane_pair term); rank
+      by it for a hero's most common lane partners.
+    type: sum
+    sql: '{CUBE}.games'
+  - name: lane_pair_wins
+    title: lane_pair_wins
+    description: Of the pair's lane games, those their side won.
+    type: sum
+    sql: '{CUBE}.wins'
+  - name: lane_pair_win_rate
+    title: lane_pair_win_rate
+    description: Share of the pair's lane games their side won; null under 20 games (the minimum_games term).
+    type: number
+    sql: CASE WHEN {lane_pair_games} >= 20 THEN {lane_pair_wins} * 1.0 / NULLIF({lane_pair_games}, 0) END
+    format: percent
+    meta:
+      dst:
+        better: higher
+  segments:
+  - name: lane_pair
+    sql: SUM({CUBE}.games)
+    meta:
+      dst:
+        meaning: Two heroes of the same side that shared a lane in a pro match, counted on lane_pairings.
+        aliases:
+        - lane pair
+        - laning pair
+        - lane duo
+        - safe lane pair
+        - off lane pair
+        - lane partners
+        - laned with
+        term: lane_pair

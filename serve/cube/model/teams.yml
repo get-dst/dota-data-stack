@@ -1,0 +1,72 @@
+cubes:
+- name: teams
+  title: teams
+  description: Professional teams, one row per team. Every team OpenDota ranks (with its rating and all-time records)
+    and every team identified on a loaded match, so a team on a match always has a row here.
+  sql_table: marts.dim_team
+  meta:
+    dst:
+      grain: one row per team
+      key:
+      - team_id
+      population: Teams in OpenDota's ranking (the top thousand by rating) and teams identified on a loaded professional
+        match in a league OpenDota rates premium or professional. Most teams that play in the window are outside
+        the ranking; for them rating, tag and the all-time records are null and is_ranked is false. A team that
+        is not ranked and played only in leagues OpenDota rates below professional is not listed, and matches in
+        those leagues are not counted.
+  dimensions:
+  - name: team_id
+    sql: '{CUBE}.team_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: team_name
+    sql: '{CUBE}.team_name'
+    type: string
+  - name: team_tag
+    sql: '{CUBE}.team_tag'
+    type: string
+    description: Short tag; null for a team outside the ranking.
+  - name: rating
+    sql: '{CUBE}.rating'
+    type: number
+    description: OpenDota Elo-style rating; null for a team outside the ranking.
+  - name: all_time_wins
+    sql: '{CUBE}.all_time_wins'
+    type: number
+    description: Wins over the team's whole OpenDota history, not the loaded window; null for a team outside the
+      ranking.
+  - name: all_time_losses
+    sql: '{CUBE}.all_time_losses'
+    type: number
+    description: Null for a team outside the ranking.
+  - name: last_match_at
+    sql: '{CUBE}.last_match_at'
+    type: time
+    description: Start of the team's latest match OpenDota knows; null for a team outside the ranking.
+  - name: is_ranked
+    sql: '{CUBE}.is_ranked'
+    type: boolean
+    description: True when the team is in OpenDota's ranking, so rating and the all-time records are present.
+  - name: loaded_matches
+    sql: '{CUBE}.loaded_matches'
+    type: number
+    description: The team's pro matches in the loaded window.
+  - name: last_loaded_match_at
+    sql: '{CUBE}.last_loaded_match_at'
+    type: time
+    description: Start of the team's latest loaded match.
+  measures:
+  - name: team_count
+    title: team_count
+    description: Number of teams.
+    type: count
+    sql: '{CUBE}.team_id'
+  - name: avg_rating
+    title: avg_rating
+    description: Average OpenDota rating over ranked teams; null ratings are skipped.
+    type: avg
+    sql: '{CUBE}.rating'
+    meta:
+      dst:
+        better: higher

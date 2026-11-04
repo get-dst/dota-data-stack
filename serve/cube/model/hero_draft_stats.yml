@@ -1,0 +1,278 @@
+cubes:
+- name: hero_draft_stats
+  title: hero draft stats
+  description: How each hero fared in professional Captains Mode drafts, per patch — picks, bans, first-phase bans,
+    first and last picks, and wins by pick phase. The table for contest, first-pick and phase win-rate questions.
+  sql_table: marts.hero_draft_stats
+  meta:
+    dst:
+      grain: one row per hero per patch; every hero has a row on every patch with drafts, zero-filled
+      key:
+      - patch_id
+      - hero_id
+      population: Captains Mode professional matches in leagues OpenDota rates premium or professional whose draft
+        OpenDota recorded. A pro match in another game mode, or without a recorded draft, counts in neither a hero's
+        picks nor drafted_matches. Leagues it rates below professional are not counted.
+  joins:
+  - name: heroes
+    relationship: many_to_one
+    sql: '{CUBE}.hero_id = {heroes}.hero_id'
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  dimensions:
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - '7.39'
+        - '7.40'
+        - '7.41'
+  - name: hero_id
+    sql: '{CUBE}.hero_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: hero_name
+    sql: '{CUBE}.hero_name'
+    type: string
+  - name: drafted_matches
+    sql: '{CUBE}.drafted_matches'
+    type: number
+    description: Drafted matches on the patch; repeats on every hero row of the patch.
+  - name: picks
+    sql: '{CUBE}.picks'
+    type: number
+  - name: bans
+    sql: '{CUBE}.bans'
+    type: number
+  - name: contests
+    sql: '{CUBE}.contests'
+    type: number
+    description: Picks plus bans — drafted matches in which the hero was picked or banned.
+  - name: first_phase_bans
+    sql: '{CUBE}.first_phase_bans'
+    type: number
+    description: Bans in the first ban phase (the opening seven bans).
+  - name: first_picks
+    sql: '{CUBE}.first_picks'
+    type: number
+    description: Times the hero was the first pick of the match.
+  - name: last_picks
+    sql: '{CUBE}.last_picks'
+    type: number
+    description: Times the hero was the last pick of the match.
+  - name: wins
+    sql: '{CUBE}.wins'
+    type: number
+    description: Picks whose side won.
+  - name: picks_phase_1
+    sql: '{CUBE}.picks_phase_1'
+    type: number
+    description: Picks in pick phase 1 (picks 1-2 of the match).
+  - name: wins_phase_1
+    sql: '{CUBE}.wins_phase_1'
+    type: number
+  - name: picks_phase_2
+    sql: '{CUBE}.picks_phase_2'
+    type: number
+    description: Picks in pick phase 2 (picks 3-8).
+  - name: wins_phase_2
+    sql: '{CUBE}.wins_phase_2'
+    type: number
+  - name: picks_phase_3
+    sql: '{CUBE}.picks_phase_3'
+    type: number
+    description: Picks in pick phase 3 (picks 9-10).
+  - name: wins_phase_3
+    sql: '{CUBE}.wins_phase_3'
+    type: number
+  measures:
+  - name: hero_draft_picks
+    title: hero_draft_picks
+    description: Times the hero was picked in drafted Captains Mode matches.
+    type: sum
+    sql: '{CUBE}.picks'
+  - name: hero_draft_bans
+    title: hero_draft_bans
+    description: Times the hero was banned in drafted Captains Mode matches, by all teams together; rank by it for
+      the most-banned heroes. The bans of one team are draft_phases.phase_bans filtered by team_name.
+    type: sum
+    sql: '{CUBE}.bans'
+  - name: hero_contests
+    title: hero_contests
+    description: Picks plus bans.
+    type: sum
+    sql: '{CUBE}.contests'
+  - name: hero_first_phase_bans
+    title: hero_first_phase_bans
+    description: Times the hero was banned in the first ban phase (the first_phase term).
+    type: sum
+    sql: '{CUBE}.first_phase_bans'
+  - name: hero_first_picks
+    title: hero_first_picks
+    description: Times the hero was the first pick of the match (the first_pick term).
+    type: sum
+    sql: '{CUBE}.first_picks'
+  - name: hero_last_picks
+    title: hero_last_picks
+    description: Times the hero was the last pick of the match (the last_pick term).
+    type: sum
+    sql: '{CUBE}.last_picks'
+  - name: hero_draft_wins
+    title: hero_draft_wins
+    description: Drafted picks of the hero whose side won.
+    type: sum
+    sql: '{CUBE}.wins'
+  - name: drafted_matches_total
+    title: drafted_matches_total
+    description: 'Drafted matches in scope, per hero: summed over one hero''s patch rows it is the match count;
+      summed over several heroes it is not.'
+    type: sum
+    sql: '{CUBE}.drafted_matches'
+  - name: phase_1_picks
+    title: phase_1_picks
+    description: Picks of the hero in pick phase 1 (picks 1-2 of the match).
+    type: sum
+    sql: '{CUBE}.picks_phase_1'
+  - name: phase_1_wins
+    title: phase_1_wins
+    description: Of the phase-1 picks, those whose side won.
+    type: sum
+    sql: '{CUBE}.wins_phase_1'
+  - name: phase_2_picks
+    title: phase_2_picks
+    description: Picks of the hero in pick phase 2 (picks 3-8 of the match).
+    type: sum
+    sql: '{CUBE}.picks_phase_2'
+  - name: phase_2_wins
+    title: phase_2_wins
+    description: Of the phase-2 picks, those whose side won.
+    type: sum
+    sql: '{CUBE}.wins_phase_2'
+  - name: phase_3_picks
+    title: phase_3_picks
+    description: Picks of the hero in pick phase 3 (picks 9-10 of the match).
+    type: sum
+    sql: '{CUBE}.picks_phase_3'
+  - name: phase_3_wins
+    title: phase_3_wins
+    description: Of the phase-3 picks, those whose side won.
+    type: sum
+    sql: '{CUBE}.wins_phase_3'
+  - name: contest_rate
+    title: contest_rate
+    description: Share of drafted matches in which the hero was picked or banned.
+    type: number
+    sql: '{hero_contests} / NULLIF({drafted_matches_total}, 0)'
+    format: percent
+  - name: draft_pick_rate
+    title: draft_pick_rate
+    description: Share of drafted matches in which the hero was picked.
+    type: number
+    sql: '{hero_draft_picks} / NULLIF({drafted_matches_total}, 0)'
+    format: percent
+  - name: draft_ban_rate
+    title: draft_ban_rate
+    description: Share of drafted matches in which the hero was banned.
+    type: number
+    sql: '{hero_draft_bans} / NULLIF({drafted_matches_total}, 0)'
+    format: percent
+  - name: first_phase_ban_rate
+    title: first_phase_ban_rate
+    description: Share of drafted matches in which the hero was banned in the first ban phase.
+    type: number
+    sql: '{hero_first_phase_bans} / NULLIF({drafted_matches_total}, 0)'
+    format: percent
+  - name: first_pick_rate
+    title: first_pick_rate
+    description: Share of drafted matches in which the hero was the first pick.
+    type: number
+    sql: '{hero_first_picks} / NULLIF({drafted_matches_total}, 0)'
+    format: percent
+  - name: last_pick_rate
+    title: last_pick_rate
+    description: Share of drafted matches in which the hero was the last pick.
+    type: number
+    sql: '{hero_last_picks} / NULLIF({drafted_matches_total}, 0)'
+    format: percent
+  - name: draft_win_rate
+    title: draft_win_rate
+    description: Share of the hero's drafted picks whose side won; null under 20 picks (the minimum_games term).
+    type: number
+    sql: CASE WHEN {hero_draft_picks} >= 20 THEN {hero_draft_wins} * 1.0 / NULLIF({hero_draft_picks}, 0) END
+    format: percent
+    meta:
+      dst:
+        better: higher
+  - name: phase_1_win_rate
+    title: phase_1_win_rate
+    description: Win rate of the hero when picked in pick phase 1; null under 20 such picks (the minimum_games term).
+    type: number
+    sql: CASE WHEN {phase_1_picks} >= 20 THEN {phase_1_wins} * 1.0 / NULLIF({phase_1_picks}, 0) END
+    format: percent
+    meta:
+      dst:
+        better: higher
+  - name: phase_2_win_rate
+    title: phase_2_win_rate
+    description: Win rate of the hero when picked in pick phase 2; null under 20 such picks (the minimum_games term).
+    type: number
+    sql: CASE WHEN {phase_2_picks} >= 20 THEN {phase_2_wins} * 1.0 / NULLIF({phase_2_picks}, 0) END
+    format: percent
+    meta:
+      dst:
+        better: higher
+  - name: phase_3_win_rate
+    title: phase_3_win_rate
+    description: Win rate of the hero when picked in pick phase 3; null under 20 such picks (the minimum_games term).
+    type: number
+    sql: CASE WHEN {phase_3_picks} >= 20 THEN {phase_3_wins} * 1.0 / NULLIF({phase_3_picks}, 0) END
+    format: percent
+    meta:
+      dst:
+        better: higher
+  segments:
+  - name: first_phase
+    sql: SUM({CUBE}.first_phase_bans) * 1.0 / SUM({CUBE}.drafted_matches)
+    meta:
+      dst:
+        meaning: The first of the three phases of a Captains Mode draft — the opening 7 bans and the first 2 picks.
+        aliases:
+        - first phase
+        - first ban phase
+        - opening bans
+        - phase one
+        - early bans
+        - first pick phase
+        term: first_phase
+  - name: first_pick
+    sql: SUM({CUBE}.first_picks) * 1.0 / SUM({CUBE}.drafted_matches)
+    meta:
+      dst:
+        meaning: The first hero picked in a Captains Mode draft — one per match, made by the first-pick side.
+        aliases:
+        - first-pick
+        - first picked
+        - opening pick
+        - first pick side
+        - first-pick side
+        term: first_pick
+  - name: last_pick
+    sql: SUM({CUBE}.last_picks) * 1.0 / SUM({CUBE}.drafted_matches)
+    meta:
+      dst:
+        meaning: The tenth and final hero picked in a Captains Mode draft, chosen knowing the other nine.
+        aliases:
+        - last-pick
+        - last picked
+        - final pick
+        - last pick slot
+        term: last_pick

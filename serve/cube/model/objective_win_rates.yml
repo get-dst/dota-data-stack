@@ -1,0 +1,90 @@
+cubes:
+- name: objective_win_rates
+  title: objective win rates
+  description: Per patch and first objective (first blood, first tower, first Roshan), how often the side that took
+    it went on to win a professional match.
+  sql_table: marts.objective_win_rates
+  meta:
+    dst:
+      grain: one row per patch per objective
+      key:
+      - patch_id
+      - objective
+      population: Professional matches in leagues OpenDota rates premium or professional, in the loaded window,
+        in which a side took the objective; matches without a Roshan kill, or without an objective log, are not
+        counted for it. Leagues it rates below professional are not counted.
+  joins:
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  dimensions:
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - '7.39'
+        - '7.40'
+        - '7.41'
+  - name: objective
+    sql: '{CUBE}.objective'
+    type: string
+    description: first_blood, first_tower or first_roshan.
+    primary_key: true
+    public: true
+    meta:
+      dst:
+        dictionary:
+        - first_blood
+        - first_roshan
+        - first_tower
+  - name: matches
+    sql: '{CUBE}.matches'
+    type: number
+    description: Matches in which a side took the objective.
+  - name: taker_wins
+    sql: '{CUBE}.taker_wins'
+    type: number
+    description: Of those, matches the side that took it won.
+  - name: taker_win_rate
+    sql: '{CUBE}.taker_win_rate'
+    type: number
+    description: taker_wins / matches, 0-1, precomputed per row; aggregate with the objective_win_rate metric.
+  measures:
+  - name: total_matches
+    title: total_matches
+    description: Matches in which a side took the objective.
+    type: sum
+    sql: '{CUBE}.matches'
+  - name: total_taker_wins
+    title: total_taker_wins
+    description: Of those, matches the side that took the objective won.
+    type: sum
+    sql: '{CUBE}.taker_wins'
+  - name: objective_win_rate
+    title: objective_win_rate
+    description: Share of matches the side that took the objective won.
+    type: number
+    sql: '{total_taker_wins} / NULLIF({total_matches}, 0)'
+    format: percent
+  segments:
+  - name: first_objective
+    sql: SUM({CUBE}.taker_wins) * 1.0 / SUM({CUBE}.matches)
+    meta:
+      dst:
+        meaning: First blood, the first tower and the first Roshan of a pro match, each credited to the side that
+          took it.
+        aliases:
+        - first blood
+        - first tower
+        - first roshan
+        - first rosh
+        - first objective
+        - fb
+        term: first_objective

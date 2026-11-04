@@ -1,0 +1,124 @@
+cubes:
+- name: item_timings
+  title: item timings
+  description: When pros first buy an item on a hero, per patch — the typical minute, how many games bought it,
+    and how many of those were won. Items costing 1 000 gold or more.
+  sql_table: marts.hero_item_timings
+  meta:
+    dst:
+      grain: one row per hero, item and patch
+      key:
+      - patch_id
+      - hero_id
+      - item_id
+      population: First purchases in professional matches in leagues OpenDota rates premium or professional, in
+        the loaded window, items of 1 000 gold or more, timed from the horn; pre-game purchases are excluded. Leagues
+        it rates below professional are not counted.
+  joins:
+  - name: heroes
+    relationship: many_to_one
+    sql: '{CUBE}.hero_id = {heroes}.hero_id'
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  dimensions:
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - '7.39'
+        - '7.41'
+        - '7.40'
+  - name: hero_id
+    sql: '{CUBE}.hero_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: hero_name
+    sql: '{CUBE}.hero_name'
+    type: string
+  - name: item_id
+    sql: '{CUBE}.item_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: item_name
+    sql: '{CUBE}.item_name'
+    type: string
+  - name: item_cost
+    sql: '{CUBE}.item_cost'
+    type: number
+  - name: games_bought
+    sql: '{CUBE}.games_bought'
+    type: number
+    description: Pro games in which the hero bought the item at least once.
+  - name: wins_when_bought
+    sql: '{CUBE}.wins_when_bought'
+    type: number
+  - name: avg_first_bought_min
+    sql: '{CUBE}.avg_first_bought_min'
+    type: number
+    description: Average minute of the first purchase across those games.
+  - name: earliest_bought_min
+    sql: '{CUBE}.earliest_bought_min'
+    type: number
+  - name: is_major_item
+    sql: '{CUBE}.is_major_item'
+    type: boolean
+    description: 'True for a major item: at least 2000 gold, assembled or with its own active ability, not a recipe,
+      consumable or neutral item.'
+  measures:
+  - name: total_games_bought
+    title: total_games_bought
+    description: Pro games in which the hero bought the item at least once; the sample size beside the typical minute.
+    type: sum
+    sql: '{CUBE}.games_bought'
+  - name: total_wins_when_bought
+    title: total_wins_when_bought
+    description: Of the games that bought the item, those won.
+    type: sum
+    sql: '{CUBE}.wins_when_bought'
+  - name: total_bought_minutes
+    title: total_bought_minutes
+    description: First-purchase minutes summed over the games that bought the item; divide by total_games_bought
+      for the typical minute.
+    type: sum
+    sql: '{CUBE}.avg_first_bought_min * {CUBE}.games_bought'
+  - name: typical_minute
+    title: typical_minute
+    description: 'The minute pros typically first buy the item on the hero (the item_timing term): the average first-purchase
+      minute over the games that bought it, weighted by games across patches. Report total_games_bought beside it.'
+    type: number
+    sql: '{total_bought_minutes} * 1.0 / NULLIF({total_games_bought}, 0)'
+  - name: win_rate_when_bought
+    title: win_rate_when_bought
+    description: Share of the games that bought the item that were won; null under 20 games (the minimum_games term).
+    type: number
+    sql: CASE WHEN {total_games_bought} >= 20 THEN {total_wins_when_bought} * 1.0 / NULLIF({total_games_bought},
+      0) END
+    format: percent
+    meta:
+      dst:
+        better: higher
+  segments:
+  - name: item_timing
+    sql: SUM({CUBE}.avg_first_bought_min * {CUBE}.games_bought) / SUM({CUBE}.games_bought)
+    meta:
+      dst:
+        meaning: The minute pros typically first buy an item on a hero — the average first-purchase minute over
+          their games on the patch.
+        aliases:
+        - timing
+        - when to buy
+        - when do pros buy
+        - rush
+        - item rush
+        - power spike timing
+        term: item_timing

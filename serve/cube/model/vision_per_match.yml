@@ -1,0 +1,255 @@
+cubes:
+- name: vision_per_match
+  title: vision per match
+  description: 'One player''s wards, runes and buybacks in one parsed professional match: observers and sentries
+    placed (and before minute 10), runes taken by type, buybacks and the first one''s minute.'
+  sql_table: marts.vision_and_runes
+  meta:
+    dst:
+      grain: one row per player per parsed match
+      key:
+      - match_id
+      - player_slot
+      population: Players in parsed professional matches in leagues OpenDota rates premium or professional, in the
+        loaded window. Leagues it rates below professional are not counted.
+  joins:
+  - name: heroes
+    relationship: many_to_one
+    sql: '{CUBE}.hero_id = {heroes}.hero_id'
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  - name: pro_matches
+    relationship: many_to_one
+    sql: '{CUBE}.match_id = {pro_matches}.match_id'
+  - name: teams
+    relationship: many_to_one
+    sql: '{CUBE}.team_id = {teams}.team_id'
+  dimensions:
+  - name: match_id
+    sql: '{CUBE}.match_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: player_slot
+    sql: '{CUBE}.player_slot'
+    type: number
+    description: 0-4 Radiant, 128-132 Dire.
+    primary_key: true
+    public: true
+  - name: is_radiant
+    sql: '{CUBE}.is_radiant'
+    type: boolean
+  - name: team_id
+    sql: '{CUBE}.team_id'
+    type: number
+  - name: team_name
+    sql: '{CUBE}.team_name'
+    type: string
+    description: Team name as the match record carries it; null when OpenDota lists no team for the side, so a team
+      ranking leaves the null rows out.
+  - name: account_id
+    sql: '{CUBE}.account_id'
+    type: number
+  - name: player_name
+    sql: '{CUBE}.player_name'
+    type: string
+  - name: hero_id
+    sql: '{CUBE}.hero_id'
+    type: number
+  - name: hero_name
+    sql: '{CUBE}.hero_name'
+    type: string
+  - name: position
+    sql: '{CUBE}.position'
+    type: number
+    description: 1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support; null for jungle, roaming or unparsed
+      lanes.
+  - name: position_name
+    sql: '{CUBE}.position_name'
+    type: string
+    description: 'The position as a word: carry, mid, offlane, soft support or hard support; the filter for questions
+      about carries, mids, offlaners or supports.'
+    meta:
+      dst:
+        dictionary:
+        - mid
+        - carry
+        - offlane
+        - hard support
+        - soft support
+  - name: is_win
+    sql: '{CUBE}.is_win'
+    type: boolean
+  - name: observers_placed
+    sql: '{CUBE}.observers_placed'
+    type: number
+  - name: sentries_placed
+    sql: '{CUBE}.sentries_placed'
+    type: number
+  - name: observers_before_10
+    sql: '{CUBE}.observers_before_10'
+    type: number
+  - name: sentries_before_10
+    sql: '{CUBE}.sentries_before_10'
+    type: number
+  - name: runes_taken
+    sql: '{CUBE}.runes_taken'
+    type: number
+    description: Every rune in the log, water and wisdom included; OpenDota's rune_pickups on player_performances
+      counts bounty and power runes only.
+  - name: bounty_runes
+    sql: '{CUBE}.bounty_runes'
+    type: number
+  - name: power_runes
+    sql: '{CUBE}.power_runes'
+    type: number
+    description: Double damage, haste, illusion, invisibility, regeneration, arcane and shield.
+  - name: water_runes
+    sql: '{CUBE}.water_runes'
+    type: number
+  - name: wisdom_runes
+    sql: '{CUBE}.wisdom_runes'
+    type: number
+  - name: double_damage_runes
+    sql: '{CUBE}.double_damage_runes'
+    type: number
+  - name: haste_runes
+    sql: '{CUBE}.haste_runes'
+    type: number
+  - name: illusion_runes
+    sql: '{CUBE}.illusion_runes'
+    type: number
+  - name: invisibility_runes
+    sql: '{CUBE}.invisibility_runes'
+    type: number
+  - name: regeneration_runes
+    sql: '{CUBE}.regeneration_runes'
+    type: number
+  - name: arcane_runes
+    sql: '{CUBE}.arcane_runes'
+    type: number
+  - name: shield_runes
+    sql: '{CUBE}.shield_runes'
+    type: number
+  - name: buybacks
+    sql: '{CUBE}.buybacks'
+    type: number
+  - name: first_buyback_min
+    sql: '{CUBE}.first_buyback_min'
+    type: number
+    description: Minute of the first buyback; null without one.
+  - name: duration_min
+    sql: '{CUBE}.duration_min'
+    type: number
+  - name: match_date
+    sql: '{CUBE}.match_date'
+    type: time
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - '7.39'
+        - '7.41'
+        - '7.40'
+  - name: league_id
+    sql: '{CUBE}.league_id'
+    type: number
+  - name: league_name
+    sql: '{CUBE}.league_name'
+    type: string
+  measures:
+  - name: vision_player_games
+    title: vision_player_games
+    description: Player-games (rows).
+    type: count
+    sql: '{CUBE}.match_id'
+  - name: matches
+    title: matches
+    description: Distinct matches in scope; a team's games, not its player-games.
+    type: count_distinct
+    sql: '{CUBE}.match_id'
+  - name: avg_observers
+    title: avg_observers
+    description: Observer wards per player-game, for a team, league, date or match. A hero, position or player rate
+      is hero_playstyle.observers_per_game or player_playstyle.
+    type: avg
+    sql: '{CUBE}.observers_placed'
+  - name: avg_sentries
+    title: avg_sentries
+    description: Sentry wards per player-game.
+    type: avg
+    sql: '{CUBE}.sentries_placed'
+  - name: total_observers
+    title: total_observers
+    description: Observer wards placed, summed.
+    type: sum
+    sql: '{CUBE}.observers_placed'
+  - name: total_sentries
+    title: total_sentries
+    description: Sentry wards placed, summed.
+    type: sum
+    sql: '{CUBE}.sentries_placed'
+  - name: total_bounty_runes
+    title: total_bounty_runes
+    description: Bounty runes taken, summed.
+    type: sum
+    sql: '{CUBE}.bounty_runes'
+  - name: total_power_runes
+    title: total_power_runes
+    description: Power runes taken, summed.
+    type: sum
+    sql: '{CUBE}.power_runes'
+  - name: total_wisdom_runes
+    title: total_wisdom_runes
+    description: Wisdom runes taken, summed.
+    type: sum
+    sql: '{CUBE}.wisdom_runes'
+  - name: total_water_runes
+    title: total_water_runes
+    description: Water runes taken, summed.
+    type: sum
+    sql: '{CUBE}.water_runes'
+  - name: total_buybacks
+    title: total_buybacks
+    description: Buybacks, summed.
+    type: sum
+    sql: '{CUBE}.buybacks'
+  - name: avg_first_buyback_min
+    title: avg_first_buyback_min
+    description: Average minute of the first buyback, over games with one.
+    type: avg
+    sql: '{CUBE}.first_buyback_min'
+  - name: team_observers_per_match
+    title: team_observers_per_match
+    description: 'Observer wards per match of the group: for a team, its five players together; null under 20 matches.
+      State the matches beside it.'
+    type: number
+    sql: CASE WHEN {matches} >= 20 THEN {total_observers} * 1.0 / NULLIF({matches}, 0) END
+  - name: team_sentries_per_match
+    title: team_sentries_per_match
+    description: 'Sentry wards per match of the group: for a team, its five players together; null under 20 matches.
+      State the matches beside it.'
+    type: number
+    sql: CASE WHEN {matches} >= 20 THEN {total_sentries} * 1.0 / NULLIF({matches}, 0) END
+  - name: power_runes_per_game
+    title: power_runes_per_game
+    description: Power runes taken per player-game (double damage, haste, illusion, invisibility, regeneration,
+      arcane, shield).
+    type: number
+    sql: '{total_power_runes} / NULLIF({vision_player_games}, 0)'
+  - name: bounty_runes_per_game
+    title: bounty_runes_per_game
+    description: Bounty runes taken per player-game.
+    type: number
+    sql: '{total_bounty_runes} / NULLIF({vision_player_games}, 0)'
+  - name: wisdom_runes_per_game
+    title: wisdom_runes_per_game
+    description: Wisdom runes taken per player-game.
+    type: number
+    sql: '{total_wisdom_runes} / NULLIF({vision_player_games}, 0)'

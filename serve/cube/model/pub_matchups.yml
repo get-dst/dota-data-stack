@@ -1,0 +1,110 @@
+cubes:
+- name: pub_matchups
+  title: pub matchups
+  description: Hero against hero in the public sample, per patch and game type. Both orderings are present, so start
+    from either hero.
+  sql: |-
+    SELECT * FROM marts.pub_matchups
+    WHERE game_type = 'ranked_all_pick'
+  meta:
+    dst:
+      grain: one row per hero, opponent hero, patch and game type
+      key:
+      - patch_id
+      - game_type
+      - hero_id
+      - opponent_hero_id
+      population: Counted over a sample of public matchmaking games, ranked All Pick only. A matchup with few games
+        says little; state the game count with the rate.
+  joins:
+  - name: heroes
+    relationship: many_to_one
+    sql: '{CUBE}.hero_id = {heroes}.hero_id'
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  dimensions:
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - '7.41'
+  - name: game_type
+    sql: '{CUBE}.game_type'
+    type: string
+    primary_key: true
+    public: true
+    meta:
+      dst:
+        dictionary:
+        - turbo
+        - ranked_all_pick
+        - unranked_all_pick
+  - name: hero_id
+    sql: '{CUBE}.hero_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: hero_name
+    sql: '{CUBE}.hero_name'
+    type: string
+    description: The hero the rate is measured for.
+  - name: opponent_hero_id
+    sql: '{CUBE}.opponent_hero_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: opponent_hero_name
+    sql: '{CUBE}.opponent_hero_name'
+    type: string
+    description: The hero on the other side.
+  - name: games
+    sql: '{CUBE}.games'
+    type: number
+    description: Sampled games the two were on opposite sides.
+  - name: wins
+    sql: '{CUBE}.wins'
+    type: number
+    description: Games hero_name's side won.
+  measures:
+  - name: matchup_games
+    title: matchup_games
+    description: Sampled games the two heroes were on opposite sides; the sample size beside the matchup rate.
+    type: sum
+    sql: '{CUBE}.games'
+  - name: matchup_wins
+    title: matchup_wins
+    description: Of those, games hero_name's side won.
+    type: sum
+    sql: '{CUBE}.wins'
+  - name: matchup_win_rate
+    title: matchup_win_rate
+    description: Share of games hero_name's side won against opponent_hero_name; null under 20 games (the minimum_games
+      term), so a rare matchup cannot rank first.
+    type: number
+    sql: CASE WHEN {matchup_games} >= 20 THEN {matchup_wins} * 1.0 / NULLIF({matchup_games}, 0) END
+    format: percent
+    meta:
+      dst:
+        better: higher
+  segments:
+  - name: counter
+    sql: SUM({CUBE}.wins) * 1.0 / SUM({CUBE}.games)
+    meta:
+      dst:
+        meaning: A hero that the asked-about hero loses to more than usual, measured over the public sample.
+        aliases:
+        - counters
+        - counter pick
+        - what beats
+        - bad matchup
+        - good against
+        - strong against
+        term: counter

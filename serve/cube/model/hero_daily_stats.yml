@@ -1,0 +1,100 @@
+cubes:
+- name: hero_daily_stats
+  title: hero daily stats
+  description: Per hero, per day, per patch — picks, bans, wins and losses across pro matches. The rollup for a
+    hero's picks, bans and win rate over a date range (this week, last month, in August).
+  sql_table: marts.daily_hero_stats
+  meta:
+    dst:
+      grain: one row per hero per match date per patch
+      key:
+      - match_date
+      - patch_id
+      - hero_id
+      population: Every hero picked or banned on a given day in professional matches in leagues OpenDota rates premium
+        or professional; a hero banned but not picked that day has a row with zero picks. Leagues it rates below
+        professional are not counted.
+  joins:
+  - name: heroes
+    relationship: many_to_one
+    sql: '{CUBE}.hero_id = {heroes}.hero_id'
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  dimensions:
+  - name: match_date
+    sql: '{CUBE}.match_date'
+    type: time
+    primary_key: true
+    public: true
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - '7.41'
+        - '7.39'
+        - '7.40'
+  - name: hero_id
+    sql: '{CUBE}.hero_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: hero_name
+    sql: '{CUBE}.hero_name'
+    type: string
+  - name: picks
+    sql: '{CUBE}.picks'
+    type: number
+  - name: bans
+    sql: '{CUBE}.bans'
+    type: number
+  - name: wins
+    sql: '{CUBE}.wins'
+    type: number
+  - name: losses
+    sql: '{CUBE}.losses'
+    type: number
+  - name: matches_that_day
+    sql: '{CUBE}.matches_that_day'
+    type: number
+    description: Pro matches played that day on that patch; repeats on every hero row.
+  measures:
+  - name: total_picks
+    title: total_picks
+    description: Times the hero was picked in pro matches over the dates in scope, in every role (every match has
+      ten picks); rank by it for the most-picked heroes. Picks in one role (carries, pos 4) are hero_position_meta.position_games.
+    type: sum
+    sql: '{CUBE}.picks'
+  - name: total_bans
+    title: total_bans
+    description: Times the hero was banned in pro matches over the dates in scope.
+    type: sum
+    sql: '{CUBE}.bans'
+  - name: total_wins
+    title: total_wins
+    description: Picks of the hero whose side won, over the dates in scope.
+    type: sum
+    sql: '{CUBE}.wins'
+  - name: total_losses
+    title: total_losses
+    description: Picks of the hero whose side lost, over the dates in scope.
+    type: sum
+    sql: '{CUBE}.losses'
+  - name: period_win_rate
+    title: period_win_rate
+    description: Wins divided by picks for the hero over the dates in scope (the hero_win_rate term); null under
+      20 picks, so a rarely picked hero cannot rank first. The rollup for a hero's win rate over a date range; state
+      total_picks beside it.
+    type: number
+    sql: CASE WHEN {total_picks} >= 20 THEN {total_wins} * 1.0 / NULLIF({total_picks}, 0) END
+    format: percent
+    meta:
+      dst:
+        better: higher

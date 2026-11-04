@@ -1,0 +1,108 @@
+cubes:
+- name: pub_duos
+  title: pub duos
+  description: Hero with hero on the same side in the public sample, per patch and game type. Both orderings are
+    present, so start from either hero.
+  sql: |-
+    SELECT * FROM marts.pub_duos
+    WHERE game_type = 'ranked_all_pick'
+  meta:
+    dst:
+      grain: one row per hero, ally hero, patch and game type
+      key:
+      - patch_id
+      - game_type
+      - hero_id
+      - ally_hero_id
+      population: Counted over a sample of public matchmaking games, ranked All Pick only. A pair with few games
+        says little; state the game count with the rate.
+  joins:
+  - name: heroes
+    relationship: many_to_one
+    sql: '{CUBE}.hero_id = {heroes}.hero_id'
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  dimensions:
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - '7.41'
+  - name: game_type
+    sql: '{CUBE}.game_type'
+    type: string
+    primary_key: true
+    public: true
+    meta:
+      dst:
+        dictionary:
+        - turbo
+        - ranked_all_pick
+        - unranked_all_pick
+  - name: hero_id
+    sql: '{CUBE}.hero_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: hero_name
+    sql: '{CUBE}.hero_name'
+    type: string
+  - name: ally_hero_id
+    sql: '{CUBE}.ally_hero_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: ally_hero_name
+    sql: '{CUBE}.ally_hero_name'
+    type: string
+    description: The hero on the same side.
+  - name: games
+    sql: '{CUBE}.games'
+    type: number
+    description: Sampled games the two were on the same side.
+  - name: wins
+    sql: '{CUBE}.wins'
+    type: number
+  measures:
+  - name: duo_games
+    title: duo_games
+    description: Sampled games the two heroes were on the same side; the sample size beside the duo rate.
+    type: sum
+    sql: '{CUBE}.games'
+  - name: duo_wins
+    title: duo_wins
+    description: Of those, games the pair won.
+    type: sum
+    sql: '{CUBE}.wins'
+  - name: duo_win_rate
+    title: duo_win_rate
+    description: Share of games the pair won together; null under 20 games (the minimum_games term), so a rare pair
+      cannot rank first.
+    type: number
+    sql: CASE WHEN {duo_games} >= 20 THEN {duo_wins} * 1.0 / NULLIF({duo_games}, 0) END
+    format: percent
+    meta:
+      dst:
+        better: higher
+  segments:
+  - name: synergy
+    sql: SUM({CUBE}.wins) * 1.0 / SUM({CUBE}.games)
+    meta:
+      dst:
+        meaning: A hero the asked-about hero wins more with on the same side, measured over the public sample.
+        aliases:
+        - synergies
+        - pairs well with
+        - good with
+        - combo
+        - lane partner
+        - duo
+        term: synergy

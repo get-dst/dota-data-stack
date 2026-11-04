@@ -1,0 +1,375 @@
+cubes:
+- name: player_performances
+  title: player performances
+  description: One player's performance in one professional match; ten rows per match, the largest pro table. The
+    table for named pro players (filter pro_name, e.g. Yatoro) and their stats, and for heroes in one role (filter
+    position_name). Every rate and average here carries the minimum-games floor inside it, so a hero or player seen
+    in a handful of games shows no rate instead of a perfect one.
+  sql_table: marts.fact_player_match
+  meta:
+    dst:
+      grain: one row per player per match, so counting rows counts player-games, not matches
+      key:
+      - match_id
+      - player_slot
+      population: Every player in every professional match in the loaded window in a league OpenDota rates premium
+        or professional. Leagues it rates below professional are not counted.
+  joins:
+  - name: heroes
+    relationship: many_to_one
+    sql: '{CUBE}.hero_id = {heroes}.hero_id'
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  - name: pro_matches
+    relationship: many_to_one
+    sql: '{CUBE}.match_id = {pro_matches}.match_id'
+  - name: pro_players
+    relationship: many_to_one
+    sql: '{CUBE}.account_id = {pro_players}.account_id'
+  dimensions:
+  - name: match_id
+    sql: '{CUBE}.match_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: player_slot
+    sql: '{CUBE}.player_slot'
+    type: number
+    description: 0-4 Radiant, 128-132 Dire.
+    primary_key: true
+    public: true
+  - name: is_radiant
+    sql: '{CUBE}.is_radiant'
+    type: boolean
+  - name: team_id
+    sql: '{CUBE}.team_id'
+    type: number
+    description: The team this player played for in this match.
+  - name: team_name
+    sql: '{CUBE}.team_name'
+    type: string
+  - name: account_id
+    sql: '{CUBE}.account_id'
+    type: number
+    description: Steam account id.
+  - name: player_name
+    sql: '{CUBE}.player_name'
+    type: string
+    description: 'The name shown for the player: the pro name when OpenDota lists one, else the Steam persona. The
+      grouping for rankings of players; to filter a named pro, use pro_name.'
+  - name: pro_name
+    sql: '{CUBE}.pro_name'
+    type: string
+    description: Competitive name; null for players OpenDota does not list as pro.
+  - name: player_country
+    sql: '{CUBE}.player_country'
+    type: string
+  - name: hero_id
+    sql: '{CUBE}.hero_id'
+    type: number
+  - name: hero_name
+    sql: '{CUBE}.hero_name'
+    type: string
+  - name: is_win
+    sql: '{CUBE}.is_win'
+    type: boolean
+    description: True when this player's side won.
+  - name: kills
+    sql: '{CUBE}.kills'
+    type: number
+  - name: deaths
+    sql: '{CUBE}.deaths'
+    type: number
+  - name: assists
+    sql: '{CUBE}.assists'
+    type: number
+  - name: kda
+    sql: '{CUBE}.kda'
+    type: number
+    description: (kills + assists) / (deaths + 1), rounded to two decimals, as OpenDota computes it.
+  - name: last_hits
+    sql: '{CUBE}.last_hits'
+    type: number
+  - name: denies
+    sql: '{CUBE}.denies'
+    type: number
+  - name: gold_per_min
+    sql: '{CUBE}.gold_per_min'
+    type: number
+  - name: xp_per_min
+    sql: '{CUBE}.xp_per_min'
+    type: number
+  - name: level
+    sql: '{CUBE}.level'
+    type: number
+  - name: net_worth
+    sql: '{CUBE}.net_worth'
+    type: number
+  - name: hero_damage
+    sql: '{CUBE}.hero_damage'
+    type: number
+  - name: tower_damage
+    sql: '{CUBE}.tower_damage'
+    type: number
+  - name: hero_healing
+    sql: '{CUBE}.hero_healing'
+    type: number
+  - name: obs_placed
+    sql: '{CUBE}.obs_placed'
+    type: number
+    description: Observer wards placed.
+  - name: sen_placed
+    sql: '{CUBE}.sen_placed'
+    type: number
+    description: Sentry wards placed.
+  - name: camps_stacked
+    sql: '{CUBE}.camps_stacked'
+    type: number
+  - name: rune_pickups
+    sql: '{CUBE}.rune_pickups'
+    type: number
+  - name: roshans_killed
+    sql: '{CUBE}.roshans_killed'
+    type: number
+  - name: towers_killed
+    sql: '{CUBE}.towers_killed'
+    type: number
+  - name: stuns
+    sql: '{CUBE}.stuns'
+    type: number
+    description: Seconds of stun dealt.
+  - name: position
+    sql: '{CUBE}.position'
+    type: number
+    description: 1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support — derived from lane and farm rank inside
+      the side (the position definition); on equal gold per minute the laner with more last hits, then the lower
+      player slot, takes the lower number.
+  - name: position_name
+    sql: '{CUBE}.position_name'
+    type: string
+    description: 'The position as a word: carry, mid, offlane, soft support or hard support; the filter for questions
+      about carries, mids, offlaners or supports. Null when no position could be derived.'
+    meta:
+      dst:
+        dictionary:
+        - mid
+        - carry
+        - offlane
+        - hard support
+        - soft support
+        value_aliases:
+        - alias: offlaner
+          value: offlane
+        - alias: midlaner
+          value: mid
+        - alias: mid player
+          value: mid
+        - alias: pos 1
+          value: carry
+        - alias: pos 2
+          value: mid
+        - alias: pos 3
+          value: offlane
+        - alias: pos 4
+          value: soft support
+        - alias: pos 5
+          value: hard support
+        - alias: position 1
+          value: carry
+        - alias: position 2
+          value: mid
+        - alias: position 3
+          value: offlane
+        - alias: position 4
+          value: soft support
+        - alias: position 5
+          value: hard support
+  - name: started_at
+    sql: '{CUBE}.started_at'
+    type: time
+  - name: match_date
+    sql: '{CUBE}.match_date'
+    type: time
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - '7.39'
+        - '7.41'
+        - '7.40'
+  - name: league_id
+    sql: '{CUBE}.league_id'
+    type: number
+  - name: league_name
+    sql: '{CUBE}.league_name'
+    type: string
+  - name: duration_min
+    sql: '{CUBE}.duration_min'
+    type: number
+  measures:
+  - name: games
+    title: games
+    description: Player-games, i.e. rows; the sample size to state beside every rate.
+    type: count
+    sql: '{CUBE}.match_id'
+  - name: wins
+    title: wins
+    description: Player-games won, a count.
+    type: sum
+    sql: CASE WHEN {CUBE}.is_win THEN 1 ELSE 0 END
+  - name: win_rate
+    title: win_rate
+    description: Wins divided by games at whatever grouping the question asks (hero, player); null under 20 games
+      (the minimum_games term), so a small sample cannot rank first.
+    type: number
+    sql: CASE WHEN {games} >= 20 THEN {wins} * 1.0 / NULLIF({games}, 0) END
+    format: percent
+    meta:
+      dst:
+        better: higher
+  - name: total_kills
+    title: total_kills
+    description: Kills, summed over player-games.
+    type: sum
+    sql: '{CUBE}.kills'
+  - name: total_deaths
+    title: total_deaths
+    description: Deaths, summed over player-games.
+    type: sum
+    sql: '{CUBE}.deaths'
+  - name: total_assists
+    title: total_assists
+    description: Assists, summed over player-games.
+    type: sum
+    sql: '{CUBE}.assists'
+  - name: total_kda
+    title: total_kda
+    description: Sum of per-game KDA; divide by games for the average.
+    type: sum
+    sql: '{CUBE}.kda'
+  - name: total_gpm
+    title: total_gpm
+    description: Sum of per-game GPM; divide by games for the average.
+    type: sum
+    sql: '{CUBE}.gold_per_min'
+  - name: total_xpm
+    title: total_xpm
+    description: Sum of per-game XPM; divide by games for the average.
+    type: sum
+    sql: '{CUBE}.xp_per_min'
+  - name: total_last_hits
+    title: total_last_hits
+    description: Last hits, summed over player-games.
+    type: sum
+    sql: '{CUBE}.last_hits'
+  - name: total_hero_damage
+    title: total_hero_damage
+    description: Hero damage, summed over player-games.
+    type: sum
+    sql: '{CUBE}.hero_damage'
+  - name: total_tower_damage
+    title: total_tower_damage
+    description: Tower damage, summed over player-games.
+    type: sum
+    sql: '{CUBE}.tower_damage'
+  - name: total_net_worth
+    title: total_net_worth
+    description: End-of-game net worth, summed over player-games.
+    type: sum
+    sql: '{CUBE}.net_worth'
+  - name: avg_gpm
+    title: avg_gpm
+    description: Average gold per minute per game; null under 10 games.
+    type: number
+    sql: CASE WHEN {games} >= 10 THEN {total_gpm} * 1.0 / NULLIF({games}, 0) END
+    meta:
+      dst:
+        better: higher
+  - name: avg_xpm
+    title: avg_xpm
+    description: Average experience per minute per game; null under 10 games.
+    type: number
+    sql: CASE WHEN {games} >= 10 THEN {total_xpm} * 1.0 / NULLIF({games}, 0) END
+    meta:
+      dst:
+        better: higher
+  - name: avg_kills
+    title: avg_kills
+    description: Average kills per game; null under 10 games.
+    type: number
+    sql: CASE WHEN {games} >= 10 THEN {total_kills} * 1.0 / NULLIF({games}, 0) END
+    meta:
+      dst:
+        better: higher
+  - name: avg_deaths
+    title: avg_deaths
+    description: Average deaths per game; null under 10 games.
+    type: number
+    sql: CASE WHEN {games} >= 10 THEN {total_deaths} * 1.0 / NULLIF({games}, 0) END
+    meta:
+      dst:
+        better: lower
+  - name: avg_assists
+    title: avg_assists
+    description: Average assists per game; null under 10 games.
+    type: number
+    sql: CASE WHEN {games} >= 10 THEN {total_assists} * 1.0 / NULLIF({games}, 0) END
+    meta:
+      dst:
+        better: higher
+  - name: avg_kda
+    title: avg_kda
+    description: Average of the per-game KDA; null under 10 games, so a one-game player cannot rank first.
+    type: number
+    sql: CASE WHEN {games} >= 10 THEN {total_kda} * 1.0 / NULLIF({games}, 0) END
+    meta:
+      dst:
+        better: higher
+  - name: avg_last_hits
+    title: avg_last_hits
+    description: Average last hits per game; null under 10 games.
+    type: number
+    sql: CASE WHEN {games} >= 10 THEN {total_last_hits} * 1.0 / NULLIF({games}, 0) END
+    meta:
+      dst:
+        better: higher
+  - name: avg_hero_damage
+    title: avg_hero_damage
+    description: Average hero damage per game; null under 10 games.
+    type: number
+    sql: CASE WHEN {games} >= 10 THEN {total_hero_damage} * 1.0 / NULLIF({games}, 0) END
+    meta:
+      dst:
+        better: higher
+  - name: avg_tower_damage
+    title: avg_tower_damage
+    description: Average tower damage per game; null under 10 games.
+    type: number
+    sql: CASE WHEN {games} >= 10 THEN {total_tower_damage} * 1.0 / NULLIF({games}, 0) END
+    meta:
+      dst:
+        better: higher
+  - name: avg_net_worth
+    title: avg_net_worth
+    description: Average end-of-game net worth; null under 10 games.
+    type: number
+    sql: CASE WHEN {games} >= 10 THEN {total_net_worth} * 1.0 / NULLIF({games}, 0) END
+    meta:
+      dst:
+        better: higher
+  segments:
+  - name: hero_win_rate
+    sql: CASE WHEN COUNT({CUBE}.match_id) >= 30 THEN SUM(CASE WHEN {CUBE}.is_win THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT({CUBE}.match_id),
+      0) END
+    meta:
+      dst:
+        meaning: Share of pro games a hero was picked in that the hero's side won; null under 30 games.
+        aliases:
+        - hero winrate
+        term: hero_win_rate
