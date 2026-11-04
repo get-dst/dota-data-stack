@@ -28,7 +28,9 @@ jobs:
           script: |
             const fs = require('fs');
             const body = fs.readFileSync(process.env.COMMENT_PATH, 'utf8');
-            await github.rest.issues.createComment({
-              owner: context.repo.owner, repo: context.repo.repo,
-              issue_number: context.issue.number, body,
-            });
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const { data: comments } = await github.rest.issues.listComments({ owner, repo, issue_number });
+            const mine = comments.find(c => c.body.startsWith('<!-- verify -->'));
+            if (mine) await github.rest.issues.updateComment({ owner, repo, comment_id: mine.id, body });
+            else await github.rest.issues.createComment({ owner, repo, issue_number, body });

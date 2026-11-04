@@ -86,7 +86,7 @@ for lens, q in rows:
     md.append(f"| ✓ | {q} | {lens} | same query · same result |")
 md.append(f"\n{untouched} vouched questions untouched by this change — not re-run\n")
 md.append(f"**Apply complete.** {reverify} re-verified: **{reverify} passed**, 0 warnings, 0 failing.")
-text = "\n".join(md)
+text = "<!-- verify -->\n" + "\n".join(md)
 if os.environ.get("GITHUB_STEP_SUMMARY"):
     Path(os.environ["GITHUB_STEP_SUMMARY"]).write_text(text)
 Path(os.environ.get("COMMENT_PATH", "comment.md")).write_text(text)
