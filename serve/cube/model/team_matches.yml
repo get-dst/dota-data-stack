@@ -148,10 +148,10 @@ cubes:
     sql: CASE WHEN {CUBE}.is_win THEN 0 ELSE 1 END
   - name: team_win_rate
     title: team_win_rate
-    description: Wins divided by matches for the team (the team_win_rate definition); null under 20 matches, so
+    description: Wins divided by matches for the team (the team_win_rate definition); null under 25 matches, so
       a team seen twice cannot top a ranking. State the match count beside it.
     type: number
-    sql: CASE WHEN {matches_played} >= 20 THEN {team_wins} * 1.0 / NULLIF({matches_played}, 0) END
+    sql: CASE WHEN {matches_played} >= 25 THEN {team_wins} * 1.0 / NULLIF({matches_played}, 0) END
     format: percent
     meta:
       dst:
