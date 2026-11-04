@@ -93,20 +93,21 @@ for lens, qs in touched.items():
 print(f"\n{untouched} vouched questions untouched by this change{' ' * 8}not re-run")
 print(f"\nApply complete. {reverify} re-verified: {reverify} passed, 0 warnings, 0 failing.")
 
-# ---- summary + comment -----------------------------------------------------------
+# ---- summary + comment: the verdict first, everything else folded ------------------
 md = []
-md.append("## plan\n")
+changed_names = ", ".join(f"**{metric_of(p)}**" for p in diffs)
+md.append(f"✅ {changed_names} changed · **{reverify} vouched questions re-verified, "
+          f"{reverify} passed** · {untouched} untouched")
 for path, lines in diffs.items():
-    md.append(f"`{path}` — changed\n\n```diff\n" + "\n".join(lines) + "\n```\n")
-md.append(f"**downstream of the change:** {', '.join(touched)} recompile · "
-          f"**{reverify} vouched questions re-verify** · {untouched} untouched\n")
-md.append("## apply\n")
-md.append("| | vouched question | lens | result |\n|---|---|---|---|")
-for lens, q in rows:
-    md.append(f"| ✓ | {q} | {lens} | same query · same result |")
-md.append(f"\n{untouched} vouched questions untouched by this change — not re-run\n")
-md.append(f"**Apply complete.** {reverify} re-verified: **{reverify} passed**, 0 warnings, 0 failing.")
-text = "<!-- verify -->\n" + "\n".join(md)
+    md.append(f"\n<details><summary>the change · <code>{path}</code></summary>\n\n```diff\n"
+              + "\n".join(lines) + "\n```\n</details>")
+for lens, qs in touched.items():
+    md.append(f"\n<details><summary>{lens} · {len(qs)} re-verified</summary>\n\n"
+              "| | question | result |\n|---|---|---|")
+    for q in qs:
+        md.append(f"| ✓ | {q} | same query · same result |")
+    md.append("</details>")
+text = "<!-- verify -->\n" + "\n".join(md) + "\n"
 if os.environ.get("GITHUB_STEP_SUMMARY"):
     Path(os.environ["GITHUB_STEP_SUMMARY"]).write_text(text)
 Path(os.environ.get("COMMENT_PATH", "comment.md")).write_text(text)
