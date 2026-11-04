@@ -11,6 +11,8 @@ DEFS = ROOT / "serve/semantic/definitions"
 ENTS = ROOT / "serve/semantic/entities"
 LENSES = ROOT / "serve/lenses"
 MODELS = ROOT / "transform/models"
+CUBES = ROOT / "serve/cube/model"
+VIEWS = CUBES / "views"
 base = sys.argv[1] if len(sys.argv) > 1 else "origin/main"
 
 def sh(*a):
@@ -19,6 +21,7 @@ def sh(*a):
 changed = sh("git", "diff", "--name-only", f"{base}...HEAD").splitlines()
 changed_defs = [p for p in changed if p.startswith("serve/semantic/definitions/") and p.endswith(".md")]
 changed_models = [p for p in changed if p.startswith("transform/models/") and p.endswith(".sql")]
+changed_cubes = [p for p in changed if p.startswith("serve/cube/model/") and p.endswith(".yml") and "/views/" not in p]
 
 def diff_lines(path):
     out = sh("git", "diff", "--unified=0", f"{base}...HEAD", "--", path)
@@ -41,11 +44,21 @@ def downstream(models):
                 seen.add(name); frontier.append(name)
     return [m for m in seen if m not in models]
 
-def entities_on(models):
+def cubes_on(models):
+    """Cubes whose sql_table is one of the models."""
     out = []
-    for p in sorted(ENTS.glob("*.yaml")):
-        m = re.search(r"^\s*table:\s*(?:\w+\.)?(\w+)\s*$", p.read_text(), re.M)
+    for p in sorted(CUBES.glob("*.yml")):
+        m = re.search(r"^\s*sql_table:\s*(?:\w+\.)?(\w+)\s*$", p.read_text(), re.M)
         if m and m.group(1) in models:
+            out.append(p.stem)
+    return out
+
+def views_on(cubes):
+    """Views that join any of the cubes; a view is named <lens>_lens."""
+    out = []
+    for p in sorted(VIEWS.glob("*.yml")):
+        text = p.read_text()
+        if any(re.search(rf"^\s*-\s*join_path:\s*(?:\w+\.)*{re.escape(c)}\s*$", text, re.M) for c in cubes):
             out.append(p.stem)
     return out
 
@@ -80,7 +93,7 @@ def questions(lens):
 lenses_all = sorted(p.name for p in LENSES.iterdir() if (p / "lens.yaml").exists())
 total = sum(len(questions(l)) for l in lenses_all)
 
-diffs = {p: diff_lines(p) for p in changed_defs + changed_models}
+diffs = {p: diff_lines(p) for p in changed_defs + changed_models + changed_cubes}
 touched = {}          # lens -> questions
 chain = []            # (label, name, state) rows for the plan
 for path in changed_defs:
@@ -88,21 +101,25 @@ for path in changed_defs:
     for lens in lenses_all:
         if lens_selects(lens, m):
             touched[lens] = questions(lens)
+cubes = [Path(p).stem for p in changed_cubes]
 if changed_models:
     roots = [Path(p).stem for p in changed_models]
     down = downstream(roots)
     for m in down:
         chain.append(("model", m, "downstream · rebuilds"))
-    ents = entities_on(roots + down)
-    for e in ents:
-        chain.append(("entity", e, "downstream · recompiles"))
-    for lens in lenses_all:
-        if any(lens_selects(lens, e) for e in ents):
+    for c in cubes_on(roots + down):
+        chain.append(("cube", c, "downstream · recompiles"))
+        cubes.append(c)
+if cubes:
+    for v in views_on(cubes):
+        chain.append(("view", v, "downstream · recompiles"))
+        lens = v[: -len("_lens")] if v.endswith("_lens") else v
+        if lens in lenses_all:
             touched[lens] = questions(lens)
 
 reverify = sum(len(q) for q in touched.values())
 untouched = total - reverify
-what = [metric_of(p) for p in changed_defs] + [Path(p).stem for p in changed_models]
+what = [metric_of(p) for p in changed_defs] + [Path(p).stem for p in changed_models + changed_cubes]
 
 # ---- terminal view -----------------------------------------------------------
 print("$ plan\n")
@@ -145,7 +162,7 @@ for path, lines in diffs.items():
 if chain:
     md.append("\n<details><summary>what stands on it · "
               f"{sum(1 for c in chain if c[0] == 'model')} models, "
-              f"{sum(1 for c in chain if c[0] == 'entity')} entities, {len(touched)} lenses</summary>\n")
+              f"{sum(1 for c in chain if c[0] == 'cube')} cubes, {sum(1 for c in chain if c[0] == 'view')} views, {len(touched)} lenses</summary>\n")
     for label, name, state in chain:
         md.append(f"- {label} `{name}` · {state}")
     for lens in touched:

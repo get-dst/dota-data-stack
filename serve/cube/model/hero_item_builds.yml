@@ -1,0 +1,97 @@
+cubes:
+- name: hero_item_builds
+  title: hero item builds
+  description: What pro players ended their games holding, per hero, item and patch — the six main inventory slots
+    at the end of the match.
+  sql_table: marts.hero_item_builds
+  meta:
+    dst:
+      grain: one row per hero, item and patch
+      key:
+      - patch_id
+      - hero_id
+      - item_id
+      population: Final inventories from professional matches in leagues OpenDota rates premium or professional,
+        in the loaded window; neutral items and backpack slots are left out. Leagues it rates below professional
+        are not counted.
+  joins:
+  - name: heroes
+    relationship: many_to_one
+    sql: '{CUBE}.hero_id = {heroes}.hero_id'
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  dimensions:
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - '7.39'
+        - '7.41'
+        - '7.40'
+  - name: hero_id
+    sql: '{CUBE}.hero_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: hero_name
+    sql: '{CUBE}.hero_name'
+    type: string
+  - name: item_id
+    sql: '{CUBE}.item_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: item_name
+    sql: '{CUBE}.item_name'
+    type: string
+    description: Display name, e.g. Black King Bar.
+  - name: item_cost
+    sql: '{CUBE}.item_cost'
+    type: number
+    description: Shop price in gold.
+  - name: games_with_item
+    sql: '{CUBE}.games_with_item'
+    type: number
+    description: Pro games the hero ended holding the item.
+  - name: wins_with_item
+    sql: '{CUBE}.wins_with_item'
+    type: number
+  - name: hero_games
+    sql: '{CUBE}.hero_games'
+    type: number
+    description: Pro games the hero played on the patch; repeats on every item row, so never sum it across items.
+  - name: is_major_item
+    sql: '{CUBE}.is_major_item'
+    type: boolean
+    description: 'True for a major item: at least 2000 gold, assembled or with its own active ability, not a recipe,
+      consumable or neutral item.'
+  measures:
+  - name: end_inventory_games
+    title: end_inventory_games
+    description: Pro games the hero ended holding the item in a main slot; rank by it for what pros build on a hero.
+    type: sum
+    sql: '{CUBE}.games_with_item'
+  - name: end_inventory_wins
+    title: end_inventory_wins
+    description: Of the games ending with the item, those won.
+    type: sum
+    sql: '{CUBE}.wins_with_item'
+  - name: item_win_rate
+    title: item_win_rate
+    description: Share of the hero's games ending with the item that were won; null under 20 games (the minimum_games
+      term).
+    type: number
+    sql: CASE WHEN {end_inventory_games} >= 20 THEN {end_inventory_wins} * 1.0 / NULLIF({end_inventory_games}, 0)
+      END
+    format: percent
+    meta:
+      dst:
+        better: higher

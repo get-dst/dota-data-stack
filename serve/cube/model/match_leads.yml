@@ -1,0 +1,213 @@
+cubes:
+- name: match_leads
+  title: match leads
+  description: One professional match's gold and XP leads at 10, 15, 20 and 25 minutes, the largest lead each side
+    held, and whether the winner came back from 10 000 gold behind.
+  sql_table: marts.match_leads
+  meta:
+    dst:
+      grain: one row per match
+      key:
+      - match_id
+      population: Professional matches in leagues OpenDota rates premium or professional, in the loaded window,
+        whose per-minute advantage OpenDota supplies. A lead at a minute mark is null when the match ended before
+        it. Leagues it rates below professional are not counted.
+  joins:
+  - name: leagues
+    relationship: many_to_one
+    sql: '{CUBE}.league_id = {leagues}.league_id'
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  - name: pro_matches
+    relationship: one_to_one
+    sql: '{CUBE}.match_id = {pro_matches}.match_id'
+  dimensions:
+  - name: match_id
+    sql: '{CUBE}.match_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: started_at
+    sql: '{CUBE}.started_at'
+    type: time
+    description: Match start, UTC.
+  - name: match_date
+    sql: '{CUBE}.match_date'
+    type: time
+    description: Match start date, UTC.
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - '7.39'
+        - '7.41'
+        - '7.40'
+  - name: league_id
+    sql: '{CUBE}.league_id'
+    type: number
+  - name: league_name
+    sql: '{CUBE}.league_name'
+    type: string
+  - name: duration_min
+    sql: '{CUBE}.duration_min'
+    type: number
+  - name: radiant_win
+    sql: '{CUBE}.radiant_win'
+    type: boolean
+  - name: winner_side
+    sql: '{CUBE}.winner_side'
+    type: string
+    description: radiant or dire.
+    meta:
+      dst:
+        dictionary:
+        - radiant
+        - dire
+  - name: radiant_team_name
+    sql: '{CUBE}.radiant_team_name'
+    type: string
+  - name: dire_team_name
+    sql: '{CUBE}.dire_team_name'
+    type: string
+  - name: winner_team_name
+    sql: '{CUBE}.winner_team_name'
+    type: string
+  - name: loser_team_name
+    sql: '{CUBE}.loser_team_name'
+    type: string
+  - name: radiant_gold_adv_10
+    sql: '{CUBE}.radiant_gold_adv_10'
+    type: number
+    description: Radiant gold advantage at minute 10; negative = Dire ahead.
+  - name: radiant_gold_adv_15
+    sql: '{CUBE}.radiant_gold_adv_15'
+    type: number
+  - name: radiant_gold_adv_20
+    sql: '{CUBE}.radiant_gold_adv_20'
+    type: number
+  - name: radiant_gold_adv_25
+    sql: '{CUBE}.radiant_gold_adv_25'
+    type: number
+  - name: radiant_xp_adv_10
+    sql: '{CUBE}.radiant_xp_adv_10'
+    type: number
+    description: Radiant experience advantage at minute 10; negative = Dire ahead.
+  - name: winner_gold_adv_10
+    sql: '{CUBE}.winner_gold_adv_10'
+    type: number
+    description: The eventual winner's gold advantage at minute 10; negative = behind.
+  - name: winner_gold_adv_15
+    sql: '{CUBE}.winner_gold_adv_15'
+    type: number
+  - name: winner_gold_adv_20
+    sql: '{CUBE}.winner_gold_adv_20'
+    type: number
+  - name: winner_gold_adv_25
+    sql: '{CUBE}.winner_gold_adv_25'
+    type: number
+  - name: max_radiant_gold_lead
+    sql: '{CUBE}.max_radiant_gold_lead'
+    type: number
+  - name: max_dire_gold_lead
+    sql: '{CUBE}.max_dire_gold_lead'
+    type: number
+  - name: max_winner_deficit
+    sql: '{CUBE}.max_winner_deficit'
+    type: number
+    description: Largest gold deficit the winner faced at any minute; 0 when never behind.
+  - name: max_winner_lead
+    sql: '{CUBE}.max_winner_lead'
+    type: number
+    description: Largest gold lead the winner held at any minute.
+  - name: is_comeback
+    sql: '{CUBE}.is_comeback'
+    type: boolean
+    description: True when the winner trailed by 10 000 gold or more at some minute (the comeback definition).
+  - name: comeback_team_name
+    sql: '{CUBE}.comeback_team_name'
+    type: string
+    description: The winning team of a comeback match.
+  - name: throw_team_name
+    sql: '{CUBE}.throw_team_name'
+    type: string
+    description: 'The losing team of a comeback match: it held a lead of 10 000 gold or more and lost.'
+  - name: leader_at_10_won
+    sql: '{CUBE}.leader_at_10_won'
+    type: boolean
+    description: True when the side ahead in gold at minute 10 won; null when level or the match ended earlier.
+  - name: leader_at_20_won
+    sql: '{CUBE}.leader_at_20_won'
+    type: boolean
+    description: True when the side ahead in gold at minute 20 won; null when level or the match ended earlier.
+  measures:
+  - name: lead_matches
+    title: lead_matches
+    description: Matches with a per-minute advantage.
+    type: count
+    sql: '{CUBE}.match_id'
+  - name: comebacks
+    title: comebacks
+    description: Matches the winner won from 10 000 gold or more behind.
+    type: sum
+    sql: CASE WHEN {CUBE}.is_comeback THEN 1 ELSE 0 END
+  - name: comeback_rate
+    title: comeback_rate
+    description: Share of matches that were comebacks.
+    type: number
+    sql: '{comebacks} / NULLIF({lead_matches}, 0)'
+    format: percent
+  - name: leader_at_10_games
+    title: leader_at_10_games
+    description: Matches with a gold leader at minute 10.
+    type: sum
+    sql: CASE WHEN {CUBE}.leader_at_10_won IS NOT NULL THEN 1 ELSE 0 END
+  - name: leader_at_10_wins
+    title: leader_at_10_wins
+    description: Of those, matches the minute-10 leader won.
+    type: sum
+    sql: CASE WHEN {CUBE}.leader_at_10_won THEN 1 ELSE 0 END
+  - name: leader_at_10_win_rate
+    title: leader_at_10_win_rate
+    description: How often the side ahead in gold at minute 10 won.
+    type: number
+    sql: '{leader_at_10_wins} / NULLIF({leader_at_10_games}, 0)'
+    format: percent
+  - name: leader_at_20_games
+    title: leader_at_20_games
+    description: Matches with a gold leader at minute 20.
+    type: sum
+    sql: CASE WHEN {CUBE}.leader_at_20_won IS NOT NULL THEN 1 ELSE 0 END
+  - name: leader_at_20_wins
+    title: leader_at_20_wins
+    description: Of those, matches the minute-20 leader won.
+    type: sum
+    sql: CASE WHEN {CUBE}.leader_at_20_won THEN 1 ELSE 0 END
+  - name: leader_at_20_win_rate
+    title: leader_at_20_win_rate
+    description: How often the side ahead in gold at minute 20 won.
+    type: number
+    sql: '{leader_at_20_wins} / NULLIF({leader_at_20_games}, 0)'
+    format: percent
+  - name: throws
+    title: throws
+    description: Matches a team lost after leading by 10 000 gold or more; group by throw_team_name for the team
+      that threw.
+    type: count
+    sql: '{CUBE}.throw_team_name'
+  - name: comeback_wins
+    title: comeback_wins
+    description: Matches a team won after trailing by 10 000 gold or more; group by comeback_team_name for the team
+      that came back.
+    type: count
+    sql: '{CUBE}.comeback_team_name'
+  - name: biggest_comeback_gold
+    title: biggest_comeback_gold
+    description: Largest gold deficit any winner overcame.
+    type: max
+    sql: '{CUBE}.max_winner_deficit'

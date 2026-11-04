@@ -1,0 +1,79 @@
+cubes:
+- name: league_standings
+  title: league standings
+  description: Each team's record inside each league or tournament, from the pro matches loaded.
+  sql_table: marts.league_standings
+  meta:
+    dst:
+      grain: one row per team per league
+      key:
+      - league_id
+      - team_id
+      population: Professional matches in leagues OpenDota rates premium or professional, in the loaded window;
+        a league that started before the window shows only the matches inside it. Leagues it rates below professional
+        are not counted.
+  joins:
+  - name: leagues
+    relationship: many_to_one
+    sql: '{CUBE}.league_id = {leagues}.league_id'
+  - name: teams
+    relationship: many_to_one
+    sql: '{CUBE}.team_id = {teams}.team_id'
+  dimensions:
+  - name: league_id
+    sql: '{CUBE}.league_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: league_name
+    sql: '{CUBE}.league_name'
+    type: string
+  - name: team_id
+    sql: '{CUBE}.team_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: team_name
+    sql: '{CUBE}.team_name'
+    type: string
+  - name: matches
+    sql: '{CUBE}.matches'
+    type: number
+  - name: wins
+    sql: '{CUBE}.wins'
+    type: number
+  - name: losses
+    sql: '{CUBE}.losses'
+    type: number
+  - name: first_match_date
+    sql: '{CUBE}.first_match_date'
+    type: time
+  - name: last_match_date
+    sql: '{CUBE}.last_match_date'
+    type: time
+  measures:
+  - name: league_matches
+    title: league_matches
+    description: Games the team played in the league (games, not series).
+    type: sum
+    sql: '{CUBE}.matches'
+  - name: league_wins
+    title: league_wins
+    description: Games the team won in the league.
+    type: sum
+    sql: '{CUBE}.wins'
+  - name: league_losses
+    title: league_losses
+    description: Games the team lost in the league.
+    type: sum
+    sql: '{CUBE}.losses'
+  - name: league_win_rate
+    title: league_win_rate
+    description: Wins divided by games for the team in the league; null under 10 games (the minimum_games term).
+      Games, not series.
+    type: number
+    sql: CASE WHEN {league_matches} >= 10 THEN {league_wins} * 1.0 / NULLIF({league_matches}, 0) END
+    format: percent
+    meta:
+      dst:
+        better: higher

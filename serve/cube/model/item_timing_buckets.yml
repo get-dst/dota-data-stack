@@ -1,0 +1,112 @@
+cubes:
+- name: item_timing_buckets
+  title: item timing buckets
+  description: Does an earlier item win more? Per hero, major item and patch, the games in which the hero first
+    completed the item inside each timing window (under 15, 15-20, 20-25, 25-30 and 30+ minutes) and how many of
+    them were won.
+  sql_table: marts.item_timing_buckets
+  meta:
+    dst:
+      grain: one row per hero, major item, patch and timing window
+      key:
+      - patch_id
+      - hero_id
+      - item_id
+      - bucket_order
+      population: First completions of major items in professional matches in leagues OpenDota rates premium or
+        professional, in the loaded window, that have a purchase log. Leagues it rates below professional are not
+        counted.
+  joins:
+  - name: heroes
+    relationship: many_to_one
+    sql: '{CUBE}.hero_id = {heroes}.hero_id'
+  - name: items
+    relationship: many_to_one
+    sql: '{CUBE}.item_id = {items}.item_id'
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  dimensions:
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - '7.39'
+        - '7.41'
+        - '7.40'
+  - name: hero_id
+    sql: '{CUBE}.hero_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: hero_name
+    sql: '{CUBE}.hero_name'
+    type: string
+  - name: item_id
+    sql: '{CUBE}.item_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: item_name
+    sql: '{CUBE}.item_name'
+    type: string
+  - name: item_cost
+    sql: '{CUBE}.item_cost'
+    type: number
+  - name: bucket_order
+    sql: '{CUBE}.bucket_order'
+    type: number
+    description: 1 to 5, earliest window first.
+    primary_key: true
+    public: true
+  - name: timing_bucket
+    sql: '{CUBE}.timing_bucket'
+    type: string
+    description: <15, 15-20, 20-25, 25-30 or 30+ minutes; a window includes its first minute and excludes its last.
+    meta:
+      dst:
+        dictionary:
+        - 30+
+        - 25-30
+        - 20-25
+        - 15-20
+        - <15
+  - name: bucket_start_min
+    sql: '{CUBE}.bucket_start_min'
+    type: number
+    description: 'First minute of the window: 0, 15, 20, 25 or 30.'
+  - name: games
+    sql: '{CUBE}.games'
+    type: number
+    description: Pro games in which the hero first completed the item inside the window.
+  - name: wins
+    sql: '{CUBE}.wins'
+    type: number
+  measures:
+  - name: timing_games
+    title: timing_games
+    description: Pro games in which the hero first finished the item inside the window.
+    type: sum
+    sql: '{CUBE}.games'
+  - name: timing_wins
+    title: timing_wins
+    description: Of those games, those won.
+    type: sum
+    sql: '{CUBE}.wins'
+  - name: timing_win_rate
+    title: timing_win_rate
+    description: Share of the games with the item finished in the window that were won; null under 20 games (the
+      minimum_games term), so compare windows only where both have a rate.
+    type: number
+    sql: CASE WHEN {timing_games} >= 20 THEN {timing_wins} * 1.0 / NULLIF({timing_games}, 0) END
+    format: percent
+    meta:
+      dst:
+        better: higher

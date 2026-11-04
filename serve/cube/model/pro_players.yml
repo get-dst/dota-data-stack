@@ -1,0 +1,49 @@
+cubes:
+- name: pro_players
+  title: pro players
+  description: Professional players as OpenDota lists them — the name fans know, the team, the country.
+  sql_table: marts.dim_pro_player
+  meta:
+    dst:
+      grain: one row per pro player
+      key:
+      - account_id
+      population: Players OpenDota flags as professional; a player who left the scene keeps their row with the last
+        team they had.
+  dimensions:
+  - name: account_id
+    sql: '{CUBE}.account_id'
+    type: number
+    description: Steam account id.
+    primary_key: true
+    public: true
+  - name: player_name
+    sql: '{CUBE}.player_name'
+    type: string
+    description: The competitive name, e.g. Yatoro.
+  - name: persona_name
+    sql: '{CUBE}.persona_name'
+    type: string
+    description: Steam persona name; changes often, prefer player_name.
+  - name: team_id
+    sql: '{CUBE}.team_id'
+    type: number
+  - name: team_name
+    sql: '{CUBE}.team_name'
+    type: string
+  - name: team_tag
+    sql: '{CUBE}.team_tag'
+    type: string
+  - name: country_code
+    sql: '{CUBE}.country_code'
+    type: string
+    description: Two-letter country code.
+  - name: last_match_at
+    sql: '{CUBE}.last_match_at'
+    type: time
+  measures:
+  - name: player_count
+    title: player_count
+    description: Number of pro players.
+    type: count
+    sql: '{CUBE}.account_id'

@@ -1,0 +1,1256 @@
+views:
+- name: pro_meta_lens
+  title: Dota 2 pro meta
+  description: Professional Dota 2 matches from OpenDota — the hero meta per patch and position, teams and their
+    records, leagues and who won them, patch notes, gold leads, comebacks and first objectives.
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: pro_matches
+    includes:
+    - match_id
+    - started_at
+    - match_date
+    - duration_min
+    - radiant_win
+    - winner_team_id
+    - radiant_team_name
+    - dire_team_name
+    - radiant_kills
+    - dire_kills
+    - total_kills
+    - league_id
+    - league_name
+    - league_tier
+    - patch_id
+    - patch_name
+    - series_id
+    - series_type
+    - first_blood_min
+    - comeback
+    - stomp
+    - match_count
+    - avg_duration_min
+    - avg_total_kills
+    - avg_first_blood_min
+    - radiant_win_rate
+    - radiant_wins
+    prefix: true
+  - join_path: team_matches
+    includes:
+    - match_id
+    - is_radiant
+    - side
+    - team_id
+    - team_name
+    - opponent_team_id
+    - opponent_team_name
+    - is_win
+    - kills
+    - kills_against
+    - has_first_pick
+    - started_at
+    - match_date
+    - duration_min
+    - patch_id
+    - patch_name
+    - league_id
+    - league_name
+    - league_tier
+    - series_id
+    - series_type
+    - matches_played
+    - team_wins
+    - team_losses
+    - team_win_rate
+    - team_avg_kills
+    - team_win_rate
+    prefix: true
+  - join_path: player_performances
+    includes:
+    - match_id
+    - player_slot
+    - is_radiant
+    - team_id
+    - team_name
+    - account_id
+    - player_name
+    - pro_name
+    - player_country
+    - hero_id
+    - hero_name
+    - is_win
+    - kills
+    - deaths
+    - assists
+    - kda
+    - last_hits
+    - denies
+    - gold_per_min
+    - xp_per_min
+    - level
+    - net_worth
+    - hero_damage
+    - tower_damage
+    - hero_healing
+    - obs_placed
+    - sen_placed
+    - camps_stacked
+    - rune_pickups
+    - roshans_killed
+    - towers_killed
+    - stuns
+    - position
+    - position_name
+    - started_at
+    - match_date
+    - patch_id
+    - patch_name
+    - league_id
+    - league_name
+    - duration_min
+    - games
+    - wins
+    - win_rate
+    - hero_win_rate
+    prefix: true
+  - join_path: hero_daily_stats
+    includes:
+    - match_date
+    - patch_id
+    - patch_name
+    - hero_id
+    - hero_name
+    - picks
+    - bans
+    - wins
+    - losses
+    - matches_that_day
+    - total_picks
+    - total_bans
+    - total_wins
+    - total_losses
+    - period_win_rate
+    prefix: true
+  - join_path: heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    - hero_count
+    prefix: true
+  - join_path: patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    - patch_count
+    prefix: true
+  - join_path: teams
+    includes:
+    - team_id
+    - team_name
+    - team_tag
+    - rating
+    - all_time_wins
+    - all_time_losses
+    - last_match_at
+    - is_ranked
+    - loaded_matches
+    - last_loaded_match_at
+    - team_count
+    - avg_rating
+    prefix: true
+  - join_path: leagues
+    includes:
+    - league_id
+    - league_name
+    - league_tier
+    - league_count
+    prefix: true
+  - join_path: team_head_to_head
+    includes:
+    - team_id
+    - team_name
+    - opponent_team_id
+    - opponent_team_name
+    - patch_id
+    - patch_name
+    - matches
+    - wins
+    - first_match_date
+    - last_match_date
+    - h2h_matches
+    - h2h_wins
+    - head_to_head_win_rate
+    prefix: true
+  - join_path: league_standings
+    includes:
+    - league_id
+    - league_name
+    - team_id
+    - team_name
+    - matches
+    - wins
+    - losses
+    - first_match_date
+    - last_match_date
+    - league_matches
+    - league_wins
+    - league_losses
+    - league_win_rate
+    prefix: true
+  - join_path: patch_notes
+    includes:
+    - patch_name
+    - section
+    - subject
+    - subject_name
+    - heading
+    - line_no
+    - note
+    - note_count
+    prefix: true
+  - join_path: advantage_timeline
+    includes:
+    - match_id
+    - minute
+    - radiant_gold_adv
+    - radiant_xp_adv
+    - winner_gold_adv
+    - winner_xp_adv
+    - radiant_win
+    - started_at
+    - match_date
+    - patch_id
+    - patch_name
+    - league_id
+    - league_name
+    - match_minutes
+    - matches
+    - avg_radiant_gold_adv
+    - avg_winner_gold_adv
+    - avg_winner_xp_adv
+    - max_radiant_gold_adv
+    - min_radiant_gold_adv
+    prefix: true
+  - join_path: match_leads
+    includes:
+    - match_id
+    - started_at
+    - match_date
+    - patch_id
+    - patch_name
+    - league_id
+    - league_name
+    - duration_min
+    - radiant_win
+    - winner_side
+    - radiant_team_name
+    - dire_team_name
+    - winner_team_name
+    - loser_team_name
+    - radiant_gold_adv_10
+    - radiant_gold_adv_15
+    - radiant_gold_adv_20
+    - radiant_gold_adv_25
+    - radiant_xp_adv_10
+    - winner_gold_adv_10
+    - winner_gold_adv_15
+    - winner_gold_adv_20
+    - winner_gold_adv_25
+    - max_radiant_gold_lead
+    - max_dire_gold_lead
+    - max_winner_deficit
+    - max_winner_lead
+    - is_comeback
+    - comeback_team_name
+    - throw_team_name
+    - leader_at_10_won
+    - leader_at_20_won
+    - lead_matches
+    - comebacks
+    - comeback_rate
+    - leader_at_10_games
+    - leader_at_10_wins
+    - leader_at_10_win_rate
+    - leader_at_20_games
+    - leader_at_20_wins
+    - leader_at_20_win_rate
+    - throws
+    - comeback_wins
+    - biggest_comeback_gold
+    prefix: true
+  - join_path: match_objectives
+    includes:
+    - match_id
+    - started_at
+    - match_date
+    - patch_id
+    - patch_name
+    - league_id
+    - league_name
+    - radiant_win
+    - winner_side
+    - radiant_team_name
+    - dire_team_name
+    - has_objective_log
+    - first_blood_min
+    - first_blood_side
+    - first_blood_side_won
+    - first_tower_min
+    - first_tower_side
+    - first_tower_side_won
+    - first_roshan_min
+    - first_roshan_side
+    - first_roshan_side_won
+    - roshan_kills
+    - radiant_roshan_kills
+    - dire_roshan_kills
+    - radiant_aegis
+    - dire_aegis
+    - aegis_stolen
+    - objective_matches
+    - avg_first_tower_min
+    - avg_first_roshan_min
+    - avg_roshan_kills
+    - total_roshan_kills
+    - total_aegis_stolen
+    prefix: true
+  - join_path: objective_win_rates
+    includes:
+    - patch_id
+    - patch_name
+    - objective
+    - matches
+    - taker_wins
+    - taker_win_rate
+    - total_matches
+    - total_taker_wins
+    - objective_win_rate
+    - first_objective
+    prefix: true
+  - join_path: hero_patch_trends
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - is_current_patch
+    - hero_id
+    - hero_name
+    - matches_on_patch
+    - picks
+    - bans
+    - wins
+    - losses
+    - win_rate
+    - pick_rate
+    - ban_rate
+    - previous_patch_id
+    - previous_patch_name
+    - previous_matches
+    - previous_picks
+    - previous_bans
+    - previous_win_rate
+    - previous_pick_rate
+    - previous_ban_rate
+    - win_rate_change
+    - pick_rate_change
+    - ban_rate_change
+    - patch_picks
+    - patch_bans
+    - patch_wins
+    - patch_win_rate
+    - patch_matches
+    - patch_pick_rate
+    - patch_ban_rate
+    - pick_rate_change_vs_previous
+    - win_rate_change_vs_previous
+    - ban_rate
+    - pick_rate
+    prefix: true
+  - join_path: hero_position_meta
+    includes:
+    - patch_id
+    - patch_name
+    - hero_id
+    - hero_name
+    - position
+    - position_name
+    - games
+    - wins
+    - losses
+    - win_rate
+    - hero_games
+    - position_share_value
+    - position_games
+    - position_wins
+    - hero_total_games
+    - position_win_rate
+    - position_share
+    prefix: true
+- name: pro_meta_advantage_timeline
+  title: 'Dota 2 pro meta: advantage_timeline with its dimensions'
+  description: advantage_timeline with the dimensions of patches, pro_matches, leagues, teams joined (the pro_meta
+    lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: advantage_timeline
+    includes:
+    - match_id
+    - minute
+    - radiant_gold_adv
+    - radiant_xp_adv
+    - winner_gold_adv
+    - winner_xp_adv
+    - radiant_win
+    - started_at
+    - match_date
+    - patch_id
+    - patch_name
+    - league_id
+    - league_name
+    - match_minutes
+    - matches
+    - avg_radiant_gold_adv
+    - avg_winner_gold_adv
+    - avg_winner_xp_adv
+    - max_radiant_gold_adv
+    - min_radiant_gold_adv
+    prefix: true
+  - join_path: advantage_timeline.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+  - join_path: advantage_timeline.pro_matches
+    includes:
+    - match_id
+    - started_at
+    - match_date
+    - duration_min
+    - radiant_win
+    - winner_team_id
+    - radiant_team_name
+    - dire_team_name
+    - radiant_kills
+    - dire_kills
+    - total_kills
+    - league_id
+    - league_name
+    - league_tier
+    - patch_id
+    - patch_name
+    - series_id
+    - series_type
+    - first_blood_min
+    - comeback
+    - stomp
+    prefix: true
+  - join_path: advantage_timeline.pro_matches.leagues
+    includes:
+    - league_id
+    - league_name
+    - league_tier
+    prefix: true
+  - join_path: advantage_timeline.pro_matches.teams
+    includes:
+    - team_id
+    - team_name
+    - team_tag
+    - rating
+    - all_time_wins
+    - all_time_losses
+    - last_match_at
+    - is_ranked
+    - loaded_matches
+    - last_loaded_match_at
+    prefix: true
+- name: pro_meta_hero_daily_stats
+  title: 'Dota 2 pro meta: hero_daily_stats with its dimensions'
+  description: hero_daily_stats with the dimensions of heroes, patches joined (the pro_meta lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: hero_daily_stats
+    includes:
+    - match_date
+    - patch_id
+    - patch_name
+    - hero_id
+    - hero_name
+    - picks
+    - bans
+    - wins
+    - losses
+    - matches_that_day
+    - total_picks
+    - total_bans
+    - total_wins
+    - total_losses
+    - period_win_rate
+    prefix: true
+  - join_path: hero_daily_stats.heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    prefix: true
+  - join_path: hero_daily_stats.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+- name: pro_meta_hero_patch_trends
+  title: 'Dota 2 pro meta: hero_patch_trends with its dimensions'
+  description: hero_patch_trends with the dimensions of heroes, patches joined (the pro_meta lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: hero_patch_trends
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - is_current_patch
+    - hero_id
+    - hero_name
+    - matches_on_patch
+    - picks
+    - bans
+    - wins
+    - losses
+    - win_rate
+    - pick_rate
+    - ban_rate
+    - previous_patch_id
+    - previous_patch_name
+    - previous_matches
+    - previous_picks
+    - previous_bans
+    - previous_win_rate
+    - previous_pick_rate
+    - previous_ban_rate
+    - win_rate_change
+    - pick_rate_change
+    - ban_rate_change
+    - patch_picks
+    - patch_bans
+    - patch_wins
+    - patch_win_rate
+    - patch_matches
+    - patch_pick_rate
+    - patch_ban_rate
+    - pick_rate_change_vs_previous
+    - win_rate_change_vs_previous
+    - ban_rate
+    - pick_rate
+    prefix: true
+  - join_path: hero_patch_trends.heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    prefix: true
+  - join_path: hero_patch_trends.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+- name: pro_meta_hero_position_meta
+  title: 'Dota 2 pro meta: hero_position_meta with its dimensions'
+  description: hero_position_meta with the dimensions of heroes, patches joined (the pro_meta lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: hero_position_meta
+    includes:
+    - patch_id
+    - patch_name
+    - hero_id
+    - hero_name
+    - position
+    - position_name
+    - games
+    - wins
+    - losses
+    - win_rate
+    - hero_games
+    - position_share_value
+    - position_games
+    - position_wins
+    - hero_total_games
+    - position_win_rate
+    - position_share
+    prefix: true
+  - join_path: hero_position_meta.heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    prefix: true
+  - join_path: hero_position_meta.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+- name: pro_meta_league_standings
+  title: 'Dota 2 pro meta: league_standings with its dimensions'
+  description: league_standings with the dimensions of leagues, teams joined (the pro_meta lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: league_standings
+    includes:
+    - league_id
+    - league_name
+    - team_id
+    - team_name
+    - matches
+    - wins
+    - losses
+    - first_match_date
+    - last_match_date
+    - league_matches
+    - league_wins
+    - league_losses
+    - league_win_rate
+    prefix: true
+  - join_path: league_standings.leagues
+    includes:
+    - league_id
+    - league_name
+    - league_tier
+    prefix: true
+  - join_path: league_standings.teams
+    includes:
+    - team_id
+    - team_name
+    - team_tag
+    - rating
+    - all_time_wins
+    - all_time_losses
+    - last_match_at
+    - is_ranked
+    - loaded_matches
+    - last_loaded_match_at
+    prefix: true
+- name: pro_meta_match_leads
+  title: 'Dota 2 pro meta: match_leads with its dimensions'
+  description: match_leads with the dimensions of leagues, patches, pro_matches, teams joined (the pro_meta lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: match_leads
+    includes:
+    - match_id
+    - started_at
+    - match_date
+    - patch_id
+    - patch_name
+    - league_id
+    - league_name
+    - duration_min
+    - radiant_win
+    - winner_side
+    - radiant_team_name
+    - dire_team_name
+    - winner_team_name
+    - loser_team_name
+    - radiant_gold_adv_10
+    - radiant_gold_adv_15
+    - radiant_gold_adv_20
+    - radiant_gold_adv_25
+    - radiant_xp_adv_10
+    - winner_gold_adv_10
+    - winner_gold_adv_15
+    - winner_gold_adv_20
+    - winner_gold_adv_25
+    - max_radiant_gold_lead
+    - max_dire_gold_lead
+    - max_winner_deficit
+    - max_winner_lead
+    - is_comeback
+    - comeback_team_name
+    - throw_team_name
+    - leader_at_10_won
+    - leader_at_20_won
+    - lead_matches
+    - comebacks
+    - comeback_rate
+    - leader_at_10_games
+    - leader_at_10_wins
+    - leader_at_10_win_rate
+    - leader_at_20_games
+    - leader_at_20_wins
+    - leader_at_20_win_rate
+    - throws
+    - comeback_wins
+    - biggest_comeback_gold
+    prefix: true
+  - join_path: match_leads.leagues
+    includes:
+    - league_id
+    - league_name
+    - league_tier
+    prefix: true
+  - join_path: match_leads.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+  - join_path: match_leads.pro_matches
+    includes:
+    - match_id
+    - started_at
+    - match_date
+    - duration_min
+    - radiant_win
+    - winner_team_id
+    - radiant_team_name
+    - dire_team_name
+    - radiant_kills
+    - dire_kills
+    - total_kills
+    - league_id
+    - league_name
+    - league_tier
+    - patch_id
+    - patch_name
+    - series_id
+    - series_type
+    - first_blood_min
+    - comeback
+    - stomp
+    prefix: true
+  - join_path: match_leads.pro_matches.teams
+    includes:
+    - team_id
+    - team_name
+    - team_tag
+    - rating
+    - all_time_wins
+    - all_time_losses
+    - last_match_at
+    - is_ranked
+    - loaded_matches
+    - last_loaded_match_at
+    prefix: true
+- name: pro_meta_match_objectives
+  title: 'Dota 2 pro meta: match_objectives with its dimensions'
+  description: match_objectives with the dimensions of leagues, patches, pro_matches, teams joined (the pro_meta
+    lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: match_objectives
+    includes:
+    - match_id
+    - started_at
+    - match_date
+    - patch_id
+    - patch_name
+    - league_id
+    - league_name
+    - radiant_win
+    - winner_side
+    - radiant_team_name
+    - dire_team_name
+    - has_objective_log
+    - first_blood_min
+    - first_blood_side
+    - first_blood_side_won
+    - first_tower_min
+    - first_tower_side
+    - first_tower_side_won
+    - first_roshan_min
+    - first_roshan_side
+    - first_roshan_side_won
+    - roshan_kills
+    - radiant_roshan_kills
+    - dire_roshan_kills
+    - radiant_aegis
+    - dire_aegis
+    - aegis_stolen
+    - objective_matches
+    - avg_first_tower_min
+    - avg_first_roshan_min
+    - avg_roshan_kills
+    - total_roshan_kills
+    - total_aegis_stolen
+    prefix: true
+  - join_path: match_objectives.leagues
+    includes:
+    - league_id
+    - league_name
+    - league_tier
+    prefix: true
+  - join_path: match_objectives.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+  - join_path: match_objectives.pro_matches
+    includes:
+    - match_id
+    - started_at
+    - match_date
+    - duration_min
+    - radiant_win
+    - winner_team_id
+    - radiant_team_name
+    - dire_team_name
+    - radiant_kills
+    - dire_kills
+    - total_kills
+    - league_id
+    - league_name
+    - league_tier
+    - patch_id
+    - patch_name
+    - series_id
+    - series_type
+    - first_blood_min
+    - comeback
+    - stomp
+    prefix: true
+  - join_path: match_objectives.pro_matches.teams
+    includes:
+    - team_id
+    - team_name
+    - team_tag
+    - rating
+    - all_time_wins
+    - all_time_losses
+    - last_match_at
+    - is_ranked
+    - loaded_matches
+    - last_loaded_match_at
+    prefix: true
+- name: pro_meta_objective_win_rates
+  title: 'Dota 2 pro meta: objective_win_rates with its dimensions'
+  description: objective_win_rates with the dimensions of patches joined (the pro_meta lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: objective_win_rates
+    includes:
+    - patch_id
+    - patch_name
+    - objective
+    - matches
+    - taker_wins
+    - taker_win_rate
+    - total_matches
+    - total_taker_wins
+    - objective_win_rate
+    - first_objective
+    prefix: true
+  - join_path: objective_win_rates.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+- name: pro_meta_patch_notes
+  title: 'Dota 2 pro meta: patch_notes with its dimensions'
+  description: patch_notes with the dimensions of patches joined (the pro_meta lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: patch_notes
+    includes:
+    - patch_name
+    - section
+    - subject
+    - subject_name
+    - heading
+    - line_no
+    - note
+    - note_count
+    prefix: true
+  - join_path: patch_notes.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+- name: pro_meta_player_performances
+  title: 'Dota 2 pro meta: player_performances with its dimensions'
+  description: player_performances with the dimensions of heroes, patches, pro_matches, leagues, teams joined (the
+    pro_meta lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: player_performances
+    includes:
+    - match_id
+    - player_slot
+    - is_radiant
+    - team_id
+    - team_name
+    - account_id
+    - player_name
+    - pro_name
+    - player_country
+    - hero_id
+    - hero_name
+    - is_win
+    - kills
+    - deaths
+    - assists
+    - kda
+    - last_hits
+    - denies
+    - gold_per_min
+    - xp_per_min
+    - level
+    - net_worth
+    - hero_damage
+    - tower_damage
+    - hero_healing
+    - obs_placed
+    - sen_placed
+    - camps_stacked
+    - rune_pickups
+    - roshans_killed
+    - towers_killed
+    - stuns
+    - position
+    - position_name
+    - started_at
+    - match_date
+    - patch_id
+    - patch_name
+    - league_id
+    - league_name
+    - duration_min
+    - games
+    - wins
+    - win_rate
+    - total_kills
+    - total_deaths
+    - total_assists
+    - total_kda
+    - total_gpm
+    - total_xpm
+    - total_last_hits
+    - total_hero_damage
+    - total_tower_damage
+    - total_net_worth
+    - avg_gpm
+    - avg_xpm
+    - avg_kills
+    - avg_deaths
+    - avg_assists
+    - avg_kda
+    - avg_last_hits
+    - avg_hero_damage
+    - avg_tower_damage
+    - avg_net_worth
+    - hero_win_rate
+    prefix: true
+  - join_path: player_performances.heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    prefix: true
+  - join_path: player_performances.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+  - join_path: player_performances.pro_matches
+    includes:
+    - match_id
+    - started_at
+    - match_date
+    - duration_min
+    - radiant_win
+    - winner_team_id
+    - radiant_team_name
+    - dire_team_name
+    - radiant_kills
+    - dire_kills
+    - total_kills
+    - league_id
+    - league_name
+    - league_tier
+    - patch_id
+    - patch_name
+    - series_id
+    - series_type
+    - first_blood_min
+    - comeback
+    - stomp
+    prefix: true
+  - join_path: player_performances.pro_matches.leagues
+    includes:
+    - league_id
+    - league_name
+    - league_tier
+    prefix: true
+  - join_path: player_performances.pro_matches.teams
+    includes:
+    - team_id
+    - team_name
+    - team_tag
+    - rating
+    - all_time_wins
+    - all_time_losses
+    - last_match_at
+    - is_ranked
+    - loaded_matches
+    - last_loaded_match_at
+    prefix: true
+- name: pro_meta_pro_matches
+  title: 'Dota 2 pro meta: pro_matches with its dimensions'
+  description: pro_matches with the dimensions of leagues, patches, teams joined (the pro_meta lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: pro_matches
+    includes:
+    - match_id
+    - started_at
+    - match_date
+    - duration_min
+    - radiant_win
+    - winner_team_id
+    - radiant_team_name
+    - dire_team_name
+    - radiant_kills
+    - dire_kills
+    - total_kills
+    - league_id
+    - league_name
+    - league_tier
+    - patch_id
+    - patch_name
+    - series_id
+    - series_type
+    - first_blood_min
+    - comeback
+    - stomp
+    - match_count
+    - avg_duration_min
+    - avg_total_kills
+    - avg_first_blood_min
+    - radiant_win_rate
+    - radiant_wins
+    prefix: true
+  - join_path: pro_matches.leagues
+    includes:
+    - league_id
+    - league_name
+    - league_tier
+    prefix: true
+  - join_path: pro_matches.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+  - join_path: pro_matches.teams
+    includes:
+    - team_id
+    - team_name
+    - team_tag
+    - rating
+    - all_time_wins
+    - all_time_losses
+    - last_match_at
+    - is_ranked
+    - loaded_matches
+    - last_loaded_match_at
+    prefix: true
+- name: pro_meta_team_head_to_head
+  title: 'Dota 2 pro meta: team_head_to_head with its dimensions'
+  description: team_head_to_head with the dimensions of patches, teams joined (the pro_meta lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: team_head_to_head
+    includes:
+    - team_id
+    - team_name
+    - opponent_team_id
+    - opponent_team_name
+    - patch_id
+    - patch_name
+    - matches
+    - wins
+    - first_match_date
+    - last_match_date
+    - h2h_matches
+    - h2h_wins
+    - head_to_head_win_rate
+    prefix: true
+  - join_path: team_head_to_head.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+  - join_path: team_head_to_head.teams
+    includes:
+    - team_id
+    - team_name
+    - team_tag
+    - rating
+    - all_time_wins
+    - all_time_losses
+    - last_match_at
+    - is_ranked
+    - loaded_matches
+    - last_loaded_match_at
+    prefix: true
+- name: pro_meta_team_matches
+  title: 'Dota 2 pro meta: team_matches with its dimensions'
+  description: team_matches with the dimensions of leagues, patches, pro_matches, teams joined (the pro_meta lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: team_matches
+    includes:
+    - match_id
+    - is_radiant
+    - side
+    - team_id
+    - team_name
+    - opponent_team_id
+    - opponent_team_name
+    - is_win
+    - kills
+    - kills_against
+    - has_first_pick
+    - started_at
+    - match_date
+    - duration_min
+    - patch_id
+    - patch_name
+    - league_id
+    - league_name
+    - league_tier
+    - series_id
+    - series_type
+    - matches_played
+    - team_wins
+    - team_losses
+    - team_win_rate
+    - team_avg_kills
+    - team_win_rate
+    prefix: true
+  - join_path: team_matches.leagues
+    includes:
+    - league_id
+    - league_name
+    - league_tier
+    prefix: true
+  - join_path: team_matches.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+  - join_path: team_matches.pro_matches
+    includes:
+    - match_id
+    - started_at
+    - match_date
+    - duration_min
+    - radiant_win
+    - winner_team_id
+    - radiant_team_name
+    - dire_team_name
+    - radiant_kills
+    - dire_kills
+    - total_kills
+    - league_id
+    - league_name
+    - league_tier
+    - patch_id
+    - patch_name
+    - series_id
+    - series_type
+    - first_blood_min
+    - comeback
+    - stomp
+    prefix: true
+  - join_path: team_matches.teams
+    includes:
+    - team_id
+    - team_name
+    - team_tag
+    - rating
+    - all_time_wins
+    - all_time_losses
+    - last_match_at
+    - is_ranked
+    - loaded_matches
+    - last_loaded_match_at
+    prefix: true

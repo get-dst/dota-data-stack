@@ -1,0 +1,120 @@
+cubes:
+- name: hero_position_meta
+  title: hero position meta
+  description: Per hero, patch and position (1-5) over professional matches — games, win rate, and the share of
+    the hero's games played in that position.
+  sql_table: marts.hero_position_meta
+  meta:
+    dst:
+      grain: one row per hero per patch per position
+      key:
+      - patch_id
+      - hero_id
+      - position
+      population: Professional player-games in the loaded window, in leagues OpenDota rates premium or professional,
+        with a derived position (the position definition); roaming and unparsed lanes are left out. Leagues it rates
+        below professional are not counted.
+  joins:
+  - name: heroes
+    relationship: many_to_one
+    sql: '{CUBE}.hero_id = {heroes}.hero_id'
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  dimensions:
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - '7.39'
+        - '7.40'
+        - '7.41'
+  - name: hero_id
+    sql: '{CUBE}.hero_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: hero_name
+    sql: '{CUBE}.hero_name'
+    type: string
+  - name: position
+    sql: '{CUBE}.position'
+    type: number
+    description: 1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support.
+    primary_key: true
+    public: true
+  - name: position_name
+    sql: '{CUBE}.position_name'
+    type: string
+    description: 'The position as a word: carry, mid, offlane, soft support or hard support; the filter for questions
+      about carries, mids, offlaners or supports.'
+    meta:
+      dst:
+        dictionary:
+        - mid
+        - offlane
+        - soft support
+        - carry
+        - hard support
+  - name: games
+    sql: '{CUBE}.games'
+    type: number
+  - name: wins
+    sql: '{CUBE}.wins'
+    type: number
+  - name: losses
+    sql: '{CUBE}.losses'
+    type: number
+  - name: win_rate
+    sql: '{CUBE}.win_rate'
+    type: number
+    description: wins / games, 0-1.
+  - name: hero_games
+    sql: '{CUBE}.hero_games'
+    type: number
+    description: The hero's positioned games on the patch; repeats on each of its position rows.
+  - name: position_share_value
+    sql: '{CUBE}.position_share'
+    type: number
+    title: position_share (the column)
+    description: games / hero_games, 0-1; a hero's five positions on a patch sum to 1.
+  measures:
+  - name: position_games
+    title: position_games
+    description: Games the hero was played in the position; filtered by position_name (or position 1 to 5), the
+      most-picked carries, mids, offlaners or supports.
+    type: sum
+    sql: '{CUBE}.games'
+  - name: position_wins
+    title: position_wins
+    description: Games won by the hero in the position.
+    type: sum
+    sql: '{CUBE}.wins'
+  - name: hero_total_games
+    title: hero_total_games
+    description: The hero's positioned games; only meaningful grouped or filtered by position.
+    type: sum
+    sql: '{CUBE}.hero_games'
+  - name: position_win_rate
+    title: position_win_rate
+    description: Win rate of the hero in the position; null under 10 games (the minimum_games floor for per-position
+      rows), so a hero played there a few times cannot rank first.
+    type: number
+    sql: CASE WHEN {position_games} >= 10 THEN {position_wins} * 1.0 / NULLIF({position_games}, 0) END
+    format: percent
+    meta:
+      dst:
+        better: higher
+  - name: position_share
+    title: position_share
+    description: Share of the hero's games played in the position; group or filter by hero and position.
+    type: number
+    sql: '{position_games} / NULLIF({hero_total_games}, 0)'
+    format: percent

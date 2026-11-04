@@ -1,0 +1,203 @@
+cubes:
+- name: draft_phases
+  title: draft phases
+  description: Every pick and ban of every Captains Mode professional match, with its draft phase (1-3), its place
+    among the picks (first pick, last pick) and whether the side won.
+  sql_table: marts.draft_phases
+  meta:
+    dst:
+      grain: one row per pick or ban, so a match contributes 24 rows (23 when a ban was skipped)
+      key:
+      - match_id
+      - draft_order
+      population: Picks and bans of professional matches in leagues OpenDota rates premium or professional, played
+        in Captains Mode, whose draft OpenDota recorded. Pro matches in other game modes (All Pick) and matches
+        with no recorded draft have no rows. Leagues it rates below professional are not counted.
+  joins:
+  - name: heroes
+    relationship: many_to_one
+    sql: '{CUBE}.hero_id = {heroes}.hero_id'
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  - name: teams
+    relationship: many_to_one
+    sql: '{CUBE}.team_id = {teams}.team_id'
+  dimensions:
+  - name: match_id
+    sql: '{CUBE}.match_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: draft_order
+    sql: '{CUBE}.draft_order'
+    type: number
+    description: Position in the draft sequence, 0-based.
+    primary_key: true
+    public: true
+  - name: action
+    sql: '{CUBE}.action'
+    type: string
+    description: '''pick'' or ''ban''.'
+    meta:
+      dst:
+        dictionary:
+        - ban
+        - pick
+  - name: is_pick
+    sql: '{CUBE}.is_pick'
+    type: boolean
+  - name: is_ban
+    sql: '{CUBE}.is_ban'
+    type: boolean
+  - name: draft_phase
+    sql: '{CUBE}.draft_phase'
+    type: number
+    description: 1, 2 or 3. Phase 1 is 7 bans then 2 picks, phase 2 is 3 bans then 6 picks, phase 3 is 4 bans then
+      2 picks.
+  - name: phase_name
+    sql: '{CUBE}.phase_name'
+    type: string
+    description: '''ban phase 1'', ''pick phase 1'', ''ban phase 2'', ''pick phase 2'', ''ban phase 3'' or ''pick
+      phase 3''.'
+    meta:
+      dst:
+        dictionary:
+        - ban phase 1
+        - pick phase 2
+        - ban phase 3
+        - ban phase 2
+        - pick phase 1
+        - pick phase 3
+  - name: match_pick_number
+    sql: '{CUBE}.match_pick_number'
+    type: number
+    description: For a pick, 1-10 among the match's picks; null for a ban.
+  - name: team_pick_number
+    sql: '{CUBE}.team_pick_number'
+    type: number
+    description: For a pick, 1-5 among the side's own picks; null for a ban.
+  - name: match_ban_number
+    sql: '{CUBE}.match_ban_number'
+    type: number
+    description: For a ban, its place among the match's bans; null for a pick.
+  - name: is_first_pick
+    sql: '{CUBE}.is_first_pick'
+    type: boolean
+    description: The first hero picked in the match.
+  - name: is_last_pick
+    sql: '{CUBE}.is_last_pick'
+    type: boolean
+    description: The tenth and last hero picked in the match.
+  - name: is_first_pick_side
+    sql: '{CUBE}.is_first_pick_side'
+    type: boolean
+    description: True when this row's side made the match's first pick.
+  - name: hero_id
+    sql: '{CUBE}.hero_id'
+    type: number
+  - name: hero_name
+    sql: '{CUBE}.hero_name'
+    type: string
+  - name: is_radiant
+    sql: '{CUBE}.is_radiant'
+    type: boolean
+  - name: side
+    sql: '{CUBE}.side'
+    type: string
+    description: '''radiant'' or ''dire''.'
+    meta:
+      dst:
+        dictionary:
+        - radiant
+        - dire
+  - name: team_id
+    sql: '{CUBE}.team_id'
+    type: number
+  - name: team_name
+    sql: '{CUBE}.team_name'
+    type: string
+    description: Team that made the pick or ban; null when not identified.
+  - name: opponent_team_name
+    sql: '{CUBE}.opponent_team_name'
+    type: string
+  - name: side_won
+    sql: '{CUBE}.side_won'
+    type: boolean
+    description: True when the side that made this pick or ban won the match.
+  - name: started_at
+    sql: '{CUBE}.started_at'
+    type: time
+  - name: match_date
+    sql: '{CUBE}.match_date'
+    type: time
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - '7.39'
+        - '7.41'
+        - '7.40'
+  - name: league_id
+    sql: '{CUBE}.league_id'
+    type: number
+  - name: league_name
+    sql: '{CUBE}.league_name'
+    type: string
+  measures:
+  - name: phase_picks
+    title: phase_picks
+    description: Picks among the rows in scope.
+    type: sum
+    sql: CASE WHEN {CUBE}.is_pick THEN 1 ELSE 0 END
+  - name: phase_bans
+    title: phase_bans
+    description: Bans among the rows in scope; filtered by team_name and grouped by hero_name, the heroes a team
+      bans most.
+    type: sum
+    sql: CASE WHEN {CUBE}.is_ban THEN 1 ELSE 0 END
+  - name: drafted_match_count
+    title: drafted_match_count
+    description: Distinct Captains Mode matches among the rows in scope.
+    type: count_distinct
+    sql: '{CUBE}.match_id'
+  - name: pick_wins
+    title: pick_wins
+    description: Picks whose side won.
+    type: sum
+    sql: CASE WHEN {CUBE}.is_pick AND {CUBE}.side_won THEN 1 ELSE 0 END
+  - name: pick_win_rate
+    title: pick_win_rate
+    description: Share of the picks in scope whose side won, e.g. a hero's win rate when first-picked or picked
+      in pick phase 3; null under 20 picks (the minimum_games term).
+    type: number
+    sql: CASE WHEN {phase_picks} >= 20 THEN {pick_wins} * 1.0 / NULLIF({phase_picks}, 0) END
+    format: percent
+    meta:
+      dst:
+        better: higher
+  - name: first_pick_matches
+    title: first_pick_matches
+    description: Drafted matches counted once each by their first pick; the denominator of first_pick_side_win_rate.
+      A hero's first-pick count is hero_draft_stats.hero_first_picks.
+    type: sum
+    sql: CASE WHEN {CUBE}.is_first_pick THEN 1 ELSE 0 END
+  - name: first_pick_side_wins
+    title: first_pick_side_wins
+    description: Matches the side with the first pick won.
+    type: sum
+    sql: CASE WHEN {CUBE}.is_first_pick AND {CUBE}.side_won THEN 1 ELSE 0 END
+  - name: first_pick_side_win_rate
+    title: first_pick_side_win_rate
+    description: Share of drafted matches won by the side that made the first pick.
+    type: number
+    sql: '{first_pick_side_wins} / NULLIF({first_pick_matches}, 0)'
+    format: percent
+    meta:
+      dst:
+        better: higher

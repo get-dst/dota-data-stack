@@ -1,0 +1,175 @@
+cubes:
+- name: team_matches
+  title: team matches
+  description: One side of one professional match, two rows per match — the team grain. A team's matches, wins and
+    win rate are counted here and nowhere else; player_performances has five rows per side and overstates a team's
+    matches five times.
+  sql_table: marts.fact_team_match
+  meta:
+    dst:
+      grain: one row per team (side) per match, so counting rows counts a team's matches
+      key:
+      - match_id
+      - side
+      population: Both sides of every professional match in the loaded window in a league OpenDota rates premium
+        or professional. A side OpenDota did not tie to a team has a null team and no name; it stays in the table
+        so every match has two rows, and is left out of any grouping by team. Leagues it rates below professional
+        are not counted.
+  joins:
+  - name: leagues
+    relationship: many_to_one
+    sql: '{CUBE}.league_id = {leagues}.league_id'
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  - name: pro_matches
+    relationship: many_to_one
+    sql: '{CUBE}.match_id = {pro_matches}.match_id'
+  - name: teams
+    relationship: many_to_one
+    sql: '{CUBE}.team_id = {teams}.team_id'
+  dimensions:
+  - name: match_id
+    sql: '{CUBE}.match_id'
+    type: number
+    description: OpenDota match id.
+    primary_key: true
+    public: true
+  - name: is_radiant
+    sql: '{CUBE}.is_radiant'
+    type: boolean
+    description: True for the Radiant side's row.
+  - name: side
+    sql: '{CUBE}.side'
+    type: string
+    description: radiant or dire.
+    primary_key: true
+    public: true
+    meta:
+      dst:
+        dictionary:
+        - dire
+        - radiant
+  - name: team_id
+    sql: '{CUBE}.team_id'
+    type: number
+    description: The team on this side; null when OpenDota did not identify it.
+  - name: team_name
+    sql: '{CUBE}.team_name'
+    type: string
+    description: The team on this side.
+  - name: opponent_team_id
+    sql: '{CUBE}.opponent_team_id'
+    type: number
+  - name: opponent_team_name
+    sql: '{CUBE}.opponent_team_name'
+    type: string
+    description: The team on the other side.
+  - name: is_win
+    sql: '{CUBE}.is_win'
+    type: boolean
+    description: True when this side won.
+  - name: kills
+    sql: '{CUBE}.kills'
+    type: number
+    description: Hero kills by this side.
+  - name: kills_against
+    sql: '{CUBE}.kills_against'
+    type: number
+    description: Hero kills by the other side.
+  - name: has_first_pick
+    sql: '{CUBE}.has_first_pick'
+    type: boolean
+    description: True when this side made the match's first pick; null when the match has no recorded draft.
+  - name: started_at
+    sql: '{CUBE}.started_at'
+    type: time
+    description: Match start, UTC.
+  - name: match_date
+    sql: '{CUBE}.match_date'
+    type: time
+    description: Match start date, UTC.
+  - name: duration_min
+    sql: '{CUBE}.duration_min'
+    type: number
+    description: Game length in minutes.
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    description: Game version the match was played on, e.g. 7.41.
+    meta:
+      dst:
+        dictionary:
+        - '7.39'
+        - '7.41'
+        - '7.40'
+  - name: league_id
+    sql: '{CUBE}.league_id'
+    type: number
+  - name: league_name
+    sql: '{CUBE}.league_name'
+    type: string
+  - name: league_tier
+    sql: '{CUBE}.league_tier'
+    type: string
+    description: 'League tier: premium for the top events, such as The International; every other league here holds
+      the standard tier. A filter only for a question about premium or top-tier tournaments.'
+    meta:
+      dst:
+        dictionary:
+        - professional
+        - premium
+  - name: series_id
+    sql: '{CUBE}.series_id'
+    type: number
+  - name: series_type
+    sql: '{CUBE}.series_type'
+    type: number
+    description: 0 = best of 1, 1 = best of 3, 2 = best of 5, 3 = best of 2; null when not reported.
+  measures:
+  - name: matches_played
+    title: matches_played
+    description: Matches the team played (games, not series); one row per team per match.
+    type: count
+    sql: '{CUBE}.match_id'
+  - name: team_wins
+    title: team_wins
+    description: Matches the team won; with team_losses, the team's record (wins-losses). Rank by it for the team
+      that won the most.
+    type: sum
+    sql: CASE WHEN {CUBE}.is_win THEN 1 ELSE 0 END
+  - name: team_losses
+    title: team_losses
+    description: Matches the team lost; with team_wins, the team's record (wins-losses).
+    type: sum
+    sql: CASE WHEN {CUBE}.is_win THEN 0 ELSE 1 END
+  - name: team_win_rate
+    title: team_win_rate
+    description: Wins divided by matches for the team (the team_win_rate definition); null under 20 matches, so
+      a team seen twice cannot top a ranking. State the match count beside it.
+    type: number
+    sql: CASE WHEN {matches_played} >= 20 THEN {team_wins} * 1.0 / NULLIF({matches_played}, 0) END
+    format: percent
+    meta:
+      dst:
+        better: higher
+  - name: team_avg_kills
+    title: team_avg_kills
+    description: Average hero kills by the team per match.
+    type: avg
+    sql: '{CUBE}.kills'
+  segments:
+  - name: team_win_rate
+    sql: CASE WHEN COUNT({CUBE}.match_id) >= 20 THEN SUM(CASE WHEN {CUBE}.is_win THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT({CUBE}.match_id),
+      0) END
+    meta:
+      dst:
+        meaning: Share of a team's pro matches that the team won, counted on the team grain; null under 20 matches.
+        aliases:
+        - team winrate
+        - team win percentage
+        - how did a team do
+        term: team_win_rate

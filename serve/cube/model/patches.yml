@@ -1,0 +1,39 @@
+cubes:
+- name: patches
+  title: patches
+  description: Game versions as windows in time. The current patch is the one with no end.
+  sql_table: marts.dim_patch
+  meta:
+    dst:
+      grain: one row per patch
+      key:
+      - patch_id
+  dimensions:
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+    description: Internal numeric id; a patch is named by patch_name.
+    primary_key: true
+    public: true
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    description: Version string, e.g. 7.41.
+  - name: patch_started_at
+    sql: '{CUBE}.patch_started_at'
+    type: time
+    description: Release time.
+  - name: patch_ended_at
+    sql: '{CUBE}.patch_ended_at'
+    type: time
+    description: Release time of the next patch; null for the current one.
+  - name: is_current
+    sql: '{CUBE}.is_current'
+    type: boolean
+    description: True for exactly one row, the patch in play now.
+  measures:
+  - name: patch_count
+    title: patch_count
+    description: Number of game versions.
+    type: count
+    sql: '{CUBE}.patch_id'

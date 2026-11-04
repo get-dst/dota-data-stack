@@ -1,0 +1,144 @@
+cubes:
+- name: pro_matches
+  title: pro matches
+  description: One professional Dota 2 match, as OpenDota records it, with the winner resolved to a team.
+  sql_table: marts.fact_match
+  meta:
+    dst:
+      grain: one row per match
+      key:
+      - match_id
+      population: Professional matches only, in leagues OpenDota rates premium or professional, as listed by OpenDota's
+        pro-match feed, for the loaded window. Leagues it rates below professional are not counted. No public matchmaking
+        games.
+  joins:
+  - name: leagues
+    relationship: many_to_one
+    sql: '{CUBE}.league_id = {leagues}.league_id'
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  - name: teams
+    relationship: many_to_one
+    sql: '{CUBE}.winner_team_id = {teams}.team_id'
+  dimensions:
+  - name: match_id
+    sql: '{CUBE}.match_id'
+    type: number
+    description: OpenDota match id.
+    primary_key: true
+    public: true
+  - name: started_at
+    sql: '{CUBE}.started_at'
+    type: time
+    description: Match start, UTC.
+  - name: match_date
+    sql: '{CUBE}.match_date'
+    type: time
+    description: Match start date, UTC.
+  - name: duration_min
+    sql: '{CUBE}.duration_min'
+    type: number
+    description: Game length in minutes.
+  - name: radiant_win
+    sql: '{CUBE}.radiant_win'
+    type: boolean
+    description: True when the Radiant side won.
+  - name: winner_team_id
+    sql: '{CUBE}.winner_team_id'
+    type: number
+  - name: radiant_team_name
+    sql: '{CUBE}.radiant_team_name'
+    type: string
+  - name: dire_team_name
+    sql: '{CUBE}.dire_team_name'
+    type: string
+  - name: radiant_kills
+    sql: '{CUBE}.radiant_kills'
+    type: number
+  - name: dire_kills
+    sql: '{CUBE}.dire_kills'
+    type: number
+  - name: total_kills
+    sql: '{CUBE}.total_kills'
+    type: number
+    description: Kills by both sides combined.
+  - name: league_id
+    sql: '{CUBE}.league_id'
+    type: number
+  - name: league_name
+    sql: '{CUBE}.league_name'
+    type: string
+  - name: league_tier
+    sql: '{CUBE}.league_tier'
+    type: string
+    description: 'League tier: premium for the top events, such as The International; every other league here holds
+      the standard tier. A filter only for a question about premium or top-tier tournaments.'
+    meta:
+      dst:
+        dictionary:
+        - professional
+        - premium
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    description: Game version the match was played on, e.g. 7.41.
+    meta:
+      dst:
+        dictionary:
+        - '7.39'
+        - '7.41'
+        - '7.40'
+  - name: series_id
+    sql: '{CUBE}.series_id'
+    type: number
+  - name: series_type
+    sql: '{CUBE}.series_type'
+    type: number
+    description: 0 = best of 1, 1 = best of 3, 2 = best of 5, 3 = best of 2; null when not reported.
+  - name: first_blood_min
+    sql: '{CUBE}.first_blood_min'
+    type: number
+  - name: comeback
+    sql: '{CUBE}.comeback'
+    type: number
+    description: Largest gold deficit the winner overcame.
+  - name: stomp
+    sql: '{CUBE}.stomp'
+    type: number
+    description: Largest gold lead the winner held.
+  measures:
+  - name: match_count
+    title: match_count
+    description: Number of pro matches.
+    type: count
+    sql: '{CUBE}.match_id'
+  - name: avg_duration_min
+    title: avg_duration_min
+    description: Average game length in minutes.
+    type: avg
+    sql: '{CUBE}.duration_min'
+  - name: avg_total_kills
+    title: avg_total_kills
+    description: Average kills by both sides per match.
+    type: avg
+    sql: '{CUBE}.total_kills'
+  - name: avg_first_blood_min
+    title: avg_first_blood_min
+    description: Average game minute of first blood.
+    type: avg
+    sql: '{CUBE}.first_blood_min'
+  - name: radiant_win_rate
+    title: radiant_win_rate
+    description: Share of matches the Radiant side won.
+    type: number
+    sql: '{radiant_wins} / NULLIF({match_count}, 0)'
+    format: percent
+  - name: radiant_wins
+    title: radiant_wins
+    description: Matches the Radiant side won.
+    type: sum
+    sql: CASE WHEN {CUBE}.radiant_win THEN 1 ELSE 0 END

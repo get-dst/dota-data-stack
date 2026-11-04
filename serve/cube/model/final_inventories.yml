@@ -1,0 +1,115 @@
+cubes:
+- name: final_inventories
+  title: final inventories
+  description: Everything a pro hero ended the game with, per hero, patch, slot group and item — the six main slots,
+    the backpack, the neutral item, the enchantment, and the buffs consumed into the hero (Aghanim's Blessing, Aghanim's
+    Shard, Moon Shard).
+  sql_table: marts.final_inventories
+  meta:
+    dst:
+      grain: one row per hero, patch, slot group and item
+      key:
+      - patch_id
+      - hero_id
+      - slot_group
+      - item_id
+      population: End-of-game inventories of every professional match in the loaded window in a league OpenDota
+        rates premium or professional. Leagues it rates below professional are not counted.
+  joins:
+  - name: heroes
+    relationship: many_to_one
+    sql: '{CUBE}.hero_id = {heroes}.hero_id'
+  - name: items
+    relationship: many_to_one
+    sql: '{CUBE}.item_id = {items}.item_id'
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  dimensions:
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - '7.39'
+        - '7.41'
+        - '7.40'
+  - name: hero_id
+    sql: '{CUBE}.hero_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: hero_name
+    sql: '{CUBE}.hero_name'
+    type: string
+  - name: slot_group
+    sql: '{CUBE}.slot_group'
+    type: string
+    description: main, backpack, neutral, enchantment or consumed.
+    primary_key: true
+    public: true
+    meta:
+      dst:
+        dictionary:
+        - main
+        - backpack
+        - neutral
+        - enchantment
+        - consumed
+  - name: item_id
+    sql: '{CUBE}.item_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: item_name
+    sql: '{CUBE}.item_name'
+    type: string
+  - name: item_cost
+    sql: '{CUBE}.item_cost'
+    type: number
+  - name: neutral_tier
+    sql: '{CUBE}.neutral_tier'
+    type: number
+    description: Neutral item tier 1 to 5; null for shop items and enchantments.
+  - name: is_major_item
+    sql: '{CUBE}.is_major_item'
+    type: boolean
+  - name: games_with_item
+    sql: '{CUBE}.games_with_item'
+    type: number
+    description: Pro games the hero ended with the item in the slot group; a game counts once.
+  - name: wins_with_item
+    sql: '{CUBE}.wins_with_item'
+    type: number
+  - name: hero_games
+    sql: '{CUBE}.hero_games'
+    type: number
+    description: Pro games the hero played on the patch; repeats on every row of the hero, so never sum it across
+      rows.
+  measures:
+  - name: games_ended_with
+    title: games_ended_with
+    description: Games ending with the item in the slot group.
+    type: sum
+    sql: '{CUBE}.games_with_item'
+  - name: wins_ended_with
+    title: wins_ended_with
+    description: Of the games ending with the item, those won.
+    type: sum
+    sql: '{CUBE}.wins_with_item'
+  - name: ended_with_win_rate
+    title: ended_with_win_rate
+    description: Share of the games ending with the item that were won; null under 20 games (the minimum_games term),
+      so a neutral item seen once cannot rank first.
+    type: number
+    sql: CASE WHEN {games_ended_with} >= 20 THEN {wins_ended_with} * 1.0 / NULLIF({games_ended_with}, 0) END
+    format: percent
+    meta:
+      dst:
+        better: higher

@@ -1,0 +1,37 @@
+cubes:
+- name: leagues
+  title: leagues
+  description: Tournaments and leagues OpenDota rates premium or professional, with the tier.
+  sql_table: marts.dim_league
+  meta:
+    dst:
+      grain: one row per league
+      key:
+      - league_id
+      population: Leagues and tournaments OpenDota rates premium or professional. Leagues it rates below professional,
+        or does not rate, are not listed.
+  dimensions:
+  - name: league_id
+    sql: '{CUBE}.league_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: league_name
+    sql: '{CUBE}.league_name'
+    type: string
+  - name: league_tier
+    sql: '{CUBE}.league_tier'
+    type: string
+    description: 'League tier: premium for the top events, such as The International; every other league here holds
+      the standard tier. A filter only for a question about premium or top-tier tournaments.'
+    meta:
+      dst:
+        dictionary:
+        - professional
+        - premium
+  measures:
+  - name: league_count
+    title: league_count
+    description: Number of leagues.
+    type: count
+    sql: '{CUBE}.league_id'

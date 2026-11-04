@@ -56,9 +56,35 @@ services:
       DST_DEMO_ORG_ID: ${DST_DEMO_ORG_ID:-}
       DST_DEMO_KEY_DAYS: ${DST_DEMO_KEY_DAYS:-7}
       DST_DAILY_REQUEST_CAP: ${DST_DAILY_REQUEST_CAP:-2000}
+      DST_CUBE_URL: http://cube:4000
+      CUBEJS_API_SECRET: ${CUBEJS_API_SECRET:?set CUBEJS_API_SECRET}
     depends_on:
       db:
         condition: service_healthy
+      cube:
+        condition: service_healthy
+
+  # The pinned Cube Core sidecar: the model under serve/cube is what dst serves.
+  # Reads MotherDuck with Cube's own DuckDB driver (DST_DUCKDB_PATH stays unset).
+  cube:
+    image: cubejs/cube:v1.6.75
+    restart: unless-stopped
+    environment:
+      - CUBEJS_DEV_MODE=false
+      - CUBEJS_API_SECRET=${CUBEJS_API_SECRET:?set CUBEJS_API_SECRET}
+      - CUBEJS_DB_TYPE=duckdb
+      - CUBEJS_DB_DUCKDB_DATABASE_PATH=md:dota
+      - CUBEJS_DB_DUCKDB_MOTHERDUCK_TOKEN=${DST_API_KEY_WAREHOUSE:?set DST_API_KEY_WAREHOUSE}
+      - CUBEJS_CACHE_AND_QUEUE_DRIVER=memory
+      - CUBEJS_SCHEDULED_REFRESH_DEFAULT=false
+    volumes:
+      - ../serve/cube/model:/cube/conf/model:ro
+      - ../serve/cube/cube.js:/cube/conf/cube.js:ro
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:4000/readyz',r=>process.exit(r.statusCode==200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
   caddy:
     image: caddy:2

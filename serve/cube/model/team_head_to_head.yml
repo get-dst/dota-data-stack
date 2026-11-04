@@ -1,0 +1,87 @@
+cubes:
+- name: team_head_to_head
+  title: team head to head
+  description: Professional matches between two teams, from each team's point of view, per patch. Both orderings
+    are present, so start from either team.
+  sql_table: marts.team_head_to_head
+  meta:
+    dst:
+      grain: one row per team, opponent and patch
+      key:
+      - team_id
+      - opponent_team_id
+      - patch_id
+      population: Professional matches in leagues OpenDota rates premium or professional, in the loaded window,
+        where both teams are identified. Leagues it rates below professional are not counted.
+  joins:
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  - name: teams
+    relationship: many_to_one
+    sql: '{CUBE}.team_id = {teams}.team_id'
+  dimensions:
+  - name: team_id
+    sql: '{CUBE}.team_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: team_name
+    sql: '{CUBE}.team_name'
+    type: string
+  - name: opponent_team_id
+    sql: '{CUBE}.opponent_team_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: opponent_team_name
+    sql: '{CUBE}.opponent_team_name'
+    type: string
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - '7.39'
+        - '7.41'
+        - '7.40'
+  - name: matches
+    sql: '{CUBE}.matches'
+    type: number
+  - name: wins
+    sql: '{CUBE}.wins'
+    type: number
+    description: Matches team_name won against opponent_team_name.
+  - name: first_match_date
+    sql: '{CUBE}.first_match_date'
+    type: time
+  - name: last_match_date
+    sql: '{CUBE}.last_match_date'
+    type: time
+  measures:
+  - name: h2h_matches
+    title: h2h_matches
+    description: Matches between the two teams (games, not series).
+    type: sum
+    sql: '{CUBE}.matches'
+  - name: h2h_wins
+    title: h2h_wins
+    description: Of those, matches team_name won; h2h_matches minus h2h_wins is the opponent's.
+    type: sum
+    sql: '{CUBE}.wins'
+  - name: head_to_head_win_rate
+    title: head_to_head_win_rate
+    description: 'Share of the matches between the two teams that team_name won. No games floor: it is asked about
+      one named pair, so give h2h_matches and h2h_wins beside it.'
+    type: number
+    sql: '{h2h_wins} / NULLIF({h2h_matches}, 0)'
+    format: percent
+    meta:
+      dst:
+        better: higher

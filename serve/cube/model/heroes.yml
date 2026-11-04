@@ -1,0 +1,54 @@
+cubes:
+- name: heroes
+  title: heroes
+  description: The hero roster with attribute, attack type and roles.
+  sql_table: marts.dim_hero
+  meta:
+    dst:
+      grain: one row per hero
+      key:
+      - hero_id
+  dimensions:
+  - name: hero_id
+    sql: '{CUBE}.hero_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: hero_name
+    sql: '{CUBE}.hero_name'
+    type: string
+    description: Display name, e.g. Windranger.
+  - name: hero_key
+    sql: '{CUBE}.hero_key'
+    type: string
+    description: Internal key, e.g. npc_dota_hero_windrunner.
+  - name: primary_attribute
+    sql: '{CUBE}.primary_attribute'
+    type: string
+    description: str, agi, int or all.
+    meta:
+      dst:
+        dictionary:
+        - str
+        - agi
+        - int
+        - all
+  - name: attack_type
+    sql: '{CUBE}.attack_type'
+    type: string
+    description: Melee or Ranged.
+    meta:
+      dst:
+        dictionary:
+        - Ranged
+        - Melee
+  - name: roles
+    sql: '{CUBE}.roles'
+    type: string
+    description: Comma-separated roles, e.g. Carry, Support.
+  measures:
+  - name: hero_count
+    title: hero_count
+    description: Number of heroes in the roster.
+    type: count
+    sql: '{CUBE}.hero_id'

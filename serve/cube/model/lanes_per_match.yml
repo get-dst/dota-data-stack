@@ -1,0 +1,218 @@
+cubes:
+- name: lanes_per_match
+  title: lanes per match
+  description: 'One laning player''s lane at 10 minutes in one parsed professional match, against the enemy heroes
+    in the same map lane: gold, last-hit and XP differences and the lane result (won, drawn, lost), which both laners
+    of a side share.'
+  sql_table: marts.lane_outcomes
+  meta:
+    dst:
+      grain: one row per laning player per parsed match
+      key:
+      - match_id
+      - player_slot
+      population: Players in parsed professional matches in leagues OpenDota rates premium or professional that
+        reached minute 10 who laned in lanes 1-3 against at least one enemy hero. Leagues it rates below professional
+        are not counted.
+  joins:
+  - name: heroes
+    relationship: many_to_one
+    sql: '{CUBE}.hero_id = {heroes}.hero_id'
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  - name: pro_matches
+    relationship: many_to_one
+    sql: '{CUBE}.match_id = {pro_matches}.match_id'
+  - name: teams
+    relationship: many_to_one
+    sql: '{CUBE}.team_id = {teams}.team_id'
+  dimensions:
+  - name: match_id
+    sql: '{CUBE}.match_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: player_slot
+    sql: '{CUBE}.player_slot'
+    type: number
+    description: 0-4 Radiant, 128-132 Dire.
+    primary_key: true
+    public: true
+  - name: is_radiant
+    sql: '{CUBE}.is_radiant'
+    type: boolean
+  - name: team_id
+    sql: '{CUBE}.team_id'
+    type: number
+  - name: team_name
+    sql: '{CUBE}.team_name'
+    type: string
+    description: Team name as the match record carries it; null when OpenDota lists no team for the side, so a team
+      ranking leaves the null rows out.
+  - name: account_id
+    sql: '{CUBE}.account_id'
+    type: number
+  - name: player_name
+    sql: '{CUBE}.player_name'
+    type: string
+  - name: hero_id
+    sql: '{CUBE}.hero_id'
+    type: number
+  - name: hero_name
+    sql: '{CUBE}.hero_name'
+    type: string
+  - name: position
+    sql: '{CUBE}.position'
+    type: number
+    description: 1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support; null for jungle, roaming or unparsed
+      lanes.
+  - name: position_name
+    sql: '{CUBE}.position_name'
+    type: string
+    description: 'The position as a word: carry, mid, offlane, soft support or hard support; the filter for questions
+      about carries, mids, offlaners or supports.'
+    meta:
+      dst:
+        dictionary:
+        - mid
+        - carry
+        - offlane
+        - hard support
+        - soft support
+  - name: is_win
+    sql: '{CUBE}.is_win'
+    type: boolean
+  - name: lane
+    sql: '{CUBE}.lane'
+    type: number
+    description: 'Map lane: 1 bottom, 2 middle, 3 top.'
+  - name: lane_role
+    sql: '{CUBE}.lane_role'
+    type: number
+    description: 1 safe lane, 2 mid, 3 off lane, relative to the side.
+  - name: own_laners
+    sql: '{CUBE}.own_laners'
+    type: number
+  - name: enemy_laners
+    sql: '{CUBE}.enemy_laners'
+    type: number
+  - name: gold_10
+    sql: '{CUBE}.gold_10'
+    type: number
+  - name: last_hits_10
+    sql: '{CUBE}.last_hits_10'
+    type: number
+  - name: xp_10
+    sql: '{CUBE}.xp_10'
+    type: number
+  - name: gold_diff_10
+    sql: '{CUBE}.gold_diff_10'
+    type: number
+    description: The player's gold at 10 minus the enemy laners' average.
+  - name: last_hits_diff_10
+    sql: '{CUBE}.last_hits_diff_10'
+    type: number
+  - name: xp_diff_10
+    sql: '{CUBE}.xp_diff_10'
+    type: number
+  - name: lane_gold_diff_10
+    sql: '{CUBE}.lane_gold_diff_10'
+    type: number
+    description: The side's laners' average gold at 10 minus the enemy laners' average.
+  - name: lane_last_hits_diff_10
+    sql: '{CUBE}.lane_last_hits_diff_10'
+    type: number
+  - name: lane_result
+    sql: '{CUBE}.lane_result'
+    type: string
+    description: won, drawn or lost (the lane_outcome term).
+    meta:
+      dst:
+        dictionary:
+        - drawn
+        - lost
+        - won
+  - name: match_date
+    sql: '{CUBE}.match_date'
+    type: time
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - '7.39'
+        - '7.41'
+        - '7.40'
+  - name: league_id
+    sql: '{CUBE}.league_id'
+    type: number
+  - name: league_name
+    sql: '{CUBE}.league_name'
+    type: string
+  measures:
+  - name: laning_games
+    title: laning_games
+    description: Laning player-games (rows) in scope; the denominator of the lane rates.
+    type: count
+    sql: '{CUBE}.match_id'
+  - name: lane_matches
+    title: lane_matches
+    description: Distinct matches in scope; a team's games. The lane rates are null under 20 of them.
+    type: count_distinct
+    sql: '{CUBE}.match_id'
+  - name: lanes_won_count
+    title: lanes_won_count
+    description: Laning player-games whose lane was won at 10 minutes.
+    type: sum
+    sql: CASE WHEN {CUBE}.lane_result = 'won' THEN 1 ELSE 0 END
+  - name: lanes_drawn_count
+    title: lanes_drawn_count
+    description: Laning player-games whose lane was drawn at 10 minutes.
+    type: sum
+    sql: CASE WHEN {CUBE}.lane_result = 'drawn' THEN 1 ELSE 0 END
+  - name: lanes_lost_count
+    title: lanes_lost_count
+    description: Laning player-games whose lane was lost at 10 minutes.
+    type: sum
+    sql: CASE WHEN {CUBE}.lane_result = 'lost' THEN 1 ELSE 0 END
+  - name: team_lane_win_rate
+    title: team_lane_win_rate
+    description: Share of laning player-games whose lane was won at 10 minutes (the lane_outcome term), for a team,
+      league or date; null under 20 matches, so a team seen a few times cannot rank first. A hero, position or player
+      rate is hero_playstyle.lane_win_rate or player_playstyle.
+    type: number
+    sql: CASE WHEN {lane_matches} >= 20 THEN {lanes_won_count} * 1.0 / NULLIF({laning_games}, 0) END
+    format: percent
+    meta:
+      dst:
+        better: higher
+  - name: team_lane_draw_rate
+    title: team_lane_draw_rate
+    description: Share of laning player-games whose lane was drawn at 10 minutes (within 400 gold either way), for
+      a team, league or date; null under 20 matches.
+    type: number
+    sql: CASE WHEN {lane_matches} >= 20 THEN {lanes_drawn_count} * 1.0 / NULLIF({laning_games}, 0) END
+    format: percent
+  - name: team_lane_loss_rate
+    title: team_lane_loss_rate
+    description: Share of laning player-games whose lane was lost at 10 minutes, for a team, league or date; null
+      under 20 matches.
+    type: number
+    sql: CASE WHEN {lane_matches} >= 20 THEN {lanes_lost_count} * 1.0 / NULLIF({laning_games}, 0) END
+    format: percent
+    meta:
+      dst:
+        better: lower
+  - name: avg_lane_gold_diff
+    title: avg_lane_gold_diff
+    description: Average lane gold difference at minute 10.
+    type: avg
+    sql: '{CUBE}.lane_gold_diff_10'
+    meta:
+      dst:
+        better: higher

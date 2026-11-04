@@ -1,0 +1,66 @@
+cubes:
+- name: patch_notes
+  title: patch notes
+  description: The patch notes, one line each, with the hero or item the line is about.
+  sql_table: marts.dim_patch_note
+  meta:
+    dst:
+      grain: one row per patch-note line
+      key:
+      - patch_name
+      - section
+      - subject
+      - line_no
+      population: The notes OpenDota carries; older patches may be missing or partial.
+  joins:
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_name = {patches}.patch_name'
+  dimensions:
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    description: e.g. 7.41 or 7.40c.
+    primary_key: true
+    public: true
+  - name: section
+    sql: '{CUBE}.section'
+    type: string
+    description: general, heroes or items.
+    primary_key: true
+    public: true
+    meta:
+      dst:
+        dictionary:
+        - heroes
+        - items
+        - general
+  - name: subject
+    sql: '{CUBE}.subject'
+    type: string
+    description: Internal key of the hero or item, or general.
+    primary_key: true
+    public: true
+  - name: subject_name
+    sql: '{CUBE}.subject_name'
+    type: string
+    description: Display name, e.g. Pudge or Black King Bar.
+  - name: heading
+    sql: '{CUBE}.heading'
+    type: string
+    description: The ability or heading the line sits under, e.g. Rot; null for top-level lines.
+  - name: line_no
+    sql: '{CUBE}.line_no'
+    type: number
+    primary_key: true
+    public: true
+  - name: note
+    sql: '{CUBE}.note'
+    type: string
+    description: The line of the patch note.
+  measures:
+  - name: note_count
+    title: note_count
+    description: Lines of patch notes.
+    type: count
+    sql: '{CUBE}.line_no'

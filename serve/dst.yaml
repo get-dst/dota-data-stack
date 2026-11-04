@@ -18,6 +18,12 @@ providers:
   embed:
     type: local
 
+# The pinned Cube Core sidecar the model is served through (deploy/docker-compose.yml).
+# DST_CUBE_URL overrides the url where dst runs beside the container.
+cube:
+  url: http://localhost:4000
+  api_secret_env: CUBEJS_API_SECRET
+
 connections:
   # The marts dbt built, on MotherDuck. The connection opens read-only under any token;
   # a read-scaling token (MotherDuck's SELECT-only credential) is the one to serve with.

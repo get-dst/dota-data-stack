@@ -1,0 +1,150 @@
+cubes:
+- name: lane_matchups
+  title: lane matchups
+  description: Hero against the enemy hero in the same map lane in parsed professional matches, per patch — the
+    lanes the two played against each other, how those lanes stood at 10 minutes and how many of the matches the
+    hero's side won. Both orderings are present, so start from either hero.
+  sql_table: marts.lane_matchups
+  meta:
+    dst:
+      grain: one row per patch, the hero's lane, hero and opponent hero
+      key:
+      - patch_id
+      - lane_role
+      - hero_id
+      - opponent_hero_id
+      population: Laning players in parsed professional matches in leagues OpenDota rates premium or professional
+        that reached minute 10, in lanes 1-3 against at least one enemy hero. Jungle, roaming and unparsed lanes
+        have no row, so a hero's games here are fewer than its picks. Leagues it rates below professional are not
+        counted.
+  joins:
+  - name: heroes
+    relationship: many_to_one
+    sql: '{CUBE}.hero_id = {heroes}.hero_id'
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  dimensions:
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - '7.39'
+        - '7.40'
+        - '7.41'
+  - name: lane_role
+    sql: '{CUBE}.lane_role'
+    type: number
+    description: 'The hero''s lane relative to its side: 1 safe lane, 2 mid, 3 off lane; the opponent''s is the
+      mirror.'
+    primary_key: true
+    public: true
+  - name: lane_name
+    sql: '{CUBE}.lane_name'
+    type: string
+    description: 'The hero''s own lane: safe lane, mid or off lane.'
+    meta:
+      dst:
+        dictionary:
+        - off lane
+        - safe lane
+        - mid
+  - name: hero_id
+    sql: '{CUBE}.hero_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: hero_name
+    sql: '{CUBE}.hero_name'
+    type: string
+    description: The hero the counts are measured for.
+  - name: opponent_hero_id
+    sql: '{CUBE}.opponent_hero_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: opponent_hero_name
+    sql: '{CUBE}.opponent_hero_name'
+    type: string
+    description: The enemy hero in the same map lane.
+  - name: games
+    sql: '{CUBE}.games'
+    type: number
+    description: Parsed pro matches in which the two laned against each other.
+  - name: lanes_won
+    sql: '{CUBE}.lanes_won'
+    type: number
+    description: Of those, lanes the hero's side had won at 10 minutes (the lane_outcome term).
+  - name: lanes_drawn
+    sql: '{CUBE}.lanes_drawn'
+    type: number
+    description: Of those, lanes drawn at 10 minutes, within 400 gold either way.
+  - name: lanes_lost
+    sql: '{CUBE}.lanes_lost'
+    type: number
+    description: Of those, lanes the hero's side had lost at 10 minutes.
+  - name: wins
+    sql: '{CUBE}.wins'
+    type: number
+    description: Of those matches, the ones the hero's side won.
+  measures:
+  - name: lane_matchup_games
+    title: lane_matchup_games
+    description: Parsed pro matches in which the two heroes laned against each other (the lane_matchup term); the
+      sample size beside every rate, and what to rank by for a hero's most common lane opponents.
+    type: sum
+    sql: '{CUBE}.games'
+  - name: lane_matchup_lanes_won
+    title: lane_matchup_lanes_won
+    description: Of those, lanes the hero's side had won at 10 minutes (the lane_outcome term).
+    type: sum
+    sql: '{CUBE}.lanes_won'
+  - name: lane_matchup_lanes_lost
+    title: lane_matchup_lanes_lost
+    description: Of those, lanes the hero's side had lost at 10 minutes.
+    type: sum
+    sql: '{CUBE}.lanes_lost'
+  - name: lane_matchup_wins
+    title: lane_matchup_wins
+    description: 'Of those matches, the ones the hero''s side won: a match win, not a lane win.'
+    type: sum
+    sql: '{CUBE}.wins'
+  - name: lane_matchup_win_rate
+    title: lane_matchup_win_rate
+    description: Share of the lanes against opponent_hero_name that hero_name's side had won at 10 minutes (the
+      lane_outcome term); null under 20 games (the minimum_games term). Filter opponent_hero_name to the hero asked
+      about and rank hero_name highest first for the heroes that win the lane against it.
+    type: number
+    sql: CASE WHEN {lane_matchup_games} >= 20 THEN {lane_matchup_lanes_won} * 1.0 / NULLIF({lane_matchup_games},
+      0) END
+    format: percent
+    meta:
+      dst:
+        better: higher
+  segments:
+  - name: lane_matchup
+    sql: SUM({CUBE}.lanes_won) * 1.0 / SUM({CUBE}.games)
+    meta:
+      dst:
+        meaning: A hero against the enemy hero that stood in the same map lane in a pro match, counted on lane_matchups;
+          its lane win rate is the share of those lanes the hero's side had won at 10 minutes.
+        aliases:
+        - lane matchup
+        - lane matchups
+        - in lane against
+        - laned against
+        - lane opponent
+        - lane opponents
+        - wins the lane against
+        - beat in lane
+        - beats in lane
+        - lane counter
+        - lane counters
+        term: lane_matchup

@@ -1,0 +1,419 @@
+cubes:
+- name: player_playstyle
+  title: player playstyle
+  description: 'How each professional player plays, per patch: teamfight participation, farm share, lane results,
+    the space_created proxy, wards, runes and buybacks, with the position they played most. The table for questions
+    about players — which players, which pros, who — rather than heroes.'
+  sql_table: marts.player_playstyle
+  meta:
+    dst:
+      grain: one row per player (Steam account) per patch
+      key:
+      - patch_id
+      - account_id
+      population: Players in parsed professional matches in leagues OpenDota rates premium or professional, in the
+        loaded window, by Steam account. Leagues it rates below professional are not counted.
+  joins:
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  - name: pro_players
+    relationship: many_to_one
+    sql: '{CUBE}.account_id = {pro_players}.account_id'
+  dimensions:
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - '7.39'
+        - '7.40'
+        - '7.41'
+  - name: account_id
+    sql: '{CUBE}.account_id'
+    type: number
+    description: Steam account id.
+    primary_key: true
+    public: true
+  - name: player_name
+    sql: '{CUBE}.player_name'
+    type: string
+    description: The pro name when OpenDota lists the account, else the Steam persona, from the player's latest
+      match on the patch.
+  - name: pro_name
+    sql: '{CUBE}.pro_name'
+    type: string
+    description: Competitive name; null for players OpenDota does not list as pro.
+  - name: main_position
+    sql: '{CUBE}.main_position'
+    type: number
+    description: The position (1-5) the player played most on the patch.
+  - name: main_position_name
+    sql: '{CUBE}.main_position_name'
+    type: string
+    description: 'main_position as a word: carry, mid, offlane, soft support or hard support; the filter for questions
+      about carries, mids, offlaners or supports.'
+    meta:
+      dst:
+        dictionary:
+        - mid
+        - carry
+        - soft support
+        - offlane
+        - hard support
+  - name: games
+    sql: '{CUBE}.games'
+    type: number
+    description: 'Player-games in the row: the sample size. Rankings keep rows with games >= 10 (the player_minimum_games
+      term).'
+  - name: wins
+    sql: '{CUBE}.wins'
+    type: number
+  - name: game_minutes
+    sql: '{CUBE}.game_minutes'
+    type: number
+    description: Minutes played, summed.
+  - name: match_fights
+    sql: '{CUBE}.match_fights'
+    type: number
+    description: Teamfights in those games.
+  - name: fights_present
+    sql: '{CUBE}.fights_present'
+    type: number
+    description: Teamfights the player was present in (damaged or healed a hero, died or got a kill inside the window).
+  - name: fight_kills
+    sql: '{CUBE}.fight_kills'
+    type: number
+  - name: fight_deaths
+    sql: '{CUBE}.fight_deaths'
+    type: number
+    description: Deaths inside teamfight windows.
+  - name: deaths_outside_fights
+    sql: '{CUBE}.deaths_outside_fights'
+    type: number
+    description: 'Deaths outside any teamfight window: pick-offs, ganks, deaths to creeps or towers.'
+  - name: fight_damage
+    sql: '{CUBE}.fight_damage'
+    type: number
+    description: Hero damage dealt inside teamfight windows.
+  - name: fight_gold_delta
+    sql: '{CUBE}.fight_gold_delta'
+    type: number
+    description: Gold gained over teamfight windows (passive income included).
+  - name: farm_games_10
+    sql: '{CUBE}.farm_games_10'
+    type: number
+    description: Games that reached minute 10.
+  - name: farm_share_10_total
+    sql: '{CUBE}.farm_share_10_total'
+    type: number
+    description: Share of the side's gold at minute 10, summed over games; divide by farm_games_10.
+  - name: farm_games_20
+    sql: '{CUBE}.farm_games_20'
+    type: number
+    description: Games that reached minute 20.
+  - name: farm_share_20_total
+    sql: '{CUBE}.farm_share_20_total'
+    type: number
+  - name: last_hits_10_total
+    sql: '{CUBE}.last_hits_10_total'
+    type: number
+  - name: lane_games
+    sql: '{CUBE}.lane_games'
+    type: number
+    description: Games with a lane result (laned in a map lane against at least one enemy hero).
+  - name: lanes_won
+    sql: '{CUBE}.lanes_won'
+    type: number
+  - name: lanes_drawn
+    sql: '{CUBE}.lanes_drawn'
+    type: number
+  - name: lanes_lost
+    sql: '{CUBE}.lanes_lost'
+    type: number
+  - name: avg_lane_gold_diff_10
+    sql: '{CUBE}.avg_lane_gold_diff_10'
+    type: number
+    description: Average gold lead of the player's lane over the enemy laners at minute 10 (per-hero averages).
+  - name: enemy_hero_damage_taken
+    sql: '{CUBE}.enemy_hero_damage_taken'
+    type: number
+    description: Damage taken from enemy heroes (space_created part 1).
+  - name: hero_kill_deaths
+    sql: '{CUBE}.hero_kill_deaths'
+    type: number
+    description: Deaths to enemy heroes.
+  - name: trade_deaths
+    sql: '{CUBE}.trade_deaths'
+    type: number
+    description: Deaths followed within 60 s by the side taking an enemy tower or Roshan (space_created part 2).
+  - name: observers_placed
+    sql: '{CUBE}.observers_placed'
+    type: number
+  - name: sentries_placed
+    sql: '{CUBE}.sentries_placed'
+    type: number
+  - name: runes_taken
+    sql: '{CUBE}.runes_taken'
+    type: number
+    description: Every rune in the log, water and wisdom included.
+  - name: buybacks
+    sql: '{CUBE}.buybacks'
+    type: number
+  measures:
+  - name: player_games
+    title: player_games
+    description: Player-games; the sample size to state beside every rate.
+    type: sum
+    sql: '{CUBE}.games'
+  - name: player_wins
+    title: player_wins
+    description: Games won, a count. Win rates belong to player_performances, which covers every pro match, not
+      only the parsed ones.
+    type: sum
+    sql: '{CUBE}.wins'
+  - name: player_match_fights
+    title: player_match_fights
+    description: Teamfights in the player's games, summed.
+    type: sum
+    sql: '{CUBE}.match_fights'
+  - name: player_fights_present
+    title: player_fights_present
+    description: Teamfights the player was present in, summed.
+    type: sum
+    sql: '{CUBE}.fights_present'
+  - name: player_fight_participation
+    title: player_fight_participation
+    description: Share of the teamfights in those games the player was present in (the fight_participation term).
+      Per named player; rank players (who, which pros) by it.
+    type: number
+    sql: CASE WHEN {player_games} >= 10 THEN {player_fights_present} * 1.0 / NULLIF({player_match_fights}, 0) END
+    format: percent
+    meta:
+      dst:
+        better: higher
+  - name: player_fight_deaths
+    title: player_fight_deaths
+    description: Deaths inside teamfight windows, summed.
+    type: sum
+    sql: '{CUBE}.fight_deaths'
+  - name: player_deaths_outside_fights
+    title: player_deaths_outside_fights
+    description: Deaths outside any teamfight window, summed.
+    type: sum
+    sql: '{CUBE}.deaths_outside_fights'
+  - name: player_fight_deaths_per_game
+    title: player_fight_deaths_per_game
+    description: Deaths inside teamfights per game. Per named player; rank players (who, which pros) by it.
+    type: number
+    sql: CASE WHEN {player_games} >= 10 THEN {player_fight_deaths} * 1.0 / NULLIF({player_games}, 0) END
+    meta:
+      dst:
+        better: lower
+  - name: player_deaths_outside_fights_per_game
+    title: player_deaths_outside_fights_per_game
+    description: Deaths outside teamfights (pick-offs, ganks, creeps, towers) per game. Per named player; rank players
+      (who, which pros) by it.
+    type: number
+    sql: CASE WHEN {player_games} >= 10 THEN {player_deaths_outside_fights} * 1.0 / NULLIF({player_games}, 0) END
+    meta:
+      dst:
+        better: lower
+  - name: player_fight_gold_delta
+    title: player_fight_gold_delta
+    description: Gold gained over teamfight windows, summed.
+    type: sum
+    sql: '{CUBE}.fight_gold_delta'
+  - name: player_fight_gold_per_game
+    title: player_fight_gold_per_game
+    description: Gold gained over teamfight windows per game (the gold swing of fights; passive income included).
+      Per named player; rank players (who, which pros) by it.
+    type: number
+    sql: CASE WHEN {player_games} >= 10 THEN {player_fight_gold_delta} * 1.0 / NULLIF({player_games}, 0) END
+    meta:
+      dst:
+        better: higher
+  - name: player_farm_games_10
+    title: player_farm_games_10
+    description: Games that reached minute 10.
+    type: sum
+    sql: '{CUBE}.farm_games_10'
+  - name: player_farm_share_10_total
+    title: player_farm_share_10_total
+    description: Share of the side's gold at minute 10, summed over games.
+    type: sum
+    sql: '{CUBE}.farm_share_10_total'
+  - name: player_farm_share_10
+    title: player_farm_share_10
+    description: Average share of the side's gold earned at minute 10 (the farm_share term). Per named player; rank
+      players (who, which pros) by it.
+    type: number
+    sql: CASE WHEN {player_games} >= 10 THEN {player_farm_share_10_total} * 1.0 / NULLIF({player_farm_games_10},
+      0) END
+    format: percent
+  - name: player_farm_games_20
+    title: player_farm_games_20
+    description: Games that reached minute 20.
+    type: sum
+    sql: '{CUBE}.farm_games_20'
+  - name: player_farm_share_20_total
+    title: player_farm_share_20_total
+    description: Share of the side's gold at minute 20, summed over games.
+    type: sum
+    sql: '{CUBE}.farm_share_20_total'
+  - name: player_farm_share_20
+    title: player_farm_share_20
+    description: Average share of the side's gold earned at minute 20 (the farm_share term). Per named player; rank
+      players (who, which pros) by it.
+    type: number
+    sql: CASE WHEN {player_games} >= 10 THEN {player_farm_share_20_total} * 1.0 / NULLIF({player_farm_games_20},
+      0) END
+    format: percent
+  - name: player_last_hits_10_total
+    title: player_last_hits_10_total
+    description: Last hits at minute 10, summed over games.
+    type: sum
+    sql: '{CUBE}.last_hits_10_total'
+  - name: player_last_hits_at_10
+    title: player_last_hits_at_10
+    description: Average last hits at minute 10. Per named player; rank players (who, which pros) by it.
+    type: number
+    sql: CASE WHEN {player_games} >= 10 THEN {player_last_hits_10_total} * 1.0 / NULLIF({player_farm_games_10},
+      0) END
+    meta:
+      dst:
+        better: higher
+  - name: player_lane_games
+    title: player_lane_games
+    description: Games with a lane result.
+    type: sum
+    sql: '{CUBE}.lane_games'
+  - name: player_lanes_won
+    title: player_lanes_won
+    description: Lanes won at 10 minutes.
+    type: sum
+    sql: '{CUBE}.lanes_won'
+  - name: player_lanes_lost
+    title: player_lanes_lost
+    description: Lanes lost at 10 minutes.
+    type: sum
+    sql: '{CUBE}.lanes_lost'
+  - name: player_lanes_drawn
+    title: player_lanes_drawn
+    description: Lanes drawn at 10 minutes.
+    type: sum
+    sql: '{CUBE}.lanes_drawn'
+  - name: player_lane_win_rate
+    title: player_lane_win_rate
+    description: Share of lanes won at 10 minutes (the lane_outcome term). Per named player; rank players (who,
+      which pros) by it.
+    type: number
+    sql: CASE WHEN {player_games} >= 10 THEN {player_lanes_won} * 1.0 / NULLIF({player_lane_games}, 0) END
+    format: percent
+    meta:
+      dst:
+        better: higher
+  - name: player_lane_loss_rate
+    title: player_lane_loss_rate
+    description: Share of lanes lost at 10 minutes (the lane_outcome term). Per named player; rank players (who,
+      which pros) by it.
+    type: number
+    sql: CASE WHEN {player_games} >= 10 THEN {player_lanes_lost} * 1.0 / NULLIF({player_lane_games}, 0) END
+    format: percent
+    meta:
+      dst:
+        better: lower
+  - name: player_lane_draw_rate
+    title: player_lane_draw_rate
+    description: Share of lanes drawn at 10 minutes, within 400 gold either way (the lane_outcome term); a share
+      of all lanes, so it carries no games floor. Per named player; rank players (who, which pros) by it.
+    type: number
+    sql: '{player_lanes_drawn} / NULLIF({player_lane_games}, 0)'
+    format: percent
+  - name: player_enemy_hero_damage_taken
+    title: player_enemy_hero_damage_taken
+    description: Damage taken from enemy heroes, summed.
+    type: sum
+    sql: '{CUBE}.enemy_hero_damage_taken'
+  - name: player_game_minutes
+    title: player_game_minutes
+    description: Minutes played, summed.
+    type: sum
+    sql: '{CUBE}.game_minutes'
+  - name: player_damage_absorbed_per_min
+    title: player_damage_absorbed_per_min
+    description: 'Damage taken from enemy heroes per game minute: attention absorbed, part 1 of the space_created
+      proxy. Per named player; rank players (who, which pros) by it.'
+    type: number
+    sql: CASE WHEN {player_games} >= 10 THEN {player_enemy_hero_damage_taken} * 1.0 / NULLIF({player_game_minutes},
+      0) END
+    meta:
+      dst:
+        better: higher
+  - name: player_hero_kill_deaths
+    title: player_hero_kill_deaths
+    description: Deaths to enemy heroes, summed.
+    type: sum
+    sql: '{CUBE}.hero_kill_deaths'
+  - name: player_trade_deaths
+    title: player_trade_deaths
+    description: Deaths the side traded for a tower or Roshan within 60 s, summed.
+    type: sum
+    sql: '{CUBE}.trade_deaths'
+  - name: player_trade_death_share
+    title: player_trade_death_share
+    description: 'Share of deaths to heroes that the side traded for a tower or Roshan within 60 s: part 2 of the
+      space_created proxy. Per named player; rank players (who, which pros) by it.'
+    type: number
+    sql: CASE WHEN {player_games} >= 10 THEN {player_trade_deaths} * 1.0 / NULLIF({player_hero_kill_deaths}, 0)
+      END
+    format: percent
+    meta:
+      dst:
+        better: higher
+  - name: player_observers_placed
+    title: player_observers_placed
+    description: Observer wards placed, summed.
+    type: sum
+    sql: '{CUBE}.observers_placed'
+  - name: player_sentries_placed
+    title: player_sentries_placed
+    description: Sentry wards placed, summed.
+    type: sum
+    sql: '{CUBE}.sentries_placed'
+  - name: player_runes_taken
+    title: player_runes_taken
+    description: Runes taken, summed.
+    type: sum
+    sql: '{CUBE}.runes_taken'
+  - name: player_buybacks
+    title: player_buybacks
+    description: Buybacks, summed.
+    type: sum
+    sql: '{CUBE}.buybacks'
+  - name: player_observers_per_game
+    title: player_observers_per_game
+    description: Observer wards placed per game. Per named player; rank players (who, which pros) by it.
+    type: number
+    sql: CASE WHEN {player_games} >= 10 THEN {player_observers_placed} * 1.0 / NULLIF({player_games}, 0) END
+  - name: player_sentries_per_game
+    title: player_sentries_per_game
+    description: Sentry wards placed per game. Per named player; rank players (who, which pros) by it.
+    type: number
+    sql: CASE WHEN {player_games} >= 10 THEN {player_sentries_placed} * 1.0 / NULLIF({player_games}, 0) END
+  - name: player_runes_per_game
+    title: player_runes_per_game
+    description: Runes taken per game. Per named player; rank players (who, which pros) by it.
+    type: number
+    sql: CASE WHEN {player_games} >= 10 THEN {player_runes_taken} * 1.0 / NULLIF({player_games}, 0) END
+  - name: player_buybacks_per_game
+    title: player_buybacks_per_game
+    description: Buybacks per game. Per named player; rank players (who, which pros) by it.
+    type: number
+    sql: CASE WHEN {player_games} >= 10 THEN {player_buybacks} * 1.0 / NULLIF({player_games}, 0) END

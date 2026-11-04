@@ -1,0 +1,153 @@
+cubes:
+- name: pub_hero_stats
+  title: pub hero stats
+  description: Hero games and wins in the public sample, per patch, rank bracket and game type. The table behind
+    every "best hero at bracket X" question.
+  sql: |-
+    SELECT * FROM marts.pub_hero_stats
+    WHERE game_type = 'ranked_all_pick'
+  meta:
+    dst:
+      grain: one row per hero per patch per bracket per game type
+      key:
+      - patch_id
+      - bracket_id
+      - game_type
+      - hero_id
+      population: Counted over a sample of public matchmaking games (the newest matches OpenDota lists at each load),
+        ranked All Pick only. Turbo and unranked games are excluded here.
+  joins:
+  - name: brackets
+    relationship: many_to_one
+    sql: '{CUBE}.bracket_id = {brackets}.bracket_id'
+  - name: heroes
+    relationship: many_to_one
+    sql: '{CUBE}.hero_id = {heroes}.hero_id'
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  dimensions:
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - '7.41'
+  - name: bracket_id
+    sql: '{CUBE}.bracket_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: bracket_name
+    sql: '{CUBE}.bracket_name'
+    type: string
+    description: Herald, Guardian, Crusader, Archon, Legend, Ancient, Divine, Immortal.
+    meta:
+      dst:
+        dictionary:
+        - Ancient
+        - Archon
+        - Crusader
+        - Divine
+        - Guardian
+        - Herald
+        - Legend
+        value_aliases:
+        - alias: heralds
+          value: Herald
+        - alias: guardians
+          value: Guardian
+        - alias: crusaders
+          value: Crusader
+        - alias: archons
+          value: Archon
+        - alias: legends
+          value: Legend
+        - alias: ancients
+          value: Ancient
+        - alias: divines
+          value: Divine
+  - name: game_type
+    sql: '{CUBE}.game_type'
+    type: string
+    primary_key: true
+    public: true
+    meta:
+      dst:
+        dictionary:
+        - ranked_all_pick
+        - turbo
+        - unranked_all_pick
+  - name: hero_id
+    sql: '{CUBE}.hero_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: hero_name
+    sql: '{CUBE}.hero_name'
+    type: string
+  - name: games
+    sql: '{CUBE}.games'
+    type: number
+    description: Sampled games the hero was picked in.
+  - name: wins
+    sql: '{CUBE}.wins'
+    type: number
+  - name: losses
+    sql: '{CUBE}.losses'
+    type: number
+  - name: matches_in_bracket
+    sql: '{CUBE}.matches_in_bracket'
+    type: number
+    description: Sampled matches at this patch, bracket and game type; repeats on every hero row, so never sum it
+      across heroes.
+  measures:
+  - name: hero_games
+    title: hero_games
+    description: Sampled games the hero was picked in; rank by it for the most-picked heroes at a bracket.
+    type: sum
+    sql: '{CUBE}.games'
+  - name: hero_wins
+    title: hero_wins
+    description: Of those, games won.
+    type: sum
+    sql: '{CUBE}.wins'
+  - name: hero_win_rate
+    title: hero_win_rate
+    description: Wins divided by games for the hero over the selected brackets and patches; null under 20 games
+      (the minimum_games term), so a small sample cannot rank first.
+    type: number
+    sql: CASE WHEN {hero_games} >= 20 THEN {hero_wins} * 1.0 / NULLIF({hero_games}, 0) END
+    format: percent
+    meta:
+      dst:
+        better: higher
+  - name: bracket_matches
+    title: bracket_matches
+    description: 'Sampled matches at the hero''s brackets and patches: the denominator of its pick rate. Read it
+      grouped or filtered by hero; summed over several heroes it counts each match once per hero.'
+    type: sum
+    sql: '{CUBE}.matches_in_bracket'
+  - name: pub_pick_rate
+    title: pub_pick_rate
+    description: Share of sampled matches at the bracket in which the hero was picked (the pub_pick_rate term).
+      Group or filter by hero; report hero_games beside it.
+    type: number
+    sql: '{hero_games} / NULLIF({bracket_matches}, 0)'
+    format: percent
+  segments:
+  - name: pub_pick_rate
+    sql: SUM({CUBE}.games) * 1.0 / SUM({CUBE}.matches_in_bracket)
+    meta:
+      dst:
+        meaning: Share of sampled public matches in which a hero was picked, at a bracket and patch.
+        aliases:
+        - pub popularity
+        - how often picked in pubs
+        term: pub_pick_rate

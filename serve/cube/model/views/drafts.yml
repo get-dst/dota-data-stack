@@ -1,0 +1,545 @@
+views:
+- name: drafts_lens
+  title: Dota 2 pro drafts
+  description: Picks, bans, draft phases, matchups, lane pairs and team lineups in professional Dota 2 matches from
+    OpenDota.
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: hero_draft_stats
+    includes:
+    - patch_id
+    - patch_name
+    - hero_id
+    - hero_name
+    - drafted_matches
+    - picks
+    - bans
+    - contests
+    - first_phase_bans
+    - first_picks
+    - last_picks
+    - wins
+    - picks_phase_1
+    - wins_phase_1
+    - picks_phase_2
+    - wins_phase_2
+    - picks_phase_3
+    - wins_phase_3
+    - hero_draft_picks
+    - hero_draft_bans
+    - hero_contests
+    - hero_first_phase_bans
+    - hero_first_picks
+    - hero_last_picks
+    - hero_draft_wins
+    - drafted_matches_total
+    - phase_1_picks
+    - phase_1_wins
+    - phase_2_picks
+    - phase_2_wins
+    - phase_3_picks
+    - phase_3_wins
+    - contest_rate
+    - draft_pick_rate
+    - draft_ban_rate
+    - first_phase_ban_rate
+    - first_pick_rate
+    - last_pick_rate
+    - draft_win_rate
+    - phase_1_win_rate
+    - phase_2_win_rate
+    - phase_3_win_rate
+    - first_phase
+    - first_pick
+    - last_pick
+    prefix: true
+  - join_path: draft_phases
+    includes:
+    - match_id
+    - draft_order
+    - action
+    - is_pick
+    - is_ban
+    - draft_phase
+    - phase_name
+    - match_pick_number
+    - team_pick_number
+    - match_ban_number
+    - is_first_pick
+    - is_last_pick
+    - is_first_pick_side
+    - hero_id
+    - hero_name
+    - is_radiant
+    - side
+    - team_id
+    - team_name
+    - opponent_team_name
+    - side_won
+    - started_at
+    - match_date
+    - patch_id
+    - patch_name
+    - league_id
+    - league_name
+    - phase_picks
+    - phase_bans
+    - drafted_match_count
+    - pick_wins
+    - pick_win_rate
+    - first_pick_matches
+    - first_pick_side_wins
+    - first_pick_side_win_rate
+    prefix: true
+  - join_path: pro_draft_matchups
+    includes:
+    - patch_id
+    - patch_name
+    - hero_id
+    - hero_name
+    - opponent_hero_id
+    - opponent_hero_name
+    - games
+    - wins
+    - pro_matchup_games
+    - pro_matchup_wins
+    - pro_matchup_win_rate
+    - pro_counter
+    prefix: true
+  - join_path: lane_pairings
+    includes:
+    - patch_id
+    - patch_name
+    - lane_role
+    - lane_name
+    - hero_id
+    - hero_name
+    - position
+    - partner_hero_id
+    - partner_hero_name
+    - partner_position
+    - games
+    - wins
+    - lane_pair_games
+    - lane_pair_wins
+    - lane_pair_win_rate
+    - lane_pair
+    prefix: true
+  - join_path: team_lineups
+    includes:
+    - match_id
+    - is_radiant
+    - side
+    - team_id
+    - team_name
+    - opponent_team_name
+    - lineup_key
+    - carry_hero
+    - mid_hero
+    - offlane_hero
+    - soft_support_hero
+    - hard_support_hero
+    - is_win
+    - started_at
+    - match_date
+    - patch_id
+    - patch_name
+    - league_id
+    - league_name
+    - lineup_games
+    - lineup_wins
+    - lineup_win_rate
+    prefix: true
+  - join_path: team_signature_heroes
+    includes:
+    - team_id
+    - team_name
+    - patch_id
+    - patch_name
+    - hero_id
+    - hero_name
+    - games
+    - wins
+    - team_matches
+    - team_pick_rate
+    - field_pick_rate
+    - pick_rate_lift
+    - team_hero_games
+    - team_hero_wins
+    - team_hero_win_rate
+    - signature_lift
+    prefix: true
+  - join_path: heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    - hero_count
+    prefix: true
+  - join_path: patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    - patch_count
+    prefix: true
+  - join_path: teams
+    includes:
+    - team_id
+    - team_name
+    - team_tag
+    - rating
+    - all_time_wins
+    - all_time_losses
+    - last_match_at
+    - is_ranked
+    - loaded_matches
+    - last_loaded_match_at
+    - team_count
+    - avg_rating
+    prefix: true
+- name: drafts_draft_phases
+  title: 'Dota 2 pro drafts: draft_phases with its dimensions'
+  description: draft_phases with the dimensions of heroes, patches, teams joined (the drafts lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: draft_phases
+    includes:
+    - match_id
+    - draft_order
+    - action
+    - is_pick
+    - is_ban
+    - draft_phase
+    - phase_name
+    - match_pick_number
+    - team_pick_number
+    - match_ban_number
+    - is_first_pick
+    - is_last_pick
+    - is_first_pick_side
+    - hero_id
+    - hero_name
+    - is_radiant
+    - side
+    - team_id
+    - team_name
+    - opponent_team_name
+    - side_won
+    - started_at
+    - match_date
+    - patch_id
+    - patch_name
+    - league_id
+    - league_name
+    - phase_picks
+    - phase_bans
+    - drafted_match_count
+    - pick_wins
+    - pick_win_rate
+    - first_pick_matches
+    - first_pick_side_wins
+    - first_pick_side_win_rate
+    prefix: true
+  - join_path: draft_phases.heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    prefix: true
+  - join_path: draft_phases.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+  - join_path: draft_phases.teams
+    includes:
+    - team_id
+    - team_name
+    - team_tag
+    - rating
+    - all_time_wins
+    - all_time_losses
+    - last_match_at
+    - is_ranked
+    - loaded_matches
+    - last_loaded_match_at
+    prefix: true
+- name: drafts_hero_draft_stats
+  title: 'Dota 2 pro drafts: hero_draft_stats with its dimensions'
+  description: hero_draft_stats with the dimensions of heroes, patches joined (the drafts lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: hero_draft_stats
+    includes:
+    - patch_id
+    - patch_name
+    - hero_id
+    - hero_name
+    - drafted_matches
+    - picks
+    - bans
+    - contests
+    - first_phase_bans
+    - first_picks
+    - last_picks
+    - wins
+    - picks_phase_1
+    - wins_phase_1
+    - picks_phase_2
+    - wins_phase_2
+    - picks_phase_3
+    - wins_phase_3
+    - hero_draft_picks
+    - hero_draft_bans
+    - hero_contests
+    - hero_first_phase_bans
+    - hero_first_picks
+    - hero_last_picks
+    - hero_draft_wins
+    - drafted_matches_total
+    - phase_1_picks
+    - phase_1_wins
+    - phase_2_picks
+    - phase_2_wins
+    - phase_3_picks
+    - phase_3_wins
+    - contest_rate
+    - draft_pick_rate
+    - draft_ban_rate
+    - first_phase_ban_rate
+    - first_pick_rate
+    - last_pick_rate
+    - draft_win_rate
+    - phase_1_win_rate
+    - phase_2_win_rate
+    - phase_3_win_rate
+    - first_phase
+    - first_pick
+    - last_pick
+    prefix: true
+  - join_path: hero_draft_stats.heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    prefix: true
+  - join_path: hero_draft_stats.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+- name: drafts_lane_pairings
+  title: 'Dota 2 pro drafts: lane_pairings with its dimensions'
+  description: lane_pairings with the dimensions of heroes, patches joined (the drafts lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: lane_pairings
+    includes:
+    - patch_id
+    - patch_name
+    - lane_role
+    - lane_name
+    - hero_id
+    - hero_name
+    - position
+    - partner_hero_id
+    - partner_hero_name
+    - partner_position
+    - games
+    - wins
+    - lane_pair_games
+    - lane_pair_wins
+    - lane_pair_win_rate
+    - lane_pair
+    prefix: true
+  - join_path: lane_pairings.heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    prefix: true
+  - join_path: lane_pairings.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+- name: drafts_pro_draft_matchups
+  title: 'Dota 2 pro drafts: pro_draft_matchups with its dimensions'
+  description: pro_draft_matchups with the dimensions of heroes, patches joined (the drafts lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: pro_draft_matchups
+    includes:
+    - patch_id
+    - patch_name
+    - hero_id
+    - hero_name
+    - opponent_hero_id
+    - opponent_hero_name
+    - games
+    - wins
+    - pro_matchup_games
+    - pro_matchup_wins
+    - pro_matchup_win_rate
+    - pro_counter
+    prefix: true
+  - join_path: pro_draft_matchups.heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    prefix: true
+  - join_path: pro_draft_matchups.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+- name: drafts_team_lineups
+  title: 'Dota 2 pro drafts: team_lineups with its dimensions'
+  description: team_lineups with the dimensions of patches, teams joined (the drafts lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: team_lineups
+    includes:
+    - match_id
+    - is_radiant
+    - side
+    - team_id
+    - team_name
+    - opponent_team_name
+    - lineup_key
+    - carry_hero
+    - mid_hero
+    - offlane_hero
+    - soft_support_hero
+    - hard_support_hero
+    - is_win
+    - started_at
+    - match_date
+    - patch_id
+    - patch_name
+    - league_id
+    - league_name
+    - lineup_games
+    - lineup_wins
+    - lineup_win_rate
+    prefix: true
+  - join_path: team_lineups.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+  - join_path: team_lineups.teams
+    includes:
+    - team_id
+    - team_name
+    - team_tag
+    - rating
+    - all_time_wins
+    - all_time_losses
+    - last_match_at
+    - is_ranked
+    - loaded_matches
+    - last_loaded_match_at
+    prefix: true
+- name: drafts_team_signature_heroes
+  title: 'Dota 2 pro drafts: team_signature_heroes with its dimensions'
+  description: team_signature_heroes with the dimensions of heroes, patches, teams joined (the drafts lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: team_signature_heroes
+    includes:
+    - team_id
+    - team_name
+    - patch_id
+    - patch_name
+    - hero_id
+    - hero_name
+    - games
+    - wins
+    - team_matches
+    - team_pick_rate
+    - field_pick_rate
+    - pick_rate_lift
+    - team_hero_games
+    - team_hero_wins
+    - team_hero_win_rate
+    - signature_lift
+    prefix: true
+  - join_path: team_signature_heroes.heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    prefix: true
+  - join_path: team_signature_heroes.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+  - join_path: team_signature_heroes.teams
+    includes:
+    - team_id
+    - team_name
+    - team_tag
+    - rating
+    - all_time_wins
+    - all_time_losses
+    - last_match_at
+    - is_ranked
+    - loaded_matches
+    - last_loaded_match_at
+    prefix: true

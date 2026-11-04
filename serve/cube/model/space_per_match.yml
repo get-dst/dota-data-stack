@@ -1,0 +1,175 @@
+cubes:
+- name: space_per_match
+  title: space per match
+  description: 'One player''s space_created proxy (the term) in one parsed professional match: damage absorbed from
+    enemy heroes per game minute, and deaths the side traded for a tower or Roshan within 60 seconds.'
+  sql_table: marts.space_created
+  meta:
+    dst:
+      grain: one row per player per parsed match
+      key:
+      - match_id
+      - player_slot
+      population: Players in parsed professional matches in leagues OpenDota rates premium or professional, in the
+        loaded window. Leagues it rates below professional are not counted.
+  joins:
+  - name: heroes
+    relationship: many_to_one
+    sql: '{CUBE}.hero_id = {heroes}.hero_id'
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  - name: pro_matches
+    relationship: many_to_one
+    sql: '{CUBE}.match_id = {pro_matches}.match_id'
+  - name: teams
+    relationship: many_to_one
+    sql: '{CUBE}.team_id = {teams}.team_id'
+  dimensions:
+  - name: match_id
+    sql: '{CUBE}.match_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: player_slot
+    sql: '{CUBE}.player_slot'
+    type: number
+    description: 0-4 Radiant, 128-132 Dire.
+    primary_key: true
+    public: true
+  - name: is_radiant
+    sql: '{CUBE}.is_radiant'
+    type: boolean
+  - name: team_id
+    sql: '{CUBE}.team_id'
+    type: number
+  - name: team_name
+    sql: '{CUBE}.team_name'
+    type: string
+    description: Team name as the match record carries it; null when OpenDota lists no team for the side, so a team
+      ranking leaves the null rows out.
+  - name: account_id
+    sql: '{CUBE}.account_id'
+    type: number
+  - name: player_name
+    sql: '{CUBE}.player_name'
+    type: string
+  - name: hero_id
+    sql: '{CUBE}.hero_id'
+    type: number
+  - name: hero_name
+    sql: '{CUBE}.hero_name'
+    type: string
+  - name: position
+    sql: '{CUBE}.position'
+    type: number
+    description: 1 carry, 2 mid, 3 offlane, 4 soft support, 5 hard support; null for jungle, roaming or unparsed
+      lanes.
+  - name: position_name
+    sql: '{CUBE}.position_name'
+    type: string
+    description: 'The position as a word: carry, mid, offlane, soft support or hard support; the filter for questions
+      about carries, mids, offlaners or supports.'
+    meta:
+      dst:
+        dictionary:
+        - mid
+        - carry
+        - offlane
+        - hard support
+        - soft support
+  - name: is_win
+    sql: '{CUBE}.is_win'
+    type: boolean
+  - name: duration_min
+    sql: '{CUBE}.duration_min'
+    type: number
+  - name: enemy_hero_damage_taken
+    sql: '{CUBE}.enemy_hero_damage_taken'
+    type: number
+  - name: enemy_hero_damage_taken_per_min
+    sql: '{CUBE}.enemy_hero_damage_taken_per_min'
+    type: number
+    description: Damage taken from enemy heroes per game minute.
+  - name: total_deaths
+    sql: '{CUBE}.total_deaths'
+    type: number
+  - name: hero_kill_deaths
+    sql: '{CUBE}.hero_kill_deaths'
+    type: number
+    description: Deaths to enemy heroes.
+  - name: trade_deaths
+    sql: '{CUBE}.trade_deaths'
+    type: number
+  - name: trade_death_share
+    sql: '{CUBE}.trade_death_share'
+    type: number
+    description: 0-1; null without a death to a hero.
+  - name: match_date
+    sql: '{CUBE}.match_date'
+    type: time
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - '7.39'
+        - '7.41'
+        - '7.40'
+  - name: league_id
+    sql: '{CUBE}.league_id'
+    type: number
+  - name: league_name
+    sql: '{CUBE}.league_name'
+    type: string
+  measures:
+  - name: space_player_games
+    title: space_player_games
+    description: Player-games (rows).
+    type: count
+    sql: '{CUBE}.match_id'
+  - name: space_matches
+    title: space_matches
+    description: Distinct matches in scope; a team's games. The team space rates are null under 20 of them.
+    type: count_distinct
+    sql: '{CUBE}.match_id'
+  - name: damage_absorbed_per_min_total
+    title: damage_absorbed_per_min_total
+    description: Per-game damage absorbed per minute, summed over player-games; divide by space_player_games.
+    type: sum
+    sql: '{CUBE}.enemy_hero_damage_taken_per_min'
+  - name: team_damage_absorbed_per_min
+    title: team_damage_absorbed_per_min
+    description: Damage taken from enemy heroes per game minute, averaged over player-games of a team, league or
+      date (space_created part 1); null under 20 matches. A hero, position or player rate is hero_playstyle.damage_absorbed_per_min
+      or player_playstyle.
+    type: number
+    sql: CASE WHEN {space_matches} >= 20 THEN {damage_absorbed_per_min_total} * 1.0 / NULLIF({space_player_games},
+      0) END
+    meta:
+      dst:
+        better: higher
+  - name: traded_deaths
+    title: traded_deaths
+    description: Deaths the side traded for a tower or Roshan within 60 s, summed.
+    type: sum
+    sql: '{CUBE}.trade_deaths'
+  - name: deaths_to_heroes
+    title: deaths_to_heroes
+    description: Deaths to enemy heroes, summed.
+    type: sum
+    sql: '{CUBE}.hero_kill_deaths'
+  - name: team_traded_death_share
+    title: team_traded_death_share
+    description: Share of deaths to heroes traded for a tower or Roshan within 60 s (space_created part 2), for
+      a team, league or date; null under 20 matches.
+    type: number
+    sql: CASE WHEN {space_matches} >= 20 THEN {traded_deaths} * 1.0 / NULLIF({deaths_to_heroes}, 0) END
+    format: percent
+    meta:
+      dst:
+        better: higher

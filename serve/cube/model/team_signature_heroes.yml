@@ -1,0 +1,105 @@
+cubes:
+- name: team_signature_heroes
+  title: team signature heroes
+  description: Per team, hero and patch — how often the team played the hero and won with it, beside how often all
+    pro teams played it. The table for a team's most-played and signature heroes.
+  sql_table: marts.team_signature_heroes
+  meta:
+    dst:
+      grain: one row per identified team, hero and patch
+      key:
+      - team_id
+      - patch_id
+      - hero_id
+      population: Professional matches in leagues OpenDota rates premium or professional in which OpenDota tied
+        the side to a team; only heroes the team played at least once on the patch have a row. Leagues it rates
+        below professional are not counted.
+  joins:
+  - name: heroes
+    relationship: many_to_one
+    sql: '{CUBE}.hero_id = {heroes}.hero_id'
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  - name: teams
+    relationship: many_to_one
+    sql: '{CUBE}.team_id = {teams}.team_id'
+  dimensions:
+  - name: team_id
+    sql: '{CUBE}.team_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: team_name
+    sql: '{CUBE}.team_name'
+    type: string
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - '7.39'
+        - '7.41'
+        - '7.40'
+  - name: hero_id
+    sql: '{CUBE}.hero_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: hero_name
+    sql: '{CUBE}.hero_name'
+    type: string
+  - name: games
+    sql: '{CUBE}.games'
+    type: number
+    description: The team's matches on the patch with the hero.
+  - name: wins
+    sql: '{CUBE}.wins'
+    type: number
+  - name: team_matches
+    sql: '{CUBE}.team_matches'
+    type: number
+    description: All of the team's matches on the patch; repeats on every row of the team and patch.
+  - name: team_pick_rate
+    sql: '{CUBE}.team_pick_rate'
+    type: number
+    description: games / team_matches for this row.
+  - name: field_pick_rate
+    sql: '{CUBE}.field_pick_rate'
+    type: number
+    description: Share of all pro matches on the patch with the hero on either side.
+  - name: pick_rate_lift
+    sql: '{CUBE}.pick_rate_lift'
+    type: number
+    description: team_pick_rate minus field_pick_rate; how much more the team plays the hero than the field does.
+  measures:
+  - name: team_hero_games
+    title: team_hero_games
+    description: The team's matches with the hero; rank by it for a team's most-played heroes.
+    type: sum
+    sql: '{CUBE}.games'
+  - name: team_hero_wins
+    title: team_hero_wins
+    description: Of those, matches the team won.
+    type: sum
+    sql: '{CUBE}.wins'
+  - name: team_hero_win_rate
+    title: team_hero_win_rate
+    description: Share of the team's matches with the hero that it won; null under 20 games (the minimum_games term).
+    type: number
+    sql: CASE WHEN {team_hero_games} >= 20 THEN {team_hero_wins} * 1.0 / NULLIF({team_hero_games}, 0) END
+    format: percent
+    meta:
+      dst:
+        better: higher
+  - name: signature_lift
+    title: signature_lift
+    description: pick_rate_lift of the row; read within one patch.
+    type: max
+    sql: '{CUBE}.pick_rate_lift'

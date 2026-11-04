@@ -1,0 +1,37 @@
+cubes:
+- name: brackets
+  title: brackets
+  description: The eight rank brackets, Herald to Immortal.
+  sql_table: marts.dim_bracket
+  meta:
+    dst:
+      grain: one row per bracket
+      key:
+      - bracket_id
+  dimensions:
+  - name: bracket_id
+    sql: '{CUBE}.bracket_id'
+    type: number
+    description: 1 Herald, 2 Guardian, 3 Crusader, 4 Archon, 5 Legend, 6 Ancient, 7 Divine, 8 Immortal.
+    primary_key: true
+    public: true
+  - name: bracket_name
+    sql: '{CUBE}.bracket_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - Ancient
+        - Archon
+        - Crusader
+        - Divine
+        - Guardian
+        - Herald
+        - Immortal
+        - Legend
+  measures:
+  - name: bracket_count
+    title: bracket_count
+    description: Number of rank brackets.
+    type: count
+    sql: '{CUBE}.bracket_id'

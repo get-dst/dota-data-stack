@@ -1,0 +1,115 @@
+cubes:
+- name: advantage_timeline
+  title: advantage timeline
+  description: The gold and experience advantage of a professional match minute by minute, from the Radiant side
+    and from the eventual winner's side.
+  sql_table: marts.gold_advantage_timeline
+  meta:
+    dst:
+      grain: one row per match per game minute, so counting rows counts match-minutes, not matches
+      key:
+      - match_id
+      - minute
+      population: Professional matches in leagues OpenDota rates premium or professional, in the loaded window,
+        whose per-minute advantage OpenDota supplies; a match without it has no rows. Leagues it rates below professional
+        are not counted.
+  joins:
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  - name: pro_matches
+    relationship: many_to_one
+    sql: '{CUBE}.match_id = {pro_matches}.match_id'
+  dimensions:
+  - name: match_id
+    sql: '{CUBE}.match_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: minute
+    sql: '{CUBE}.minute'
+    type: number
+    description: Game minute, 0 = the horn.
+    primary_key: true
+    public: true
+  - name: radiant_gold_adv
+    sql: '{CUBE}.radiant_gold_adv'
+    type: number
+    description: Radiant net worth minus Dire net worth at that minute; negative = Dire ahead.
+  - name: radiant_xp_adv
+    sql: '{CUBE}.radiant_xp_adv'
+    type: number
+    description: Radiant experience minus Dire experience at that minute; negative = Dire ahead.
+  - name: winner_gold_adv
+    sql: '{CUBE}.winner_gold_adv'
+    type: number
+    description: Gold advantage of the side that went on to win; negative = the winner was behind.
+  - name: winner_xp_adv
+    sql: '{CUBE}.winner_xp_adv'
+    type: number
+    description: Experience advantage of the side that went on to win; negative = the winner was behind.
+  - name: radiant_win
+    sql: '{CUBE}.radiant_win'
+    type: boolean
+  - name: started_at
+    sql: '{CUBE}.started_at'
+    type: time
+    description: Match start, UTC.
+  - name: match_date
+    sql: '{CUBE}.match_date'
+    type: time
+    description: Match start date, UTC.
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - '7.39'
+        - '7.41'
+        - '7.40'
+  - name: league_id
+    sql: '{CUBE}.league_id'
+    type: number
+  - name: league_name
+    sql: '{CUBE}.league_name'
+    type: string
+  measures:
+  - name: match_minutes
+    title: match_minutes
+    description: Match-minutes, i.e. rows.
+    type: count
+    sql: '{CUBE}.minute'
+  - name: matches
+    title: matches
+    description: Distinct matches.
+    type: count_distinct
+    sql: '{CUBE}.match_id'
+  - name: avg_radiant_gold_adv
+    title: avg_radiant_gold_adv
+    description: Average Radiant gold advantage.
+    type: avg
+    sql: '{CUBE}.radiant_gold_adv'
+  - name: avg_winner_gold_adv
+    title: avg_winner_gold_adv
+    description: Average gold advantage of the eventual winner.
+    type: avg
+    sql: '{CUBE}.winner_gold_adv'
+  - name: avg_winner_xp_adv
+    title: avg_winner_xp_adv
+    description: Average experience advantage of the eventual winner.
+    type: avg
+    sql: '{CUBE}.winner_xp_adv'
+  - name: max_radiant_gold_adv
+    title: max_radiant_gold_adv
+    description: Largest Radiant gold advantage.
+    type: max
+    sql: '{CUBE}.radiant_gold_adv'
+  - name: min_radiant_gold_adv
+    title: min_radiant_gold_adv
+    description: Most negative Radiant gold advantage, i.e. the largest Dire lead as a negative number.
+    type: min
+    sql: '{CUBE}.radiant_gold_adv'

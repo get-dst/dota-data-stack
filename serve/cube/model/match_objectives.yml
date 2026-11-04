@@ -1,0 +1,178 @@
+cubes:
+- name: match_objectives
+  title: match objectives
+  description: One professional match's first blood, first tower and first Roshan (when, which side, and whether
+    that side won), with Roshan kills and Aegis pickups per side.
+  sql_table: marts.match_objectives
+  meta:
+    dst:
+      grain: one row per match
+      key:
+      - match_id
+      population: Every professional match in the loaded window in a league OpenDota rates premium or professional.
+        A match whose objective log is empty (has_objective_log false) has null objective columns; first Roshan
+        columns are null when Roshan was never killed. Leagues it rates below professional are not counted.
+  joins:
+  - name: leagues
+    relationship: many_to_one
+    sql: '{CUBE}.league_id = {leagues}.league_id'
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  - name: pro_matches
+    relationship: one_to_one
+    sql: '{CUBE}.match_id = {pro_matches}.match_id'
+  dimensions:
+  - name: match_id
+    sql: '{CUBE}.match_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: started_at
+    sql: '{CUBE}.started_at'
+    type: time
+    description: Match start, UTC.
+  - name: match_date
+    sql: '{CUBE}.match_date'
+    type: time
+    description: Match start date, UTC.
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - '7.39'
+        - '7.41'
+        - '7.40'
+  - name: league_id
+    sql: '{CUBE}.league_id'
+    type: number
+  - name: league_name
+    sql: '{CUBE}.league_name'
+    type: string
+  - name: radiant_win
+    sql: '{CUBE}.radiant_win'
+    type: boolean
+  - name: winner_side
+    sql: '{CUBE}.winner_side'
+    type: string
+    description: radiant or dire.
+    meta:
+      dst:
+        dictionary:
+        - radiant
+        - dire
+  - name: radiant_team_name
+    sql: '{CUBE}.radiant_team_name'
+    type: string
+  - name: dire_team_name
+    sql: '{CUBE}.dire_team_name'
+    type: string
+  - name: has_objective_log
+    sql: '{CUBE}.has_objective_log'
+    type: boolean
+  - name: first_blood_min
+    sql: '{CUBE}.first_blood_min'
+    type: number
+    description: Game minute of first blood; negative before the horn.
+  - name: first_blood_side
+    sql: '{CUBE}.first_blood_side'
+    type: string
+    description: 'radiant or dire: the side that made the first kill.'
+    meta:
+      dst:
+        dictionary:
+        - radiant
+        - dire
+  - name: first_blood_side_won
+    sql: '{CUBE}.first_blood_side_won'
+    type: boolean
+  - name: first_tower_min
+    sql: '{CUBE}.first_tower_min'
+    type: number
+    description: Game minute the first tower fell.
+  - name: first_tower_side
+    sql: '{CUBE}.first_tower_side'
+    type: string
+    description: 'radiant or dire: the side that did not own the first tower to fall.'
+    meta:
+      dst:
+        dictionary:
+        - radiant
+        - dire
+  - name: first_tower_side_won
+    sql: '{CUBE}.first_tower_side_won'
+    type: boolean
+  - name: first_roshan_min
+    sql: '{CUBE}.first_roshan_min'
+    type: number
+    description: Game minute of the first Roshan kill; null when Roshan was never killed.
+  - name: first_roshan_side
+    sql: '{CUBE}.first_roshan_side'
+    type: string
+    description: 'radiant or dire: the side that killed Roshan first.'
+    meta:
+      dst:
+        dictionary:
+        - radiant
+        - dire
+  - name: first_roshan_side_won
+    sql: '{CUBE}.first_roshan_side_won'
+    type: boolean
+  - name: roshan_kills
+    sql: '{CUBE}.roshan_kills'
+    type: number
+    description: Roshan kills by both sides.
+  - name: radiant_roshan_kills
+    sql: '{CUBE}.radiant_roshan_kills'
+    type: number
+  - name: dire_roshan_kills
+    sql: '{CUBE}.dire_roshan_kills'
+    type: number
+  - name: radiant_aegis
+    sql: '{CUBE}.radiant_aegis'
+    type: number
+    description: Aegis pickups by Radiant heroes, stolen ones included.
+  - name: dire_aegis
+    sql: '{CUBE}.dire_aegis'
+    type: number
+    description: Aegis pickups by Dire heroes, stolen ones included.
+  - name: aegis_stolen
+    sql: '{CUBE}.aegis_stolen'
+    type: number
+    description: Aegis pickups by the side that did not kill Roshan.
+  measures:
+  - name: objective_matches
+    title: objective_matches
+    description: Pro matches.
+    type: count
+    sql: '{CUBE}.match_id'
+  - name: avg_first_tower_min
+    title: avg_first_tower_min
+    description: Average minute the first tower falls.
+    type: avg
+    sql: '{CUBE}.first_tower_min'
+  - name: avg_first_roshan_min
+    title: avg_first_roshan_min
+    description: Average minute of the first Roshan kill, over matches where Roshan died.
+    type: avg
+    sql: '{CUBE}.first_roshan_min'
+  - name: avg_roshan_kills
+    title: avg_roshan_kills
+    description: Roshan kills per match.
+    type: avg
+    sql: '{CUBE}.roshan_kills'
+  - name: total_roshan_kills
+    title: total_roshan_kills
+    description: Roshan kills by both sides, summed over matches.
+    type: sum
+    sql: '{CUBE}.roshan_kills'
+  - name: total_aegis_stolen
+    title: total_aegis_stolen
+    description: Aegis pickups by the side that did not kill Roshan, summed over matches.
+    type: sum
+    sql: '{CUBE}.aegis_stolen'

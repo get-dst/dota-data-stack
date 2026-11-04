@@ -1,0 +1,1095 @@
+views:
+- name: playstyle_lens
+  title: Dota 2 pro playstyle
+  description: How pros play — fights, farm, lanes, space, vision — from OpenDota's parsed pro matches.
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: hero_playstyle
+    includes:
+    - patch_id
+    - patch_name
+    - hero_id
+    - hero_name
+    - position
+    - position_name
+    - games_value
+    - wins_value
+    - game_minutes_value
+    - match_fights_value
+    - fights_present_value
+    - fight_kills
+    - fight_deaths_value
+    - deaths_outside_fights_value
+    - fight_damage
+    - fight_gold_delta_value
+    - farm_games_10_value
+    - farm_share_10_total_value
+    - farm_games_20_value
+    - farm_share_20_total_value
+    - last_hits_10_total_value
+    - lane_games_value
+    - lanes_won_value
+    - lanes_drawn_value
+    - lanes_lost_value
+    - avg_lane_gold_diff_10
+    - enemy_hero_damage_taken_value
+    - hero_kill_deaths_value
+    - trade_deaths_value
+    - observers_placed_value
+    - sentries_placed_value
+    - runes_taken_value
+    - buybacks_value
+    - games
+    - wins
+    - match_fights
+    - fights_present
+    - fight_participation
+    - fight_deaths
+    - deaths_outside_fights
+    - fight_deaths_per_game
+    - deaths_outside_fights_per_game
+    - fight_gold_delta
+    - fight_gold_per_game
+    - farm_games_10
+    - farm_share_10_total
+    - farm_share_10
+    - farm_games_20
+    - farm_share_20_total
+    - farm_share_20
+    - last_hits_10_total
+    - last_hits_at_10
+    - lane_games
+    - lanes_won
+    - lanes_lost
+    - lanes_drawn
+    - lane_win_rate
+    - lane_loss_rate
+    - lane_draw_rate
+    - enemy_hero_damage_taken
+    - game_minutes
+    - damage_absorbed_per_min
+    - hero_kill_deaths
+    - trade_deaths
+    - trade_death_share
+    - observers_placed
+    - sentries_placed
+    - runes_taken
+    - buybacks
+    - observers_per_game
+    - sentries_per_game
+    - runes_per_game
+    - buybacks_per_game
+    - farm_share
+    - fight_participation
+    - lane_outcome
+    - space_created
+    prefix: true
+  - join_path: player_playstyle
+    includes:
+    - patch_id
+    - patch_name
+    - account_id
+    - player_name
+    - pro_name
+    - main_position
+    - main_position_name
+    - games
+    - wins
+    - game_minutes
+    - match_fights
+    - fights_present
+    - fight_kills
+    - fight_deaths
+    - deaths_outside_fights
+    - fight_damage
+    - fight_gold_delta
+    - farm_games_10
+    - farm_share_10_total
+    - farm_games_20
+    - farm_share_20_total
+    - last_hits_10_total
+    - lane_games
+    - lanes_won
+    - lanes_drawn
+    - lanes_lost
+    - avg_lane_gold_diff_10
+    - enemy_hero_damage_taken
+    - hero_kill_deaths
+    - trade_deaths
+    - observers_placed
+    - sentries_placed
+    - runes_taken
+    - buybacks
+    - player_games
+    - player_wins
+    - player_match_fights
+    - player_fights_present
+    - player_fight_participation
+    - player_fight_deaths
+    - player_deaths_outside_fights
+    - player_fight_deaths_per_game
+    - player_deaths_outside_fights_per_game
+    - player_fight_gold_delta
+    - player_fight_gold_per_game
+    - player_farm_games_10
+    - player_farm_share_10_total
+    - player_farm_share_10
+    - player_farm_games_20
+    - player_farm_share_20_total
+    - player_farm_share_20
+    - player_last_hits_10_total
+    - player_last_hits_at_10
+    - player_lane_games
+    - player_lanes_won
+    - player_lanes_lost
+    - player_lanes_drawn
+    - player_lane_win_rate
+    - player_lane_loss_rate
+    - player_lane_draw_rate
+    - player_enemy_hero_damage_taken
+    - player_game_minutes
+    - player_damage_absorbed_per_min
+    - player_hero_kill_deaths
+    - player_trade_deaths
+    - player_trade_death_share
+    - player_observers_placed
+    - player_sentries_placed
+    - player_runes_taken
+    - player_buybacks
+    - player_observers_per_game
+    - player_sentries_per_game
+    - player_runes_per_game
+    - player_buybacks_per_game
+    prefix: true
+  - join_path: fights_per_match
+    includes:
+    - match_id
+    - player_slot
+    - is_radiant
+    - team_id
+    - team_name
+    - account_id
+    - player_name
+    - hero_id
+    - hero_name
+    - position
+    - position_name
+    - is_win
+    - match_fights
+    - fights_present
+    - fight_participation
+    - fight_kills
+    - fight_deaths
+    - total_deaths
+    - deaths_outside_fights
+    - fight_buybacks
+    - fight_damage
+    - fight_healing
+    - fight_gold_delta
+    - fight_xp_delta
+    - match_date
+    - patch_id
+    - patch_name
+    - league_id
+    - league_name
+    - duration_min
+    - fight_player_games
+    - fight_matches
+    - fights_in_games
+    - avg_teamfights_per_match
+    - fights_attended
+    - team_fight_participation
+    - avg_fight_gold_swing
+    - avg_deaths_outside_fights
+    - avg_fight_deaths
+    prefix: true
+  - join_path: farm_per_match
+    includes:
+    - match_id
+    - player_slot
+    - is_radiant
+    - team_id
+    - team_name
+    - account_id
+    - player_name
+    - hero_id
+    - hero_name
+    - position
+    - position_name
+    - is_win
+    - gold_10
+    - team_gold_10
+    - farm_share_10
+    - gold_20
+    - team_gold_20
+    - farm_share_20
+    - last_hits_10
+    - last_hits_20
+    - farm_rank_10
+    - net_worth
+    - networth_rank
+    - match_date
+    - patch_id
+    - patch_name
+    - league_id
+    - league_name
+    - duration_min
+    - farm_player_games
+    - avg_gold_at_10
+    - avg_lh_at_10
+    - farm_matches
+    - farm_share_10_sum
+    - team_farm_share_10
+    prefix: true
+  - join_path: lanes_per_match
+    includes:
+    - match_id
+    - player_slot
+    - is_radiant
+    - team_id
+    - team_name
+    - account_id
+    - player_name
+    - hero_id
+    - hero_name
+    - position
+    - position_name
+    - is_win
+    - lane
+    - lane_role
+    - own_laners
+    - enemy_laners
+    - gold_10
+    - last_hits_10
+    - xp_10
+    - gold_diff_10
+    - last_hits_diff_10
+    - xp_diff_10
+    - lane_gold_diff_10
+    - lane_last_hits_diff_10
+    - lane_result
+    - match_date
+    - patch_id
+    - patch_name
+    - league_id
+    - league_name
+    - laning_games
+    - lane_matches
+    - lanes_won_count
+    - lanes_drawn_count
+    - lanes_lost_count
+    - team_lane_win_rate
+    - team_lane_draw_rate
+    - team_lane_loss_rate
+    - avg_lane_gold_diff
+    prefix: true
+  - join_path: lane_matchups
+    includes:
+    - patch_id
+    - patch_name
+    - lane_role
+    - lane_name
+    - hero_id
+    - hero_name
+    - opponent_hero_id
+    - opponent_hero_name
+    - games
+    - lanes_won
+    - lanes_drawn
+    - lanes_lost
+    - wins
+    - lane_matchup_games
+    - lane_matchup_lanes_won
+    - lane_matchup_lanes_lost
+    - lane_matchup_wins
+    - lane_matchup_win_rate
+    - lane_matchup
+    prefix: true
+  - join_path: space_per_match
+    includes:
+    - match_id
+    - player_slot
+    - is_radiant
+    - team_id
+    - team_name
+    - account_id
+    - player_name
+    - hero_id
+    - hero_name
+    - position
+    - position_name
+    - is_win
+    - duration_min
+    - enemy_hero_damage_taken
+    - enemy_hero_damage_taken_per_min
+    - total_deaths
+    - hero_kill_deaths
+    - trade_deaths
+    - trade_death_share
+    - match_date
+    - patch_id
+    - patch_name
+    - league_id
+    - league_name
+    - space_player_games
+    - space_matches
+    - damage_absorbed_per_min_total
+    - team_damage_absorbed_per_min
+    - traded_deaths
+    - deaths_to_heroes
+    - team_traded_death_share
+    prefix: true
+  - join_path: vision_per_match
+    includes:
+    - match_id
+    - player_slot
+    - is_radiant
+    - team_id
+    - team_name
+    - account_id
+    - player_name
+    - hero_id
+    - hero_name
+    - position
+    - position_name
+    - is_win
+    - observers_placed
+    - sentries_placed
+    - observers_before_10
+    - sentries_before_10
+    - runes_taken
+    - bounty_runes
+    - power_runes
+    - water_runes
+    - wisdom_runes
+    - double_damage_runes
+    - haste_runes
+    - illusion_runes
+    - invisibility_runes
+    - regeneration_runes
+    - arcane_runes
+    - shield_runes
+    - buybacks
+    - first_buyback_min
+    - duration_min
+    - match_date
+    - patch_id
+    - patch_name
+    - league_id
+    - league_name
+    - vision_player_games
+    - matches
+    - avg_observers
+    - avg_sentries
+    - total_observers
+    - total_sentries
+    - total_bounty_runes
+    - total_power_runes
+    - total_wisdom_runes
+    - total_water_runes
+    - total_buybacks
+    - avg_first_buyback_min
+    - team_observers_per_match
+    - team_sentries_per_match
+    - power_runes_per_game
+    - bounty_runes_per_game
+    - wisdom_runes_per_game
+    prefix: true
+  - join_path: heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    - hero_count
+    prefix: true
+  - join_path: patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    - patch_count
+    prefix: true
+  - join_path: teams
+    includes:
+    - team_id
+    - team_name
+    - team_tag
+    - rating
+    - all_time_wins
+    - all_time_losses
+    - last_match_at
+    - is_ranked
+    - loaded_matches
+    - last_loaded_match_at
+    - team_count
+    - avg_rating
+    prefix: true
+  - join_path: pro_players
+    includes:
+    - account_id
+    - player_name
+    - persona_name
+    - team_id
+    - team_name
+    - team_tag
+    - country_code
+    - last_match_at
+    - player_count
+    prefix: true
+- name: playstyle_farm_per_match
+  title: 'Dota 2 pro playstyle: farm_per_match with its dimensions'
+  description: farm_per_match with the dimensions of heroes, patches, teams joined (the playstyle lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: farm_per_match
+    includes:
+    - match_id
+    - player_slot
+    - is_radiant
+    - team_id
+    - team_name
+    - account_id
+    - player_name
+    - hero_id
+    - hero_name
+    - position
+    - position_name
+    - is_win
+    - gold_10
+    - team_gold_10
+    - farm_share_10
+    - gold_20
+    - team_gold_20
+    - farm_share_20
+    - last_hits_10
+    - last_hits_20
+    - farm_rank_10
+    - net_worth
+    - networth_rank
+    - match_date
+    - patch_id
+    - patch_name
+    - league_id
+    - league_name
+    - duration_min
+    - farm_player_games
+    - avg_gold_at_10
+    - avg_lh_at_10
+    - farm_matches
+    - farm_share_10_sum
+    - team_farm_share_10
+    prefix: true
+  - join_path: farm_per_match.heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    prefix: true
+  - join_path: farm_per_match.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+  - join_path: farm_per_match.teams
+    includes:
+    - team_id
+    - team_name
+    - team_tag
+    - rating
+    - all_time_wins
+    - all_time_losses
+    - last_match_at
+    - is_ranked
+    - loaded_matches
+    - last_loaded_match_at
+    prefix: true
+- name: playstyle_fights_per_match
+  title: 'Dota 2 pro playstyle: fights_per_match with its dimensions'
+  description: fights_per_match with the dimensions of heroes, patches, teams joined (the playstyle lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: fights_per_match
+    includes:
+    - match_id
+    - player_slot
+    - is_radiant
+    - team_id
+    - team_name
+    - account_id
+    - player_name
+    - hero_id
+    - hero_name
+    - position
+    - position_name
+    - is_win
+    - match_fights
+    - fights_present
+    - fight_participation
+    - fight_kills
+    - fight_deaths
+    - total_deaths
+    - deaths_outside_fights
+    - fight_buybacks
+    - fight_damage
+    - fight_healing
+    - fight_gold_delta
+    - fight_xp_delta
+    - match_date
+    - patch_id
+    - patch_name
+    - league_id
+    - league_name
+    - duration_min
+    - fight_player_games
+    - fight_matches
+    - fights_in_games
+    - avg_teamfights_per_match
+    - fights_attended
+    - team_fight_participation
+    - avg_fight_gold_swing
+    - avg_deaths_outside_fights
+    - avg_fight_deaths
+    prefix: true
+  - join_path: fights_per_match.heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    prefix: true
+  - join_path: fights_per_match.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+  - join_path: fights_per_match.teams
+    includes:
+    - team_id
+    - team_name
+    - team_tag
+    - rating
+    - all_time_wins
+    - all_time_losses
+    - last_match_at
+    - is_ranked
+    - loaded_matches
+    - last_loaded_match_at
+    prefix: true
+- name: playstyle_hero_playstyle
+  title: 'Dota 2 pro playstyle: hero_playstyle with its dimensions'
+  description: hero_playstyle with the dimensions of heroes, patches joined (the playstyle lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: hero_playstyle
+    includes:
+    - patch_id
+    - patch_name
+    - hero_id
+    - hero_name
+    - position
+    - position_name
+    - games_value
+    - wins_value
+    - game_minutes_value
+    - match_fights_value
+    - fights_present_value
+    - fight_kills
+    - fight_deaths_value
+    - deaths_outside_fights_value
+    - fight_damage
+    - fight_gold_delta_value
+    - farm_games_10_value
+    - farm_share_10_total_value
+    - farm_games_20_value
+    - farm_share_20_total_value
+    - last_hits_10_total_value
+    - lane_games_value
+    - lanes_won_value
+    - lanes_drawn_value
+    - lanes_lost_value
+    - avg_lane_gold_diff_10
+    - enemy_hero_damage_taken_value
+    - hero_kill_deaths_value
+    - trade_deaths_value
+    - observers_placed_value
+    - sentries_placed_value
+    - runes_taken_value
+    - buybacks_value
+    - games
+    - wins
+    - match_fights
+    - fights_present
+    - fight_participation
+    - fight_deaths
+    - deaths_outside_fights
+    - fight_deaths_per_game
+    - deaths_outside_fights_per_game
+    - fight_gold_delta
+    - fight_gold_per_game
+    - farm_games_10
+    - farm_share_10_total
+    - farm_share_10
+    - farm_games_20
+    - farm_share_20_total
+    - farm_share_20
+    - last_hits_10_total
+    - last_hits_at_10
+    - lane_games
+    - lanes_won
+    - lanes_lost
+    - lanes_drawn
+    - lane_win_rate
+    - lane_loss_rate
+    - lane_draw_rate
+    - enemy_hero_damage_taken
+    - game_minutes
+    - damage_absorbed_per_min
+    - hero_kill_deaths
+    - trade_deaths
+    - trade_death_share
+    - observers_placed
+    - sentries_placed
+    - runes_taken
+    - buybacks
+    - observers_per_game
+    - sentries_per_game
+    - runes_per_game
+    - buybacks_per_game
+    - farm_share
+    - fight_participation
+    - lane_outcome
+    - space_created
+    prefix: true
+  - join_path: hero_playstyle.heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    prefix: true
+  - join_path: hero_playstyle.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+- name: playstyle_lane_matchups
+  title: 'Dota 2 pro playstyle: lane_matchups with its dimensions'
+  description: lane_matchups with the dimensions of heroes, patches joined (the playstyle lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: lane_matchups
+    includes:
+    - patch_id
+    - patch_name
+    - lane_role
+    - lane_name
+    - hero_id
+    - hero_name
+    - opponent_hero_id
+    - opponent_hero_name
+    - games
+    - lanes_won
+    - lanes_drawn
+    - lanes_lost
+    - wins
+    - lane_matchup_games
+    - lane_matchup_lanes_won
+    - lane_matchup_lanes_lost
+    - lane_matchup_wins
+    - lane_matchup_win_rate
+    - lane_matchup
+    prefix: true
+  - join_path: lane_matchups.heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    prefix: true
+  - join_path: lane_matchups.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+- name: playstyle_lanes_per_match
+  title: 'Dota 2 pro playstyle: lanes_per_match with its dimensions'
+  description: lanes_per_match with the dimensions of heroes, patches, teams joined (the playstyle lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: lanes_per_match
+    includes:
+    - match_id
+    - player_slot
+    - is_radiant
+    - team_id
+    - team_name
+    - account_id
+    - player_name
+    - hero_id
+    - hero_name
+    - position
+    - position_name
+    - is_win
+    - lane
+    - lane_role
+    - own_laners
+    - enemy_laners
+    - gold_10
+    - last_hits_10
+    - xp_10
+    - gold_diff_10
+    - last_hits_diff_10
+    - xp_diff_10
+    - lane_gold_diff_10
+    - lane_last_hits_diff_10
+    - lane_result
+    - match_date
+    - patch_id
+    - patch_name
+    - league_id
+    - league_name
+    - laning_games
+    - lane_matches
+    - lanes_won_count
+    - lanes_drawn_count
+    - lanes_lost_count
+    - team_lane_win_rate
+    - team_lane_draw_rate
+    - team_lane_loss_rate
+    - avg_lane_gold_diff
+    prefix: true
+  - join_path: lanes_per_match.heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    prefix: true
+  - join_path: lanes_per_match.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+  - join_path: lanes_per_match.teams
+    includes:
+    - team_id
+    - team_name
+    - team_tag
+    - rating
+    - all_time_wins
+    - all_time_losses
+    - last_match_at
+    - is_ranked
+    - loaded_matches
+    - last_loaded_match_at
+    prefix: true
+- name: playstyle_player_playstyle
+  title: 'Dota 2 pro playstyle: player_playstyle with its dimensions'
+  description: player_playstyle with the dimensions of patches, pro_players joined (the playstyle lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: player_playstyle
+    includes:
+    - patch_id
+    - patch_name
+    - account_id
+    - player_name
+    - pro_name
+    - main_position
+    - main_position_name
+    - games
+    - wins
+    - game_minutes
+    - match_fights
+    - fights_present
+    - fight_kills
+    - fight_deaths
+    - deaths_outside_fights
+    - fight_damage
+    - fight_gold_delta
+    - farm_games_10
+    - farm_share_10_total
+    - farm_games_20
+    - farm_share_20_total
+    - last_hits_10_total
+    - lane_games
+    - lanes_won
+    - lanes_drawn
+    - lanes_lost
+    - avg_lane_gold_diff_10
+    - enemy_hero_damage_taken
+    - hero_kill_deaths
+    - trade_deaths
+    - observers_placed
+    - sentries_placed
+    - runes_taken
+    - buybacks
+    - player_games
+    - player_wins
+    - player_match_fights
+    - player_fights_present
+    - player_fight_participation
+    - player_fight_deaths
+    - player_deaths_outside_fights
+    - player_fight_deaths_per_game
+    - player_deaths_outside_fights_per_game
+    - player_fight_gold_delta
+    - player_fight_gold_per_game
+    - player_farm_games_10
+    - player_farm_share_10_total
+    - player_farm_share_10
+    - player_farm_games_20
+    - player_farm_share_20_total
+    - player_farm_share_20
+    - player_last_hits_10_total
+    - player_last_hits_at_10
+    - player_lane_games
+    - player_lanes_won
+    - player_lanes_lost
+    - player_lanes_drawn
+    - player_lane_win_rate
+    - player_lane_loss_rate
+    - player_lane_draw_rate
+    - player_enemy_hero_damage_taken
+    - player_game_minutes
+    - player_damage_absorbed_per_min
+    - player_hero_kill_deaths
+    - player_trade_deaths
+    - player_trade_death_share
+    - player_observers_placed
+    - player_sentries_placed
+    - player_runes_taken
+    - player_buybacks
+    - player_observers_per_game
+    - player_sentries_per_game
+    - player_runes_per_game
+    - player_buybacks_per_game
+    prefix: true
+  - join_path: player_playstyle.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+  - join_path: player_playstyle.pro_players
+    includes:
+    - account_id
+    - player_name
+    - persona_name
+    - team_id
+    - team_name
+    - team_tag
+    - country_code
+    - last_match_at
+    prefix: true
+- name: playstyle_space_per_match
+  title: 'Dota 2 pro playstyle: space_per_match with its dimensions'
+  description: space_per_match with the dimensions of heroes, patches, teams joined (the playstyle lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: space_per_match
+    includes:
+    - match_id
+    - player_slot
+    - is_radiant
+    - team_id
+    - team_name
+    - account_id
+    - player_name
+    - hero_id
+    - hero_name
+    - position
+    - position_name
+    - is_win
+    - duration_min
+    - enemy_hero_damage_taken
+    - enemy_hero_damage_taken_per_min
+    - total_deaths
+    - hero_kill_deaths
+    - trade_deaths
+    - trade_death_share
+    - match_date
+    - patch_id
+    - patch_name
+    - league_id
+    - league_name
+    - space_player_games
+    - space_matches
+    - damage_absorbed_per_min_total
+    - team_damage_absorbed_per_min
+    - traded_deaths
+    - deaths_to_heroes
+    - team_traded_death_share
+    prefix: true
+  - join_path: space_per_match.heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    prefix: true
+  - join_path: space_per_match.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+  - join_path: space_per_match.teams
+    includes:
+    - team_id
+    - team_name
+    - team_tag
+    - rating
+    - all_time_wins
+    - all_time_losses
+    - last_match_at
+    - is_ranked
+    - loaded_matches
+    - last_loaded_match_at
+    prefix: true
+- name: playstyle_vision_per_match
+  title: 'Dota 2 pro playstyle: vision_per_match with its dimensions'
+  description: vision_per_match with the dimensions of heroes, patches, teams joined (the playstyle lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: vision_per_match
+    includes:
+    - match_id
+    - player_slot
+    - is_radiant
+    - team_id
+    - team_name
+    - account_id
+    - player_name
+    - hero_id
+    - hero_name
+    - position
+    - position_name
+    - is_win
+    - observers_placed
+    - sentries_placed
+    - observers_before_10
+    - sentries_before_10
+    - runes_taken
+    - bounty_runes
+    - power_runes
+    - water_runes
+    - wisdom_runes
+    - double_damage_runes
+    - haste_runes
+    - illusion_runes
+    - invisibility_runes
+    - regeneration_runes
+    - arcane_runes
+    - shield_runes
+    - buybacks
+    - first_buyback_min
+    - duration_min
+    - match_date
+    - patch_id
+    - patch_name
+    - league_id
+    - league_name
+    - vision_player_games
+    - matches
+    - avg_observers
+    - avg_sentries
+    - total_observers
+    - total_sentries
+    - total_bounty_runes
+    - total_power_runes
+    - total_wisdom_runes
+    - total_water_runes
+    - total_buybacks
+    - avg_first_buyback_min
+    - team_observers_per_match
+    - team_sentries_per_match
+    - power_runes_per_game
+    - bounty_runes_per_game
+    - wisdom_runes_per_game
+    prefix: true
+  - join_path: vision_per_match.heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    prefix: true
+  - join_path: vision_per_match.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+  - join_path: vision_per_match.teams
+    includes:
+    - team_id
+    - team_name
+    - team_tag
+    - rating
+    - all_time_wins
+    - all_time_losses
+    - last_match_at
+    - is_ranked
+    - loaded_matches
+    - last_loaded_match_at
+    prefix: true

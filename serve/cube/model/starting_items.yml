@@ -1,0 +1,103 @@
+cubes:
+- name: starting_items
+  title: starting items
+  description: What pros buy before the horn — per hero, item and patch, how many games bought the item at or before
+    0:00, how many units, and how those games ended.
+  sql_table: marts.starting_items
+  meta:
+    dst:
+      grain: one row per hero, item and patch
+      key:
+      - patch_id
+      - hero_id
+      - item_id
+      population: Pre-game purchases (at or before 0:00) in professional matches in leagues OpenDota rates premium
+        or professional, in the loaded window, that have a purchase log. The free starting Town Portal Scroll is
+        not a purchase and is not here. Leagues it rates below professional are not counted.
+  joins:
+  - name: heroes
+    relationship: many_to_one
+    sql: '{CUBE}.hero_id = {heroes}.hero_id'
+  - name: items
+    relationship: many_to_one
+    sql: '{CUBE}.item_id = {items}.item_id'
+  - name: patches
+    relationship: many_to_one
+    sql: '{CUBE}.patch_id = {patches}.patch_id'
+  dimensions:
+  - name: patch_id
+    sql: '{CUBE}.patch_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: patch_name
+    sql: '{CUBE}.patch_name'
+    type: string
+    meta:
+      dst:
+        dictionary:
+        - '7.39'
+        - '7.40'
+        - '7.41'
+  - name: hero_id
+    sql: '{CUBE}.hero_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: hero_name
+    sql: '{CUBE}.hero_name'
+    type: string
+  - name: item_id
+    sql: '{CUBE}.item_id'
+    type: number
+    primary_key: true
+    public: true
+  - name: item_name
+    sql: '{CUBE}.item_name'
+    type: string
+    description: Display name, e.g. Iron Branch.
+  - name: item_cost
+    sql: '{CUBE}.item_cost'
+    type: number
+  - name: games_bought
+    sql: '{CUBE}.games_bought'
+    type: number
+    description: Pro games in which the hero bought at least one before the horn.
+  - name: units_bought
+    sql: '{CUBE}.units_bought'
+    type: number
+    description: Units bought before the horn over those games.
+  - name: wins_when_bought
+    sql: '{CUBE}.wins_when_bought'
+    type: number
+  - name: hero_games
+    sql: '{CUBE}.hero_games'
+    type: number
+    description: Pro games the hero played on the patch with a purchase log; repeats on every item row, so never
+      sum it across items.
+  measures:
+  - name: starting_games
+    title: starting_games
+    description: Games in which the item was bought before the horn.
+    type: sum
+    sql: '{CUBE}.games_bought'
+  - name: starting_units
+    title: starting_units
+    description: Units of the item bought before the horn, summed over games.
+    type: sum
+    sql: '{CUBE}.units_bought'
+  - name: starting_wins
+    title: starting_wins
+    description: Of the games that bought the item before the horn, those won.
+    type: sum
+    sql: '{CUBE}.wins_when_bought'
+  - name: starting_item_win_rate
+    title: starting_item_win_rate
+    description: Share of the games that bought the item before the horn that were won; null under 20 games (the
+      minimum_games term).
+    type: number
+    sql: CASE WHEN {starting_games} >= 20 THEN {starting_wins} * 1.0 / NULLIF({starting_games}, 0) END
+    format: percent
+    meta:
+      dst:
+        better: higher

@@ -1,0 +1,233 @@
+views:
+- name: pro_players_lens
+  title: Dota 2 pro players
+  description: Professional players and their performances — who plays what, how well, for which team, from OpenDota's
+    pro matches.
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: player_performances
+    includes:
+    - match_id
+    - player_slot
+    - is_radiant
+    - team_id
+    - team_name
+    - account_id
+    - player_name
+    - pro_name
+    - player_country
+    - hero_id
+    - hero_name
+    - is_win
+    - kills
+    - deaths
+    - assists
+    - kda
+    - last_hits
+    - denies
+    - gold_per_min
+    - xp_per_min
+    - level
+    - net_worth
+    - hero_damage
+    - tower_damage
+    - hero_healing
+    - obs_placed
+    - sen_placed
+    - camps_stacked
+    - rune_pickups
+    - roshans_killed
+    - towers_killed
+    - stuns
+    - position
+    - position_name
+    - started_at
+    - match_date
+    - patch_id
+    - patch_name
+    - league_id
+    - league_name
+    - duration_min
+    - games
+    - wins
+    - win_rate
+    - total_kills
+    - total_deaths
+    - total_assists
+    - total_kda
+    - total_gpm
+    - total_xpm
+    - total_last_hits
+    - total_hero_damage
+    - total_tower_damage
+    - total_net_worth
+    - avg_gpm
+    - avg_xpm
+    - avg_kills
+    - avg_deaths
+    - avg_assists
+    - avg_kda
+    - avg_last_hits
+    - avg_hero_damage
+    - avg_tower_damage
+    - avg_net_worth
+    - hero_win_rate
+    prefix: true
+  - join_path: pro_players
+    includes:
+    - account_id
+    - player_name
+    - persona_name
+    - team_id
+    - team_name
+    - team_tag
+    - country_code
+    - last_match_at
+    - player_count
+    prefix: true
+  - join_path: heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    - hero_count
+    prefix: true
+  - join_path: patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    - patch_count
+    prefix: true
+  - join_path: teams
+    includes:
+    - team_id
+    - team_name
+    - team_tag
+    - rating
+    - all_time_wins
+    - all_time_losses
+    - last_match_at
+    - is_ranked
+    - loaded_matches
+    - last_loaded_match_at
+    - team_count
+    - avg_rating
+    prefix: true
+  - join_path: leagues
+    includes:
+    - league_id
+    - league_name
+    - league_tier
+    - league_count
+    prefix: true
+- name: pro_players_player_performances
+  title: 'Dota 2 pro players: player_performances with its dimensions'
+  description: player_performances with the dimensions of heroes, patches, pro_players joined (the pro_players lens).
+  meta:
+    dst:
+      sources: []
+  cubes:
+  - join_path: player_performances
+    includes:
+    - match_id
+    - player_slot
+    - is_radiant
+    - team_id
+    - team_name
+    - account_id
+    - player_name
+    - pro_name
+    - player_country
+    - hero_id
+    - hero_name
+    - is_win
+    - kills
+    - deaths
+    - assists
+    - kda
+    - last_hits
+    - denies
+    - gold_per_min
+    - xp_per_min
+    - level
+    - net_worth
+    - hero_damage
+    - tower_damage
+    - hero_healing
+    - obs_placed
+    - sen_placed
+    - camps_stacked
+    - rune_pickups
+    - roshans_killed
+    - towers_killed
+    - stuns
+    - position
+    - position_name
+    - started_at
+    - match_date
+    - patch_id
+    - patch_name
+    - league_id
+    - league_name
+    - duration_min
+    - games
+    - wins
+    - win_rate
+    - total_kills
+    - total_deaths
+    - total_assists
+    - total_kda
+    - total_gpm
+    - total_xpm
+    - total_last_hits
+    - total_hero_damage
+    - total_tower_damage
+    - total_net_worth
+    - avg_gpm
+    - avg_xpm
+    - avg_kills
+    - avg_deaths
+    - avg_assists
+    - avg_kda
+    - avg_last_hits
+    - avg_hero_damage
+    - avg_tower_damage
+    - avg_net_worth
+    - hero_win_rate
+    prefix: true
+  - join_path: player_performances.heroes
+    includes:
+    - hero_id
+    - hero_name
+    - hero_key
+    - primary_attribute
+    - attack_type
+    - roles
+    prefix: true
+  - join_path: player_performances.patches
+    includes:
+    - patch_id
+    - patch_name
+    - patch_started_at
+    - patch_ended_at
+    - is_current
+    prefix: true
+  - join_path: player_performances.pro_players
+    includes:
+    - account_id
+    - player_name
+    - persona_name
+    - team_id
+    - team_name
+    - team_tag
+    - country_code
+    - last_match_at
+    prefix: true
