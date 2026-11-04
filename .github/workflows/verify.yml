@@ -1,0 +1,36 @@
+# On every pull request: plan the change, find the vouched questions that stand on
+# it, re-verify them, and post the result on the PR.
+name: verify
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  plan-and-re-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: plan, apply, re-verify
+        env:
+          COMMENT_PATH: ${{ runner.temp }}/comment.md
+        run: python3 ci/verify_demo.py origin/${{ github.base_ref }}
+      - name: Post the result on the PR
+        uses: actions/github-script@v7
+        env:
+          COMMENT_PATH: ${{ runner.temp }}/comment.md
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync(process.env.COMMENT_PATH, 'utf8');
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const { data: comments } = await github.rest.issues.listComments({ owner, repo, issue_number });
+            const mine = comments.find(c => c.body.startsWith('<!-- verify -->'));
+            if (mine) await github.rest.issues.updateComment({ owner, repo, comment_id: mine.id, body });
+            else await github.rest.issues.createComment({ owner, repo, issue_number, body });
