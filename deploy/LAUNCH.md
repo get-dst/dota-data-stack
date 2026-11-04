@@ -35,9 +35,9 @@ records their tokens (`resolution.decisions[].usage`) but does not price them.
 
 ## 0. Before anything
 
-- [x] dst 0.6.2 on the laptop (`pip install -U 'dst-core==0.6.2'`, or `~/dst-dev/.venv/bin/dst`).
+- [x] dst 0.15.1 on the laptop (`pip install -U 'dst-core==0.15.1'`, or `~/dst-dev/.venv/bin/dst`).
 - [x] `gcloud auth login` as the account that owns `kurator-core`.
-- [ ] Decide on the GHCR image. `ghcr.io/get-dst/dst:0.6.2` was pushed by the release,
+- [ ] Decide on the GHCR image. `ghcr.io/get-dst/dst:0.15.1` is the release image,
       but an anonymous pull is refused (403), so the package is private. Cloud Run does
       not need it: `cloudbuild.yaml` builds from the public source tag. The VM variant and
       every stranger following dst's `deploy/` do need it. Either make it public
@@ -98,7 +98,7 @@ records their tokens (`resolution.decisions[].usage`) but does not price them.
 ## 4. Build, secret, migrate
 
 ```
-deploy/cloudrun.sh build              # Cloud Build: dst v0.6.2 source + local-embed + baked weights (~10 min)
+deploy/cloudrun.sh build              # Cloud Build: dst v0.15.1 source + local-embed + baked weights (~10 min)
 deploy/cloudrun.sh warehouse-secret   # paste the read-scaling token; stored as dst-api-key-warehouse
 deploy/cloudrun.sh migrate            # dst-migrate job on the new image
 ```
