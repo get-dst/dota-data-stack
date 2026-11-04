@@ -64,3 +64,5 @@ select
 from sides as s
 inner join {{ ref('fact_match') }} as m on m.match_id = s.match_id
 left join first_picks as f on f.match_id = s.match_id
+-- A remake (under ten minutes) is not a team match: it counts for neither side.
+where m.duration_min >= 10
