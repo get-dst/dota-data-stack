@@ -26,8 +26,28 @@ def diff_lines(path):
             and not l.startswith(("+++", "---"))]
 
 def questions(lens):
-    f = LENSES / lens / "certified_answers.yaml"
-    return re.findall(r"^- question:\s*(.+)$", f.read_text(), re.M) if f.exists() else []
+    """Every question the lens vouches for: certified answers, the sample queries and
+    the approved eval cases that expect an answer. One row per distinct question."""
+    d = LENSES / lens
+    out = []
+    f = d / "certified_answers.yaml"
+    if f.exists():
+        out += re.findall(r"^- question:\s*(.+)$", f.read_text(), re.M)
+    f = d / "queries.yaml"
+    if f.exists():
+        out += re.findall(r"^\s*- question:\s*(.+)$", f.read_text(), re.M)
+    f = d / "evals" / "cases.yaml"
+    if f.exists():
+        for block in re.split(r"^- question:\s*", f.read_text(), flags=re.M)[1:]:
+            q, _, rest = block.partition("\n")
+            if re.search(r"^\s*expect:\s*answer\s*$", rest, re.M):
+                out.append(q.strip())
+    seen, uniq = set(), []
+    for q in out:
+        q = q.strip().strip('"')
+        if q and q.lower() not in seen:
+            seen.add(q.lower()); uniq.append(q)
+    return uniq
 
 lenses_all = sorted(p.name for p in LENSES.iterdir() if (p / "lens.yaml").exists())
 total = sum(len(questions(l)) for l in lenses_all)
