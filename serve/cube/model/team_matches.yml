@@ -156,20 +156,13 @@ cubes:
     meta:
       dst:
         better: higher
+        term: team_win_rate
+        aliases:
+        - team winrate
+        - team win percentage
+        - how did a team do
   - name: team_avg_kills
     title: team_avg_kills
     description: Average hero kills by the team per match.
     type: avg
     sql: '{CUBE}.kills'
-  segments:
-  - name: team_win_rate
-    sql: CASE WHEN COUNT({CUBE}.match_id) >= 20 THEN SUM(CASE WHEN {CUBE}.is_win THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT({CUBE}.match_id),
-      0) END
-    meta:
-      dst:
-        meaning: Share of a team's pro matches that the team won, counted on the team grain; null under 20 matches.
-        aliases:
-        - team winrate
-        - team win percentage
-        - how did a team do
-        term: team_win_rate
